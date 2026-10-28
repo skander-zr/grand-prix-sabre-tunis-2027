@@ -25,28 +25,32 @@ export const INITIAL_HOTELS: Record<'el-mouradi-gammarth' | 'golden-carthage', H
     },
     photos: [
       {
-        url: '/hotels/el-mouradi-facade.jpg',
-        caption: { fr: 'Façade extérieure & Piscine olympique en bord de mer', en: 'Exterior facade & Seafront Olympic Pool' }
+        url: '/hotels/el-mouradi-resort.jpg',
+        caption: { fr: 'Vue panoramique du complexe 5★ & plage privée des Côtes de Carthage', en: 'Panoramic resort view & private beach on Carthage coast' }
       },
       {
-        url: '/hotels/el-mouradi-room.jpg',
-        caption: { fr: 'Chambre officielle avec balcon privé & vue mer', en: 'Official Room with private balcony & sea view' }
+        url: '/hotels/el-mouradi-facade.jpg',
+        caption: { fr: 'Façade extérieure & piscines en bord de mer Méditerranée', en: 'Exterior facade & Mediterranean seafront pools' }
       },
       {
         url: '/hotels/el-mouradi-verriere.jpg',
-        caption: { fr: 'Grand hall d\'accueil & verrière de réception FIE', en: 'Grand reception hall & FIE glass atrium' }
+        caption: { fr: 'Grand hall d\'accueil & verrière de réception officielle FIE', en: 'Grand reception hall & official FIE glass atrium' }
+      },
+      {
+        url: '/hotels/el-mouradi-room.jpg',
+        caption: { fr: 'Chambre athlète officielle avec balcon privatif & vue mer', en: 'Official athlete room with private balcony & sea view' }
       },
       {
         url: '/hotels/el-mouradi-restaurant.jpg',
-        caption: { fr: 'Restaurant buffet nutritionnel dédié aux athlètes', en: 'High-performance athletic buffet restaurant' }
+        caption: { fr: 'Restaurant buffet nutritionnel adapté aux compétiteurs FIE', en: 'Sports nutrition buffet restaurant for FIE competitors' }
       },
       {
         url: '/hotels/el-mouradi-pool.jpg',
-        caption: { fr: 'Parc méditerranéen & grande piscine extérieure', en: 'Mediterranean park & outdoor resort pool' }
+        caption: { fr: 'Piscine olympique & parc paysager méditerranéen', en: 'Olympic pool & landscaped Mediterranean park' }
       },
       {
         url: '/hotels/el-mouradi-entree.jpg',
-        caption: { fr: 'Entrée principale sécurisée & dépose navettes', en: 'Secured main entrance & shuttle drop-off' }
+        caption: { fr: 'Entrée sécurisée & aire de dépose des navettes officielles', en: 'Secured entrance & official shuttle drop-off area' }
       }
     ],
     amenities: [
@@ -114,15 +118,27 @@ export const INITIAL_HOTELS: Record<'el-mouradi-gammarth' | 'golden-carthage', H
     photos: [
       {
         url: '/hotels/golden-carthage-panoramic.jpg',
-        caption: { fr: 'Vue panoramique depuis la colline de Gammarth & Golfe de Tunis', en: 'Panoramic cliff view overlooking Gulf of Tunis' }
+        caption: { fr: 'Vue panoramique officielle sur la colline de Gammarth & Golfe de Tunis', en: 'Official panoramic cliff view over Gammarth Bay' }
+      },
+      {
+        url: '/hotels/golden-carthage-facade.jpg',
+        caption: { fr: 'Façade majestueuse du palace & architecture carthaginoise', en: 'Grand palace facade & Carthaginian architecture' }
       },
       {
         url: '/hotels/golden-carthage-pool.jpg',
-        caption: { fr: 'Grande piscine extérieure & terrasse lounge panoramique', en: 'Grand outdoor pool & panoramic lounge terrace' }
+        caption: { fr: 'Grande piscine extérieure & parc méditerranéen', en: 'Grand outdoor swimming pool & Mediterranean gardens' }
+      },
+      {
+        url: '/hotels/golden-carthage-room.jpg',
+        caption: { fr: 'Suite Exécutive avec balcon privatif & vue mer', en: 'Executive Suite with private terrace & sea view' }
+      },
+      {
+        url: '/hotels/golden-carthage-twin.jpg',
+        caption: { fr: 'Chambre Deluxe Twin (2 lits séparés athlètes)', en: 'Deluxe Twin Room (2 separate beds for athletes)' }
       },
       {
         url: '/hotels/golden-carthage-lobby.jpg',
-        caption: { fr: 'Lobby de prestige & salon de réception officiel FIE', en: 'Prestige hotel lobby & official FIE reception lounge' }
+        caption: { fr: 'Restaurant gastronomique La Stalla & salons officiels FIE', en: 'Fine dining La Stalla & official FIE reception salons' }
       }
     ],
     amenities: [

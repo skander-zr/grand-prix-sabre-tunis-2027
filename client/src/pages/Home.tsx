@@ -92,12 +92,13 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#040813] text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-black">
+    <div className="min-h-screen bg-[#050811] text-slate-100 flex flex-col selection:bg-[#D4AF37] selection:text-[#060B14]">
       
       {/* Platform Header */}
       <Header
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        onOpenAdmin={() => setActiveTab('admin')}
       />
 
       {/* Main Content Body */}
@@ -112,13 +113,13 @@ export default function Home() {
             ) : (
               <>
                 {/* Official Session Header */}
-                <div className="bg-[#071329] border-b border-sky-900/60 no-print py-2.5 px-4 sm:px-6">
+                <div className="bg-[#071329] border-b border-[#D4AF37]/30 no-print py-2.5 px-4 sm:px-6">
                   <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <span className="w-2.5 h-2.5 rounded-full touche-lamp-green"></span>
                       <span className="text-slate-300">
                         Session Accréditée :{' '}
-                        <strong className="text-amber-300">
+                        <strong className="text-[#F5E8C7]">
                           {adminRole === 'super-admin'
                             ? 'Comité Directeur FIE / FTE (Super-Admin)'
                             : adminRole === 'el-mouradi-gammarth'
@@ -130,7 +131,7 @@ export default function Home() {
                     <div className="flex items-center gap-4 ml-auto">
                       <button
                         onClick={() => setActiveTab('hotels')}
-                        className="text-sky-400 hover:text-white transition-colors cursor-pointer"
+                        className="text-[#D4AF37] hover:text-white transition-colors cursor-pointer"
                       >
                         ← Consulter le site public
                       </button>
@@ -149,13 +150,40 @@ export default function Home() {
           </div>
         ) : (
           <div>
-            {/* Hero Section with Official User Banner */}
-            <HeroBanner
-              onNavigate={(tab) => {
-                setActiveTab(tab);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-            />
+            {/* Show full HeroBanner on hotels homepage */}
+            {activeTab === 'hotels' && (
+              <HeroBanner
+                onNavigate={(tab) => {
+                  setActiveTab(tab);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              />
+            )}
+
+            {/* Compact Official Breadcrumb for other tabs */}
+            {activeTab !== 'hotels' && (
+              <div className="bg-[#060B14] border-b border-[#D4AF37]/20 py-3.5 px-4 sm:px-6 lg:px-8 no-print">
+                <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2 text-slate-300">
+                    <span className="font-bold text-[#D4AF37] uppercase">Grand Prix Sabre Tunis 2027</span>
+                    <span className="text-slate-600">&bull;</span>
+                    <span className="text-slate-200 font-medium">
+                      {activeTab === 'booking' && 'Formulaire Officiel d\'Engagement & Réservation Hôtelière 5★'}
+                      {activeTab === 'shuttle' && 'Transferts Aéroports Exclusifs (TUN) & Salles de Radès'}
+                      {activeTab === 'client' && 'Portail Délégations & Voucher Officiel A4'}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('hotels')}
+                    className="text-[#D4AF37] hover:text-[#F5E8C7] font-bold text-xs underline underline-offset-4 cursor-pointer"
+                  >
+                    &larr; Retour aux Hôtels 5★
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Active Content Section */}
             <div className="animate-fadeIn">

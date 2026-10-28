@@ -29,17 +29,17 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ reservation, hotel, 
       <div className="relative w-full max-w-4xl bg-white text-slate-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
         
         {/* Top Control Bar (Hidden on print) */}
-        <div className="flex items-center justify-between px-6 py-3 bg-[#071329] text-white border-b border-sky-950 no-print">
+        <div className="flex items-center justify-between px-6 py-3 bg-[#060B14] text-white border-b border-[#D4AF37]/30 no-print">
           <div className="flex items-center gap-2 text-xs">
-            <span className="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
-            <span className="font-bold text-sky-300">VOUCHER & FACTURE OFFICIELLE FIE / FTE</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-[#D4AF37]"></span>
+            <span className="font-bold text-[#F5E8C7]">VOUCHER &amp; FACTURE OFFICIELLE FIE / FTE</span>
             <span className="text-slate-400 font-mono">[{reservation.id}]</span>
           </div>
           
           <div className="flex items-center gap-3">
             <button
               onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs transition-colors shadow-sm cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#D4AF37] hover:bg-[#C59B27] text-[#060B14] font-black text-xs transition-colors shadow-sm cursor-pointer"
             >
               <Printer className="w-4 h-4" />
               <span>{t('btn.print')}</span>

@@ -238,27 +238,27 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
   };
 
   return (
-    <section id="booking-section" className="py-14 sm:py-20 bg-[#040812] text-white piste-bg">
+    <section id="booking-section" className="py-14 sm:py-20 bg-[#050811] text-white piste-bg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Module Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 border-b border-[#14233c] pb-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 border-b border-[#D4AF37]/25 pb-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0b172a] border border-cyan-400/40 text-cyan-300 text-xs font-black uppercase tracking-wider mb-2">
-              <Swords className="w-3.5 h-3.5 text-cyan-400" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#091222] border border-[#D4AF37]/40 text-[#F5E8C7] text-xs font-bold uppercase tracking-wider mb-2">
+              <Swords className="w-3.5 h-3.5 text-[#D4AF37]" />
               <span>Module Officiel d'Engagement FIE</span>
             </div>
-            <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight uppercase">
+            <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight uppercase font-heading">
               Réservation Hôtelière Tournoi 2027
             </h2>
-            <p className="mt-1 text-xs sm:text-sm text-slate-300 max-w-2xl font-medium">
-              Système de réservation avec calcul automatique des chambres Single et Double pour délégations sportives, tarifs négociés et disponibilité en temps réel.
+            <p className="mt-1 text-xs sm:text-sm text-slate-300 max-w-2xl font-medium leading-relaxed">
+              Système officiel de réservation pour délégations sportives et athlètes. Tarifs négociés FIE avec buffet sportif et balnéothérapie inclus.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-mono">
-            <span className="w-2.5 h-2.5 rounded-full touche-green"></span>
-            <span className="text-slate-300">Quotas Officiels FIE Ouverts</span>
+          <div className="flex items-center gap-2 text-xs font-mono bg-[#091222] px-3.5 py-2 rounded-xl border border-[#D4AF37]/30">
+            <span className="w-2.5 h-2.5 rounded-full touche-lamp-green"></span>
+            <span className="text-[#F5E8C7] font-bold">Quotas Officiels FIE Ouverts</span>
           </div>
         </div>
 
@@ -269,22 +269,22 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
           <div className="lg:col-span-8 space-y-8">
             
             {/* Step 1: Hôtel & Dates */}
-            <div className="tournament-card rounded-3xl p-6 sm:p-8 space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-[#14233c]">
+            <div className="palace-card rounded-2xl p-6 sm:p-8 space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b border-[#D4AF37]/20">
                 <div className="flex items-center gap-3">
-                  <span className="w-8 h-8 rounded-xl bg-sky-600/20 border border-sky-500/40 flex items-center justify-center text-sky-400 font-mono font-black text-sm">
+                  <span className="w-8 h-8 rounded-lg bg-[#121E38] border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37] font-mono font-bold text-sm">
                     01
                   </span>
-                  <h3 className="text-base sm:text-lg font-black text-white uppercase tracking-tight">
-                    Choix de l'Hôtel & Période du Séjour
+                  <h3 className="text-base sm:text-lg font-black text-white uppercase tracking-tight font-heading">
+                    Choix de l'Hôtel &amp; Période du Séjour
                   </h3>
                 </div>
-                <span className="text-xs text-amber-400 font-mono font-bold">2 Hôtels Partenaires 5★</span>
+                <span className="text-xs text-[#D4AF37] font-mono font-bold">2 Hôtels 5★ Gammarth</span>
               </div>
 
               {/* The 2 Hotels Selection */}
               <div>
-                <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3">
+                <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-3">
                   Sélectionnez l'un des 2 Hôtels Officiels
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -292,40 +292,40 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                   {/* Hotel 1 */}
                   <div
                     onClick={() => setHotelId('el-mouradi-gammarth')}
-                    className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
                       hotelId === 'el-mouradi-gammarth'
-                        ? 'border-cyan-400 bg-[#0d1e38] shadow-xl shadow-cyan-950/60'
-                        : 'border-[#16253f] bg-[#070f1e] hover:border-slate-700'
+                        ? 'border-[#D4AF37] bg-[#121F38] shadow-xl'
+                        : 'border-white/[0.08] bg-[#070D18] hover:border-slate-700'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="font-black text-white text-sm uppercase">Hôtel El Mouradi Gammarth</span>
-                      <span className="text-xs text-amber-400 font-bold">5 ★★★★★</span>
+                      <span className="font-bold text-white text-sm uppercase">Hôtel El Mouradi Gammarth</span>
+                      <span className="text-xs text-[#D4AF37] font-bold">5 ★★★★★</span>
                     </div>
                     <p className="text-xs text-slate-400 mb-3">Village Officiel Athlètes &bull; Front de mer &bull; Spa</p>
-                    <div className="p-2 rounded-xl bg-[#040812] border border-sky-950 flex items-center justify-between text-xs font-mono">
-                      <span className="text-amber-400 font-bold">Single: {hotels['el-mouradi-gammarth'].roomTypes.single.pricePerNight} €</span>
-                      <span className="text-cyan-300 font-bold">Double: {hotels['el-mouradi-gammarth'].roomTypes.double.pricePerNight} €</span>
+                    <div className="p-2 rounded-lg bg-[#060B14] border border-[#D4AF37]/20 flex items-center justify-between text-xs font-mono">
+                      <span className="text-[#D4AF37] font-bold">Single: {hotels['el-mouradi-gammarth'].roomTypes.single.pricePerNight} €</span>
+                      <span className="text-[#F5E8C7] font-bold">Double: {hotels['el-mouradi-gammarth'].roomTypes.double.pricePerNight} €</span>
                     </div>
                   </div>
 
                   {/* Hotel 2 */}
                   <div
                     onClick={() => setHotelId('golden-carthage')}
-                    className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
                       hotelId === 'golden-carthage'
-                        ? 'border-cyan-400 bg-[#0d1e38] shadow-xl shadow-cyan-950/60'
-                        : 'border-[#16253f] bg-[#070f1e] hover:border-slate-700'
+                        ? 'border-[#D4AF37] bg-[#121F38] shadow-xl'
+                        : 'border-white/[0.08] bg-[#070D18] hover:border-slate-700'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="font-black text-white text-sm uppercase">Hôtel Golden Carthage</span>
-                      <span className="text-xs text-amber-400 font-bold">5 ★★★★★</span>
+                      <span className="font-bold text-white text-sm uppercase">Hôtel Golden Carthage</span>
+                      <span className="text-xs text-[#D4AF37] font-bold">5 ★★★★★</span>
                     </div>
-                    <p className="text-xs text-slate-400 mb-3">QG Exécutif FIE &bull; Arbitres &bull; Colline Gammarth</p>
-                    <div className="p-2 rounded-xl bg-[#040812] border border-sky-950 flex items-center justify-between text-xs font-mono">
-                      <span className="text-amber-400 font-bold">Single: {hotels['golden-carthage'].roomTypes.single.pricePerNight} €</span>
-                      <span className="text-cyan-300 font-bold">Double: {hotels['golden-carthage'].roomTypes.double.pricePerNight} €</span>
+                    <p className="text-xs text-slate-400 mb-3">QG Directoire FIE &bull; Arbitres &bull; Colline Gammarth</p>
+                    <div className="p-2 rounded-lg bg-[#060B14] border border-[#D4AF37]/20 flex items-center justify-between text-xs font-mono">
+                      <span className="text-[#D4AF37] font-bold">Single: {hotels['golden-carthage'].roomTypes.single.pricePerNight} €</span>
+                      <span className="text-[#F5E8C7] font-bold">Double: {hotels['golden-carthage'].roomTypes.double.pricePerNight} €</span>
                     </div>
                   </div>
 
@@ -342,7 +342,7 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                     type="date"
                     value={checkInDate}
                     onChange={(e) => setCheckInDate(e.target.value)}
-                    className="w-full bg-[#081224] border border-[#1a2d4c] rounded-xl px-3.5 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-cyan-400"
+                    className="w-full bg-[#060B14] border border-[#D4AF37]/30 rounded-lg px-3.5 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-[#D4AF37]"
                     required
                   />
                 </div>
@@ -354,7 +354,7 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                     type="date"
                     value={checkOutDate}
                     onChange={(e) => setCheckOutDate(e.target.value)}
-                    className="w-full bg-[#081224] border border-[#1a2d4c] rounded-xl px-3.5 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-cyan-400"
+                    className="w-full bg-[#060B14] border border-[#D4AF37]/30 rounded-lg px-3.5 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-[#D4AF37]"
                     required
                   />
                 </div>
@@ -362,9 +362,9 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                   <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1.5">
                     Durée Totale
                   </label>
-                  <div className="w-full bg-[#081224] border border-[#1a2d4c] rounded-xl px-3.5 py-2.5 text-sm font-black font-mono text-cyan-300 flex items-center justify-between">
+                  <div className="w-full bg-[#060B14] border border-[#D4AF37]/30 rounded-lg px-3.5 py-2.5 text-sm font-black font-mono text-[#F5E8C7] flex items-center justify-between">
                     <span>{nightsCount} Nuits</span>
-                    <span className="text-[10px] text-amber-400 font-bold uppercase">Grand Prix FIE</span>
+                    <span className="text-[10px] text-[#D4AF37] font-bold uppercase">Grand Prix FIE</span>
                   </div>
                 </div>
               </div>
@@ -372,14 +372,14 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
             </div>
 
             {/* Step 2: Mode de Réservation (Individuel vs Groupe Fédération) */}
-            <div className="tournament-card rounded-3xl p-6 sm:p-8 space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-[#14233c]">
+            <div className="palace-card rounded-2xl p-6 sm:p-8 space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b border-[#D4AF37]/20">
                 <div className="flex items-center gap-3">
-                  <span className="w-8 h-8 rounded-xl bg-cyan-600/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 font-mono font-black text-sm">
+                  <span className="w-8 h-8 rounded-lg bg-[#121E38] border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37] font-mono font-bold text-sm">
                     02
                   </span>
-                  <h3 className="text-base sm:text-lg font-black text-white uppercase tracking-tight">
-                    Formule de Réservation & Composition
+                  <h3 className="text-base sm:text-lg font-black text-white uppercase tracking-tight font-heading">
+                    Formule de Réservation &amp; Composition
                   </h3>
                 </div>
               </div>
@@ -389,26 +389,26 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                 <button
                   type="button"
                   onClick={() => setBookingType('group')}
-                  className={`flex items-center justify-center gap-3 p-4 rounded-2xl border-2 font-black text-xs uppercase tracking-wider transition-all cursor-pointer ${
+                  className={`flex items-center justify-center gap-3 p-4 rounded-xl border-2 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
                     bookingType === 'group'
-                      ? 'border-cyan-400 bg-[#0d213d] text-white shadow-xl shadow-cyan-950/50'
-                      : 'border-[#16253f] bg-[#070f1e] text-slate-400 hover:text-white'
+                      ? 'border-[#D4AF37] bg-[#121F38] text-[#F5E8C7] shadow-xl'
+                      : 'border-white/[0.08] bg-[#070D18] text-slate-400 hover:text-white'
                   }`}
                 >
-                  <Users className="w-4 h-4 text-cyan-400" />
+                  <Users className="w-4 h-4 text-[#D4AF37]" />
                   <span>B) Réservation Groupe / Fédération</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setBookingType('individual')}
-                  className={`flex items-center justify-center gap-3 p-4 rounded-2xl border-2 font-black text-xs uppercase tracking-wider transition-all cursor-pointer ${
+                  className={`flex items-center justify-center gap-3 p-4 rounded-xl border-2 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
                     bookingType === 'individual'
-                      ? 'border-cyan-400 bg-[#0d213d] text-white shadow-xl shadow-cyan-950/50'
-                      : 'border-[#16253f] bg-[#070f1e] text-slate-400 hover:text-white'
+                      ? 'border-[#D4AF37] bg-[#121F38] text-[#F5E8C7] shadow-xl'
+                      : 'border-white/[0.08] bg-[#070D18] text-slate-400 hover:text-white'
                   }`}
                 >
-                  <User className="w-4 h-4 text-cyan-400" />
+                  <User className="w-4 h-4 text-[#D4AF37]" />
                   <span>A) Réservation Individuelle (1 Personne)</span>
                 </button>
               </div>
@@ -418,47 +418,47 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                 <div className="space-y-6 animate-fadeIn pt-2">
                   
                   {/* Room counters for individual */}
-                  <div className="p-4 rounded-2xl bg-[#081224] border border-[#162640]">
-                    <div className="text-[11px] font-black uppercase tracking-wider text-slate-300 mb-3">
+                  <div className="p-4 rounded-xl bg-[#070D18] border border-white/[0.08]">
+                    <div className="text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-3">
                       Choix de la Chambre Individuelle
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="flex items-center justify-between p-3.5 rounded-xl bg-[#0b172a] border border-[#1a2d4c]">
+                      <div className="flex items-center justify-between p-3.5 rounded-xl bg-[#091122] border border-[#D4AF37]/25">
                         <div>
                           <div className="font-bold text-white text-sm">Chambre Single</div>
-                          <div className="text-xs text-amber-400 font-mono font-bold">{singlePrice} € / nuit</div>
+                          <div className="text-xs text-[#D4AF37] font-mono font-bold">{singlePrice} € / nuit</div>
                         </div>
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
                             onClick={() => setIndividualSingleQty(Math.max(0, individualSingleQty - 1))}
-                            className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 font-bold"
+                            className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 font-bold cursor-pointer"
                           >-</button>
-                          <span className="w-6 text-center font-bold font-mono text-cyan-300">{individualSingleQty}</span>
+                          <span className="w-6 text-center font-bold font-mono text-[#F5E8C7]">{individualSingleQty}</span>
                           <button
                             type="button"
                             onClick={() => setIndividualSingleQty(individualSingleQty + 1)}
-                            className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 font-bold"
+                            className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 font-bold cursor-pointer"
                           >+</button>
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between p-3.5 rounded-xl bg-[#0b172a] border border-[#1a2d4c]">
+                      <div className="flex items-center justify-between p-3.5 rounded-xl bg-[#091122] border border-[#D4AF37]/25">
                         <div>
                           <div className="font-bold text-white text-sm">Chambre Double / Twin</div>
-                          <div className="text-xs text-cyan-300 font-mono font-bold">{doublePrice} € / nuit</div>
+                          <div className="text-xs text-[#F5E8C7] font-mono font-bold">{doublePrice} € / nuit</div>
                         </div>
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
                             onClick={() => setIndividualDoubleQty(Math.max(0, individualDoubleQty - 1))}
-                            className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 font-bold"
+                            className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 font-bold cursor-pointer"
                           >-</button>
-                          <span className="w-6 text-center font-bold font-mono text-cyan-300">{individualDoubleQty}</span>
+                          <span className="w-6 text-center font-bold font-mono text-[#F5E8C7]">{individualDoubleQty}</span>
                           <button
                             type="button"
                             onClick={() => setIndividualDoubleQty(individualDoubleQty + 1)}
-                            className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 font-bold"
+                            className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 font-bold cursor-pointer"
                           >+</button>
                         </div>
                       </div>
@@ -569,30 +569,30 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                 <div className="space-y-6 animate-fadeIn pt-2">
                   
                   {/* Federation info */}
-                  <div className="p-4 rounded-2xl bg-[#081224] border border-[#162640] space-y-4">
-                    <div className="text-[11px] font-black uppercase tracking-wider text-cyan-300 flex items-center gap-2">
-                      <Shield className="w-4 h-4 text-cyan-400" />
-                      <span>Coordonnées de la Fédération & Chef de Délégation</span>
+                  <div className="p-4 rounded-xl bg-[#070D18] border border-white/[0.08] space-y-4">
+                    <div className="text-[11px] font-bold uppercase tracking-wider text-[#F5E8C7] flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-[#D4AF37]" />
+                      <span>Coordonnées de la Fédération &amp; Chef de Délégation</span>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-300 mb-1">Nom de la Fédération / Équipe *</label>
+                        <label className="block text-[11px] font-medium text-slate-300 mb-1">Nom de la Fédération / Équipe *</label>
                         <input
                           type="text"
                           value={federationData.federationName}
                           onChange={(e) => setFederationData({ ...federationData, federationName: e.target.value })}
                           placeholder="Ex: Fédération Française d'Escrime (FFE)"
-                          className="w-full bg-[#0b172a] border border-[#1a2d4c] rounded-xl px-3.5 py-2 text-xs text-white"
+                          className="w-full bg-[#091122] border border-[#D4AF37]/25 rounded-lg px-3.5 py-2 text-xs text-white"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-300 mb-1">Pays Représenté *</label>
+                        <label className="block text-[11px] font-medium text-slate-300 mb-1">Pays Représenté *</label>
                         <select
                           value={federationData.country}
                           onChange={(e) => setFederationData({ ...federationData, country: e.target.value })}
-                          className="w-full bg-[#0b172a] border border-[#1a2d4c] rounded-xl px-3.5 py-2 text-xs text-white"
+                          className="w-full bg-[#091122] border border-[#D4AF37]/25 rounded-lg px-3.5 py-2 text-xs text-white"
                         >
                           {COUNTRIES_LIST.map((c) => (
                             <option key={c.code} value={c.nameFr}>{c.flag} {c.nameFr}</option>
@@ -600,24 +600,24 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                         </select>
                       </div>
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-300 mb-1">Chef de Délégation (Nom & Prénom) *</label>
+                        <label className="block text-[11px] font-medium text-slate-300 mb-1">Chef de Délégation (Nom &amp; Prénom) *</label>
                         <input
                           type="text"
                           value={federationData.contactPersonName}
                           onChange={(e) => setFederationData({ ...federationData, contactPersonName: e.target.value })}
                           placeholder="Ex: Jean-Christophe Durand"
-                          className="w-full bg-[#0b172a] border border-[#1a2d4c] rounded-xl px-3.5 py-2 text-xs text-white"
+                          className="w-full bg-[#091122] border border-[#D4AF37]/25 rounded-lg px-3.5 py-2 text-xs text-white"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-300 mb-1">Email Officiel Fédération *</label>
+                        <label className="block text-[11px] font-medium text-slate-300 mb-1">Email Officiel Fédération *</label>
                         <input
                           type="email"
                           value={federationData.contactEmail}
                           onChange={(e) => setFederationData({ ...federationData, contactEmail: e.target.value })}
                           placeholder="contact@escrime.fr"
-                          className="w-full bg-[#0b172a] border border-[#1a2d4c] rounded-xl px-3.5 py-2 text-xs text-white"
+                          className="w-full bg-[#091122] border border-[#D4AF37]/25 rounded-lg px-3.5 py-2 text-xs text-white"
                           required
                         />
                       </div>
@@ -628,9 +628,9 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                   <div className="space-y-3">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
-                        <h4 className="text-sm font-black text-white uppercase tracking-tight flex items-center gap-2">
+                        <h4 className="text-sm font-bold text-white uppercase tracking-tight flex items-center gap-2 font-heading">
                           <span>Feuille d'Engagement Délégation (Roster)</span>
-                          <span className="text-xs px-2.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-700 font-mono font-bold">
+                          <span className="text-xs px-2.5 py-0.5 rounded bg-[#0A1220] text-[#D4AF37] border border-[#D4AF37]/30 font-mono font-bold">
                             {members.length} inscrits
                           </span>
                         </h4>
@@ -642,7 +642,7 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                       <button
                         type="button"
                         onClick={addMember}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#D4AF37] hover:bg-[#C59B27] text-[#060B14] font-black text-xs uppercase tracking-wider transition-all shadow-md cursor-pointer"
                       >
                         <Plus className="w-4 h-4" />
                         <span>Ajouter un Tireur / Membre</span>
@@ -721,7 +721,7 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                                   className={`rounded px-2 py-1 text-xs font-bold ${
                                     member.roomPreference === 'single'
                                       ? 'bg-amber-950/80 border border-amber-600/60 text-amber-300'
-                                      : 'bg-sky-950/80 border border-sky-600/60 text-cyan-300'
+                                      : 'bg-[#091222] border border-[#D4AF37]/30 text-[#F5E8C7]'
                                   }`}
                                 >
                                   <option value="single">Single (1 pers)</option>
@@ -736,7 +736,7 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                                     value={member.roommateName || ''}
                                     onChange={(e) => updateMember(member.id, { roommateName: e.target.value })}
                                     placeholder="Nom du colocataire"
-                                    className="w-32 bg-[#0a1529] border border-[#1a2d4c] rounded px-2 py-1 text-xs text-slate-300"
+                                    className="w-32 bg-[#060B14] border border-[#D4AF37]/25 rounded px-2 py-1 text-xs text-slate-200"
                                   />
                                 ) : (
                                   <span className="text-[11px] text-slate-500 italic">Non applicable</span>
@@ -747,7 +747,7 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                                 <button
                                   type="button"
                                   onClick={() => removeMember(member.id)}
-                                  className="p-1 rounded text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 transition-colors"
+                                  className="p-1 rounded text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 transition-colors cursor-pointer"
                                   title="Supprimer ce membre"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
@@ -760,10 +760,10 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                     </div>
 
                     {/* Automatic Room Calculator Banner */}
-                    <div className="p-4 rounded-2xl bg-[#09152b] border border-cyan-400/40 flex flex-wrap items-center justify-between gap-4">
+                    <div className="p-4 rounded-xl bg-[#091222] border border-[#D4AF37]/35 flex flex-wrap items-center justify-between gap-4">
                       <div>
-                        <div className="text-xs font-black text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
-                          <Sparkles className="w-4 h-4 text-amber-400" />
+                        <div className="text-xs font-bold text-[#D4AF37] uppercase tracking-wider flex items-center gap-1.5 font-heading">
+                          <Sparkles className="w-4 h-4 text-[#D4AF37]" />
                           <span>Calculateur Automatique de Chambres FIE</span>
                         </div>
                         <p className="text-xs text-slate-300 mt-0.5">
@@ -772,10 +772,10 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                       </div>
 
                       <div className="flex items-center gap-3 text-xs font-bold">
-                        <div className="bg-[#050b18] px-3 py-1.5 rounded-xl border border-amber-500/40 text-amber-300 font-mono">
+                        <div className="bg-[#060B14] px-3 py-1.5 rounded-lg border border-[#D4AF37]/30 text-[#D4AF37] font-mono">
                           Single requises : <span className="text-base font-black text-white ml-1">{autoGroupSingleCount}</span>
                         </div>
-                        <div className="bg-[#050b18] px-3 py-1.5 rounded-xl border border-cyan-500/40 text-cyan-300 font-mono">
+                        <div className="bg-[#060B14] px-3 py-1.5 rounded-lg border border-[#D4AF37]/30 text-[#F5E8C7] font-mono">
                           Double requises : <span className="text-base font-black text-white ml-1">{autoGroupDoubleCount}</span>
                         </div>
                       </div>
@@ -789,14 +789,14 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
             </div>
 
             {/* Step 3: Paiement Sécurisé & Prise en Charge */}
-            <div className="tournament-card rounded-3xl p-6 sm:p-8 space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-[#14233c]">
+            <div className="palace-card rounded-2xl p-6 sm:p-8 space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b border-[#D4AF37]/20">
                 <div className="flex items-center gap-3">
-                  <span className="w-8 h-8 rounded-xl bg-amber-600/20 border border-amber-500/40 flex items-center justify-center text-amber-400 font-mono font-black text-sm">
+                  <span className="w-8 h-8 rounded-lg bg-[#121E38] border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37] font-mono font-bold text-sm">
                     03
                   </span>
-                  <h3 className="text-base sm:text-lg font-black text-white uppercase tracking-tight">
-                    Modalités de Règlement & Facturation Officielle
+                  <h3 className="text-base sm:text-lg font-black text-white uppercase tracking-tight font-heading">
+                    Modalités de Règlement &amp; Facturation Officielle
                   </h3>
                 </div>
               </div>
@@ -890,7 +890,7 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                 </div>
                 <div className="flex justify-between text-slate-300">
                   <span>Participants Totaux :</span>
-                  <span className="font-bold text-cyan-300">{effectiveGuestsCount} Personnes</span>
+                  <span className="font-bold text-[#F5E8C7]">{effectiveGuestsCount} Personnes</span>
                 </div>
                 <div className="flex justify-between text-slate-300">
                   <span>Taxe & Frais FIE (3€/n/pers) :</span>
@@ -901,24 +901,24 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
               {/* Total Display */}
               <div className="mb-6">
                 <div className="flex items-baseline justify-between">
-                  <span className="text-xs font-black uppercase text-slate-300">Total à Régler :</span>
+                  <span className="text-xs font-bold uppercase text-slate-300">Total à Régler :</span>
                   <div className="text-right">
-                    <div className="text-3xl font-black text-amber-400 font-mono">{totalAmount} €</div>
-                    <div className="text-xs text-slate-400 font-mono">(~{Math.round(totalAmount * 3.35)} TND)</div>
+                    <div className="text-3xl font-black text-[#F5E8C7] font-mono">{totalAmount} €</div>
+                    <div className="text-xs text-[#D4AF37] font-mono">(~{Math.round(totalAmount * 3.35)} TND)</div>
                   </div>
                 </div>
-                <div className="text-[10px] text-slate-400 mt-1">Facture officielle émise au nom de la délégation.</div>
+                <div className="text-[10px] text-slate-400 mt-1 font-medium">Règlement 100% en espèces sur place au Check-in / Bureau FIE.</div>
               </div>
 
               {/* Submit CTA Button */}
               <button
                 type="submit"
                 disabled={isProcessingPayment}
-                className="w-full py-4 px-4 rounded-2xl text-slate-950 font-black text-xs uppercase tracking-wider bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 shadow-xl shadow-amber-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-4 px-4 rounded-xl text-[#060B14] font-black text-xs uppercase tracking-wider bg-[#D4AF37] hover:bg-[#C59B27] shadow-xl shadow-black/50 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {isProcessingPayment ? (
                   <>
-                    <span className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></span>
+                    <span className="w-4 h-4 border-2 border-[#060B14] border-t-transparent rounded-full animate-spin"></span>
                     <span>Validation Sécurisée FIE...</span>
                   </>
                 ) : (
@@ -930,17 +930,17 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
               </button>
 
               <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-slate-400">
-                <Lock className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Paiement sécurisé crypté SSL &bull; Code unique GPS2027</span>
+                <Lock className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <span>Paiement 100% Cash sur place &bull; Code unique GPS2027</span>
               </div>
 
             </div>
 
             {/* Hint Box: Airport Transfer Unlock */}
-            <div className="p-4 rounded-2xl bg-[#081324] border border-sky-900/50 text-xs text-slate-300 flex gap-3">
-              <Bus className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+            <div className="p-4 rounded-xl bg-[#091222] border border-[#D4AF37]/25 text-xs text-slate-300 flex gap-3">
+              <Bus className="w-5 h-5 text-[#D4AF37] shrink-0 mt-0.5" />
               <div>
-                <strong className="text-white block mb-0.5">Navette Aéroport Incluse</strong>
+                <strong className="text-white block mb-0.5">Navette Aéroport TUN Incluse</strong>
                 Une fois votre réservation validée, vous recevrez votre code unique pour programmer immédiatement votre navette aéroport gratuite ou personnalisée.
               </div>
             </div>
@@ -954,13 +954,13 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
       {/* Booking Success Modal */}
       {createdReservation && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-          <div className="relative w-full max-w-xl tournament-card rounded-3xl p-6 sm:p-8 text-center text-white border-2 border-cyan-400 shadow-2xl">
+          <div className="relative w-full max-w-xl palace-card rounded-2xl p-6 sm:p-8 text-center text-white border border-[#D4AF37] shadow-2xl">
             
-            <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center text-emerald-400 mx-auto mb-4 animate-bounce">
-              <CheckCircle2 className="w-8 h-8" />
+            <div className="w-16 h-16 rounded-xl bg-[#121E38] border border-[#D4AF37]/50 flex items-center justify-center text-[#D4AF37] mx-auto mb-4">
+              <CheckCircle2 className="w-8 h-8 text-[#D4AF37]" />
             </div>
 
-            <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-1">
+            <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-1 font-heading">
               Réservation Validée avec Succès !
             </h3>
             <p className="text-xs sm:text-sm text-slate-300 mb-6 font-medium">
@@ -968,15 +968,15 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
             </p>
 
             {/* Code */}
-            <div className="p-4 rounded-2xl bg-[#040812] border border-cyan-400/60 mb-6">
-              <div className="text-[10px] uppercase font-black text-slate-400 tracking-widest mb-1">
+            <div className="p-4 rounded-xl bg-[#060B14] border border-[#D4AF37]/40 mb-6">
+              <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">
                 VOTRE CODE DE RÉSERVATION UNIQUE
               </div>
-              <div className="text-3xl sm:text-4xl font-black text-amber-400 font-mono tracking-widest select-all">
+              <div className="text-3xl sm:text-4xl font-black text-[#F5E8C7] font-mono tracking-widest select-all">
                 {createdReservation.id}
               </div>
-              <p className="text-[11px] text-cyan-300 mt-1">
-                Conservez ce code. Il est indispensable pour réserver votre navette aéroport et télécharger votre voucher officiel.
+              <p className="text-[11px] text-[#D4AF37] mt-1 font-medium">
+                Conservez ce code. Il est indispensable pour réserver votre navette aéroport (TUN) et télécharger votre voucher officiel A4.
               </p>
             </div>
 

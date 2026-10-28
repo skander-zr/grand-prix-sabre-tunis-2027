@@ -3,17 +3,30 @@
 
 @layer base {
   :root {
-    --bg-main: #060a13;
-    --bg-card: #0b1322;
-    --bg-card-elevated: #101c33;
-    --border-subtle: #16243d;
-    --border-focus: #0066ff;
-    --blue-fie: #0062ff;
-    --cyan-laser: #00f0ff;
-    --red-tunis: #e60028;
-    --gold-trophy: #f59e0b;
-    --green-touche: #00e676;
-    --red-touche: #ff1744;
+    /* Mediterranean Night & Deep Sabre Steel */
+    --bg-void: #050811;
+    --bg-navy-950: #070D18;
+    --bg-navy-900: #0B1322;
+    --bg-navy-850: #0F192C;
+    --bg-card: #0E1728;
+    --bg-card-elevated: #142036;
+
+    /* Ancient Carthage Gold & Warm Tunisian Terracotta */
+    --gold-carthage: #D4AF37;
+    --gold-sand: #C59B27;
+    --gold-champagne: #F5E8C7;
+    --gold-bronze: #8E6D24;
+    --terracotta-tunis: #B85C38;
+
+    /* Olympic Sabre Steel & Silver */
+    --steel-blade: #F1F5F9;
+    --steel-hairline: rgba(212, 175, 55, 0.22);
+    --steel-border: rgba(255, 255, 255, 0.08);
+
+    /* Official FIE Tournament Scoring Box (Favero/Stange standard) */
+    --touche-red: #DC2626;
+    --touche-green: #059669;
+    --touche-white: #FFFFFF;
   }
 }
 
@@ -21,16 +34,22 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  background-color: #050912;
-  color: #f1f5f9;
+  background-color: var(--bg-void);
+  color: #F8FAFC;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Regal Title Typography */
+.font-cinzel {
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.05em;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Outfit', sans-serif;
-  letter-spacing: -0.025em;
-  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .font-heading {
@@ -41,88 +60,112 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* Fencing piste subtle texture */
-.piste-bg {
-  background-image: 
-    linear-gradient(rgba(0, 102, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 102, 255, 0.03) 1px, transparent 1px);
-  background-size: 32px 32px;
+/* Gold Foil Gradient for Championship Titles & Trophies */
+.gold-foil-text {
+  background: linear-gradient(135deg, #FFFFFF 0%, #F5E8C7 35%, #D4AF37 70%, #9B7624 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-/* Fencing metallic piste strip center line */
+.silver-foil-text {
+  background: linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 50%, #94A3B8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Subtle Fencing 14-Meter Piste Strip Grid Texture */
+.piste-bg {
+  background-color: #050811;
+  background-image: 
+    linear-gradient(rgba(212, 175, 55, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Fencing Piste Strip Divider with 2m & 4m En-Garde Markers */
 .piste-strip-divider {
   position: relative;
   height: 2px;
-  background: linear-gradient(90deg, transparent 0%, #0062ff 20%, #00f0ff 50%, #0062ff 80%, transparent 100%);
-  box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+  background: linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 0.3) 15%, #D4AF37 50%, rgba(212, 175, 55, 0.3) 85%, transparent 100%);
 }
 
-/* Luxury tournament glass card */
-.tournament-card {
-  background: rgba(11, 19, 34, 0.82);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(22, 36, 61, 0.9);
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.03);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+.piste-strip-divider::before {
+  content: '⚔️';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 11px;
+  background: #050811;
+  padding: 0 10px;
 }
 
-.tournament-card:hover {
-  border-color: rgba(0, 102, 255, 0.4);
-  box-shadow: 0 14px 40px -5px rgba(0, 98, 255, 0.15), 0 0 0 1px rgba(0, 240, 255, 0.1);
+/* Mediterranean Palace 5★ Card */
+.palace-card {
+  background: rgba(14, 23, 40, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.03);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.tournament-card-gold {
-  background: rgba(18, 22, 14, 0.85);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(245, 158, 11, 0.25);
-  box-shadow: 0 10px 30px -5px rgba(245, 158, 11, 0.1);
+.palace-card:hover {
+  border-color: rgba(212, 175, 55, 0.45);
+  box-shadow: 0 25px 50px -10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(212, 175, 55, 0.12);
+  transform: translateY(-2px);
 }
 
-/* LED Scoreboard style numbers */
-.scoreboard-digit {
-  font-family: 'JetBrains Mono', monospace;
-  font-weight: 800;
-  letter-spacing: -0.05em;
-  text-shadow: 0 0 12px currentColor;
+/* Official FIE Cash Accreditation Seal */
+.cash-accreditation-seal {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.12) 0%, rgba(184, 92, 56, 0.08) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-/* Touché indicator dots */
-.touche-green {
-  background-color: #00e676;
-  box-shadow: 0 0 14px #00e676, 0 0 24px rgba(0, 230, 118, 0.6);
+/* FIE Scoring Apparatus Scoring Lamps (Realistic Favero Tournament Standard) */
+.touche-lamp-red {
+  background: radial-gradient(circle at 35% 35%, #FF6B6B 0%, #DC2626 60%, #7F1D1D 100%);
+  box-shadow: 0 0 12px rgba(220, 38, 38, 0.7);
 }
 
-.touche-red {
-  background-color: #ff1744;
-  box-shadow: 0 0 14px #ff1744, 0 0 24px rgba(255, 23, 68, 0.6);
+.touche-lamp-green {
+  background: radial-gradient(circle at 35% 35%, #34D399 0%, #059669 60%, #064E3B 100%);
+  box-shadow: 0 0 12px rgba(5, 150, 105, 0.7);
 }
 
-/* Blade light reflection */
-.blade-glow {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
+.touche-lamp-white {
+  background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #E2E8F0 60%, #64748B 100%);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
 }
 
-/* Custom smooth scrollbar */
+/* Luxury Tabular Price Figure */
+.tabular-price {
+  font-feature-settings: "tnum" 1, "zero" 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #050912;
+  background: #050811;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #172640;
-  border-radius: 4px;
+  background: #1B2942;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.15);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #0062ff;
+  background: #D4AF37;
 }
 
-/* Print Stylesheet for Official Voucher & Invoice PDF */
+/* Print Stylesheet for Official Voucher */
 @media print {
   body {
     background: #ffffff !important;
