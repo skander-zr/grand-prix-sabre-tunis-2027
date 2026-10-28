@@ -70,9 +70,19 @@ export const ReservationProvider: React.FC<{ children: React.ReactNode }> = ({ c
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // Always enforce the latest real photos from INITIAL_HOTELS
-        if (parsed['el-mouradi-gammarth']) parsed['el-mouradi-gammarth'].photos = INITIAL_HOTELS['el-mouradi-gammarth'].photos;
-        if (parsed['golden-carthage']) parsed['golden-carthage'].photos = INITIAL_HOTELS['golden-carthage'].photos;
+        // Always enforce the latest real photos and metadata from INITIAL_HOTELS
+        if (parsed['el-mouradi-gammarth']) {
+          parsed['el-mouradi-gammarth'].photos = INITIAL_HOTELS['el-mouradi-gammarth'].photos;
+          parsed['el-mouradi-gammarth'].amenities = INITIAL_HOTELS['el-mouradi-gammarth'].amenities;
+          parsed['el-mouradi-gammarth'].tagline = INITIAL_HOTELS['el-mouradi-gammarth'].tagline;
+          parsed['el-mouradi-gammarth'].description = INITIAL_HOTELS['el-mouradi-gammarth'].description;
+        }
+        if (parsed['golden-carthage']) {
+          parsed['golden-carthage'].photos = INITIAL_HOTELS['golden-carthage'].photos;
+          parsed['golden-carthage'].amenities = INITIAL_HOTELS['golden-carthage'].amenities;
+          parsed['golden-carthage'].tagline = INITIAL_HOTELS['golden-carthage'].tagline;
+          parsed['golden-carthage'].description = INITIAL_HOTELS['golden-carthage'].description;
+        }
         return parsed;
       } catch (e) {
         // fallback

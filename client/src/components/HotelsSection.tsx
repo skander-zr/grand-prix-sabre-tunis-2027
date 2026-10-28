@@ -85,8 +85,13 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
         <div className="space-y-16">
           {hotelList.map((hotel) => {
             const currentPhotoIdx = photoIndexes[hotel.id] || 0;
-            const singlePrice = hotel.roomTypes.single.pricePerNight;
-            const doublePrice = hotel.roomTypes.double.pricePerNight;
+            const rawSingle = hotel.roomTypes?.single?.pricePerNight;
+            const singleEur = typeof rawSingle === 'number' ? rawSingle : rawSingle?.eur ?? 130;
+            const singleTnd = typeof rawSingle === 'number' ? Math.round(rawSingle * 3.3) : rawSingle?.tnd ?? 430;
+
+            const rawDouble = hotel.roomTypes?.double?.pricePerNight;
+            const doubleEur = typeof rawDouble === 'number' ? rawDouble : rawDouble?.eur ?? 180;
+            const doubleTnd = typeof rawDouble === 'number' ? Math.round(rawDouble * 3.3) : rawDouble?.tnd ?? 595;
 
             return (
               <div
@@ -102,7 +107,7 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
                     <div className="relative w-full h-full flex-1 overflow-hidden group">
                       <img
                         src={hotel.photos[currentPhotoIdx]?.url}
-                        alt={hotel.photos[currentPhotoIdx]?.caption[lang]}
+                        alt={hotel.photos[currentPhotoIdx]?.caption?.[lang] || hotel.name}
                         className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
                       />
                       
@@ -141,7 +146,7 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
                       {/* Photo Caption & Counter */}
                       <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-xs text-slate-200">
                         <span className="font-semibold truncate pr-2 drop-shadow">
-                          {hotel.photos[currentPhotoIdx]?.caption[lang]}
+                          {hotel.photos[currentPhotoIdx]?.caption?.[lang] || ''}
                         </span>
                         <span className="px-2 py-0.5 rounded bg-black/80 font-mono text-[10px] shrink-0 border border-white/10 font-bold text-[#F5E8C7]">
                           {currentPhotoIdx + 1} / {hotel.photos.length}
@@ -194,7 +199,7 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
                         {hotel.name}
                       </h3>
                       <p className="text-xs font-bold text-[#D4AF37] mt-1 mb-4 font-mono">
-                        {hotel.tagline[lang]}
+                        {hotel.tagline?.[lang] || ''}
                       </p>
 
                       {/* Distance to Radès Competition Venue Banner */}
@@ -217,18 +222,18 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
 
                       {/* Editorial Hotel Description */}
                       <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-5">
-                        {hotel.description[lang]}
+                        {hotel.description?.[lang] || ''}
                       </p>
 
                       {/* Athletic & Hospitality Amenities */}
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-6">
-                        {hotel.amenities.slice(0, 6).map((amenity, aIdx) => (
+                        {hotel.amenities?.slice(0, 6).map((amenity, aIdx) => (
                           <div
                             key={aIdx}
                             className="flex items-center gap-2 p-2 rounded bg-[#070D18] border border-white/[0.06] text-[11px] text-slate-300 font-medium"
                           >
                             <Sparkles className="w-3 h-3 text-[#D4AF37] shrink-0" />
-                            <span className="truncate">{amenity.name[lang]}</span>
+                            <span className="truncate">{amenity.label?.[lang] || (amenity as any).name?.[lang] || (amenity as any).label || ''}</span>
                           </div>
                         ))}
                       </div>
@@ -257,10 +262,10 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
                           </div>
                           <div className="text-right">
                             <div className="text-base font-black text-[#F5E8C7] font-mono tabular-price">
-                              {singlePrice.eur} €
+                              {singleEur} €
                             </div>
                             <div className="text-[10px] text-[#C59B27] font-mono font-bold">
-                              {singlePrice.tnd} TND
+                              {singleTnd} TND
                             </div>
                           </div>
                         </div>
@@ -278,10 +283,10 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
                           </div>
                           <div className="text-right">
                             <div className="text-base font-black text-[#F5E8C7] font-mono tabular-price">
-                              {doublePrice.eur} €
+                              {doubleEur} €
                             </div>
                             <div className="text-[10px] text-[#C59B27] font-mono font-bold">
-                              {doublePrice.tnd} TND
+                              {doubleTnd} TND
                             </div>
                           </div>
                         </div>
