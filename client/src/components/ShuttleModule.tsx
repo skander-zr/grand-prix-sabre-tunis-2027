@@ -12,24 +12,24 @@ import {
   ShieldCheck,
   CheckCircle2,
   AlertCircle,
-  Sparkles,
   ArrowRight,
   MapPin,
   Calendar,
-  Swords,
   Search,
-  ExternalLink
+  Lock
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ShuttleModuleProps {
   initialCode?: string;
   onShuttleSuccess: (reservation: Reservation) => void;
+  onNavigateToBooking?: () => void;
 }
 
 export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
   initialCode = '',
-  onShuttleSuccess
+  onShuttleSuccess,
+  onNavigateToBooking
 }) => {
   const { lang, t } = useLanguage();
   const { getReservation, bookShuttle } = useReservation();
@@ -37,6 +37,8 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
   const [bookingCode, setBookingCode] = useState(initialCode);
   const [verifiedReservation, setVerifiedReservation] = useState<Reservation | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
     if (initialCode) {
@@ -44,30 +46,37 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
       const res = getReservation(initialCode);
       if (res) {
         setVerifiedReservation(res);
+        setPassengerCount(res.totalGuestsCount || 1);
         setHasSearched(true);
       }
     }
   }, [initialCode]);
 
-  // Shuttle Form Fields - Exclusively TUN
+  // Shuttle Form Fields
   const [tripType, setTripType] = useState<'arrival' | 'departure' | 'roundtrip'>('roundtrip');
-  const airport = 'TUN';
+  const [airport, setAirport] = useState<'TUN' | 'NBE' | 'MIR'>('TUN');
+  
+  // Flights
   const [arrivalAirline, setArrivalAirline] = useState('Air France');
   const [arrivalFlightNumber, setArrivalFlightNumber] = useState('AF1184');
   const [arrivalDateTime, setArrivalDateTime] = useState('2027-01-14T14:15');
+  
   const [departureAirline, setDepartureAirline] = useState('Air France');
   const [departureFlightNumber, setDepartureFlightNumber] = useState('AF1185');
   const [departureDateTime, setDepartureDateTime] = useState('2027-01-18T17:30');
+
+  // Logistics
   const [passengerCount, setPassengerCount] = useState(2);
   const [luggageCount, setLuggageCount] = useState(2);
   const [weaponBagsCount, setWeaponBagsCount] = useState(2);
-  const [driverContactPhone, setDriverContactPhone] = useState('+216 98 440 112');
+  const [driverWhatsApp, setDriverWhatsApp] = useState('+33 6 12 34 56 78');
   const [specialRequests, setSpecialRequests] = useState('');
 
   const handleVerifyCode = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setHasSearched(true);
-    const res = getReservation(bookingCode);
+    const cleanCode = bookingCode.trim().toUpperCase();
+    const res = getReservation(cleanCode);
     if (res) {
       setVerifiedReservation(res);
       setPassengerCount(res.totalGuestsCount || 1);
@@ -85,250 +94,283 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
       return;
     }
 
-    const details: ShuttleDetails = {
-      tripType,
-      airport: 'TUN',
-      arrivalAirline: (tripType === 'arrival' || tripType === 'roundtrip') ? arrivalAirline : undefined,
-      arrivalFlightNumber: (tripType === 'arrival' || tripType === 'roundtrip') ? arrivalFlightNumber : undefined,
-      arrivalDateTime: (tripType === 'arrival' || tripType === 'roundtrip') ? arrivalDateTime : undefined,
-      departureAirline: (tripType === 'departure' || tripType === 'roundtrip') ? departureAirline : undefined,
-      departureFlightNumber: (tripType === 'departure' || tripType === 'roundtrip') ? departureFlightNumber : undefined,
-      departureDateTime: (tripType === 'departure' || tripType === 'roundtrip') ? departureDateTime : undefined,
-      passengerCount,
-      luggageCount,
-      weaponBagsCount,
-      driverWhatsApp: driverContactPhone,
-      specialRequests,
-      status: 'grouped'
-    };
-
-    const success = bookShuttle(verifiedReservation.id, details);
-    if (success) {
-      const updated = getReservation(verifiedReservation.id);
-      if (updated) {
-        setVerifiedReservation(updated);
-        onShuttleSuccess(updated);
-      }
+    if (!driverWhatsApp) {
+      toast.error('Veuillez renseigner un numéro WhatsApp pour la coordination du chauffeur.');
+      return;
     }
+
+    setIsSubmitting(true);
+
+    setTimeout(() => {
+      setIsSubmitting(false);
+
+      const details: ShuttleDetails = {
+        tripType,
+        airport,
+        arrivalAirline: (tripType === 'arrival' || tripType === 'roundtrip') ? arrivalAirline : undefined,
+        arrivalFlightNumber: (tripType === 'arrival' || tripType === 'roundtrip') ? arrivalFlightNumber : undefined,
+        arrivalDateTime: (tripType === 'arrival' || tripType === 'roundtrip') ? arrivalDateTime : undefined,
+        departureAirline: (tripType === 'departure' || tripType === 'roundtrip') ? departureAirline : undefined,
+        departureFlightNumber: (tripType === 'departure' || tripType === 'roundtrip') ? departureFlightNumber : undefined,
+        departureDateTime: (tripType === 'departure' || tripType === 'roundtrip') ? departureDateTime : undefined,
+        passengerCount,
+        luggageCount,
+        weaponBagsCount,
+        driverWhatsApp,
+        specialRequests,
+        assignedGroupCode: `SHT-${airport}-${verifiedReservation.hotelId === 'el-mouradi-gammarth' ? 'ELM' : 'GDC'}-14H`,
+        assignedVehicle: passengerCount > 4 ? 'Minibus Mercedes Sprinter FIE #1' : 'Berline VIP Officielle FIE #3',
+        status: 'grouped'
+      };
+
+      const success = bookShuttle(verifiedReservation.id, details);
+      if (success) {
+        setIsSuccess(true);
+        toast.success(`Navette aéroport assignée au dossier ${verifiedReservation.id}`);
+        onShuttleSuccess({
+          ...verifiedReservation,
+          hasShuttle: true,
+          shuttle: details
+        });
+      }
+    }, 700);
   };
 
   return (
-    <section id="shuttle-section" className="py-14 sm:py-20 bg-[#050811] text-white piste-bg">
+    <section id="shuttle-section" className="py-12 sm:py-16 bg-[#F8FAFC]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Module Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 border-b border-[#D4AF37]/25 pb-6">
+        {/* Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-6 border-b border-slate-200">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#091222] border border-[#D4AF37]/40 text-[#F5E8C7] text-xs font-bold uppercase tracking-wider mb-2">
-              <Bus className="w-3.5 h-3.5 text-[#D4AF37]" />
-              <span>Service de Transfert Officiel Aéroport TUN — Hôtels Gammarth</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-blue-50 border border-blue-200 text-[#03396C] text-xs font-semibold mb-2.5">
+              <Bus className="w-3.5 h-3.5" />
+              <span>Service Officiel de Transport FIE &bull; Aéroports de Tunisie</span>
             </div>
-            <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight uppercase font-heading">
-              Navettes &amp; Accueil Délégations
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight">
+              Réservation Navettes Aéroport &bull; Grand Prix Sabre 2027
             </h2>
-            <p className="mt-1 text-xs sm:text-sm text-slate-300 max-w-2xl font-medium leading-relaxed">
-              Service officiel de transport réservé aux participants munis d'un code de réservation hôtelière validé. Coordination directe avec le desk d'accueil officiel FTE à l'Aéroport Tunis-Carthage (TUN) et véhicules avec compartiments pour housses d'armes (1m40).
+            <p className="mt-1.5 text-sm text-slate-600 max-w-3xl leading-relaxed">
+              Prise en charge officielle réservée aux délégations enregistrées. Desserte des 3 aéroports internationaux vers les 2 hôtels 5★ de Gammarth avec véhicules dédiés et transport sécurisé des housses d'escrime.
             </p>
           </div>
 
-          <div className="text-left md:text-right shrink-0 bg-[#091222] p-3.5 rounded-xl border border-[#D4AF37]/30">
-            <span className="text-[11px] text-slate-400 block font-mono">Accueil garanti 24/7 :</span>
-            <span className="text-sm font-bold text-[#F5E8C7]">Aéroport Tunis-Carthage (TUN) Terminal 1</span>
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 bg-white px-3.5 py-2.5 rounded-xl border border-slate-200 shadow-xs">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+            <span>Aéroports : TUN &bull; NBE &bull; MIR</span>
           </div>
         </div>
 
-        {/* Verification Card (Enforcing condition) */}
-        <div className="max-w-2xl mx-auto mb-10">
-          <div className="palace-card rounded-2xl p-6 sm:p-8 text-center border border-[#D4AF37]/35 shadow-2xl">
-            <div className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-[#F5E8C7] mb-2">
-              <ShieldCheck className="w-4 h-4 text-[#D4AF37]" />
-              <span>Vérification Obligatoire de la Réservation Hôtelière</span>
+        {/* LOCKED GATE: If no verified hotel reservation is found */}
+        {!verifiedReservation ? (
+          <div className="max-w-2xl mx-auto inst-card p-8 sm:p-10 text-center space-y-6">
+            <div className="w-14 h-14 rounded-full bg-blue-50 text-[#03396C] border border-blue-200 flex items-center justify-center mx-auto">
+              <Lock className="w-7 h-7" />
             </div>
-            <p className="text-xs text-slate-300 mb-4">
-              Saisissez votre code unique de réservation pour débloquer votre navette et lier votre vol à votre dossier officiel.
-            </p>
 
-            <form onSubmit={handleVerifyCode} className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+            <div>
+              <h3 className="text-xl font-bold text-[#0F172A] mb-2">
+                Accès Verrouillé par Réservation Hôtelière
+              </h3>
+              <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
+                Ce module de navette officielle est réservé exclusivement aux délégations et athlètes disposant déjà d'une réservation hôtelière confirmée (code format <strong>GPS2027-XXXX</strong>).
+              </p>
+            </div>
+
+            {/* Code Verification Form */}
+            <form onSubmit={handleVerifyCode} className="max-w-md mx-auto space-y-3">
+              <div className="flex gap-2">
                 <input
                   type="text"
                   value={bookingCode}
-                  onChange={(e) => setBookingCode(e.target.value.toUpperCase())}
-                  placeholder="Ex: GPS2027-FR48 ou GPS2027-IT92"
-                  className="w-full bg-[#060B14] border border-[#D4AF37]/30 rounded-xl pl-10 pr-4 py-3 text-sm font-mono uppercase tracking-widest text-[#F5E8C7] placeholder:text-slate-600 focus:outline-none focus:border-[#D4AF37] text-center sm:text-left font-bold"
+                  onChange={(e) => setBookingCode(e.target.value)}
+                  placeholder="ex: GPS2027-FR48"
+                  className="flex-1 px-4 py-3 font-mono font-bold uppercase tracking-wider text-sm"
                   required
                 />
+                <button
+                  type="submit"
+                  className="btn-primary cursor-pointer text-sm font-semibold px-5"
+                >
+                  <Search className="w-4 h-4" />
+                  <span>Vérifier</span>
+                </button>
               </div>
 
-              <button
-                type="submit"
-                className="px-6 py-3 rounded-xl bg-[#D4AF37] hover:bg-[#C59B27] text-[#060B14] font-black text-xs uppercase tracking-wider shadow-lg transition-all cursor-pointer"
-              >
-                Vérifier mon Code
-              </button>
+              {hasSearched && !verifiedReservation && (
+                <div className="p-3 bg-red-50 text-red-700 border border-red-200 rounded-lg text-xs flex items-center gap-2 text-left">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>Aucun dossier trouvé avec ce code. Vérifiez votre référence ou effectuez votre réservation hôtelière.</span>
+                </div>
+              )}
             </form>
 
-            {/* Quick Test Codes */}
-            <div className="mt-3.5 flex flex-wrap items-center justify-center gap-2 text-[11px] text-slate-400">
-              <span>Dossiers de démonstration :</span>
+            <div className="pt-4 border-t border-slate-200 text-xs text-slate-500">
+              <span>Vous n'avez pas encore réservé votre hôtel ? </span>
               <button
                 type="button"
-                onClick={() => { setBookingCode('GPS2027-FR48'); const r = getReservation('GPS2027-FR48'); if (r) setVerifiedReservation(r); setHasSearched(true); }}
-                className="px-2 py-0.5 rounded bg-[#091122] hover:bg-[#101C32] text-[#F5E8C7] font-mono border border-[#D4AF37]/30 cursor-pointer"
+                onClick={onNavigateToBooking}
+                className="text-[#03396C] font-semibold underline underline-offset-4 cursor-pointer hover:text-[#005B96]"
               >
-                🇫🇷 GPS2027-FR48
-              </button>
-              <button
-                type="button"
-                onClick={() => { setBookingCode('GPS2027-IT92'); const r = getReservation('GPS2027-IT92'); if (r) setVerifiedReservation(r); setHasSearched(true); }}
-                className="px-2 py-0.5 rounded bg-[#091122] hover:bg-[#101C32] text-[#F5E8C7] font-mono border border-[#D4AF37]/30 cursor-pointer"
-              >
-                🇮🇹 GPS2027-IT92
-              </button>
-              <button
-                type="button"
-                onClick={() => { setBookingCode('GPS2027-TN01'); const r = getReservation('GPS2027-TN01'); if (r) setVerifiedReservation(r); setHasSearched(true); }}
-                className="px-2 py-0.5 rounded bg-[#091122] hover:bg-[#101C32] text-[#F5E8C7] font-mono border border-[#D4AF37]/30 cursor-pointer"
-              >
-                🇹🇳 GPS2027-TN01
+                Réserver votre hébergement 5★ ici
               </button>
             </div>
-
-            {/* Success Banner */}
-            {hasSearched && verifiedReservation && (
-              <div className="mt-4 p-4 rounded-xl bg-[#0B1A24] border border-emerald-500/40 text-left flex items-start gap-3 animate-fadeIn">
-                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                <div className="text-xs">
-                  <div className="font-bold text-emerald-300 uppercase tracking-wide">
-                    Dossier Hôtelier Confirmé : {verifiedReservation.id}
-                  </div>
-                  <div className="text-slate-300 mt-1">
-                    <strong>Hôtel Assigné :</strong> {verifiedReservation.hotelId === 'el-mouradi-gammarth' ? 'Hôtel El Mouradi Gammarth (5★)' : 'Hôtel Golden Carthage (5★)'}
-                    {' '}&bull;{' '}
-                    <strong>Délégation :</strong> {verifiedReservation.type === 'group' ? verifiedReservation.federationGroup?.federationName : `${verifiedReservation.individualLead?.firstName} ${verifiedReservation.individualLead?.lastName}`}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
-        </div>
-
-        {/* Form Container (Rendered when reservation is verified) */}
-        {verifiedReservation && (
-          <form onSubmit={handleSubmitShuttle} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-fadeIn">
+        ) : (
+          /* UNLOCKED SHUTTLE CONFIGURATION FORM */
+          <form onSubmit={handleSubmitShuttle} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
-            {/* Left Column (8 cols) */}
+            {/* Left Column (8 cols): Flight & Trip Details */}
             <div className="lg:col-span-8 space-y-6">
               
-              <div className="palace-card rounded-2xl p-6 sm:p-8 space-y-6">
-                
+              {/* Verified File Summary Header */}
+              <div className="inst-card p-5 bg-blue-50/50 border-blue-200 flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-[#03396C] text-white flex items-center justify-center font-bold text-sm">
+                    FIE
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-[#0F172A]">Dossier Validé :</span>
+                      <span className="font-mono font-black text-[#03396C] text-base">{verifiedReservation.id}</span>
+                    </div>
+                    <div className="text-xs text-slate-600">
+                      {verifiedReservation.type === 'group'
+                        ? verifiedReservation.federationGroup?.federationName
+                        : `${verifiedReservation.individualLead?.firstName} ${verifiedReservation.individualLead?.lastName}`}
+                      {' '}&bull; {verifiedReservation.hotelId === 'el-mouradi-gammarth' ? 'Hôtel El Mouradi Gammarth' : 'Hôtel Golden Carthage'}
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setVerifiedReservation(null);
+                    setBookingCode('');
+                  }}
+                  className="text-xs text-slate-500 hover:text-slate-800 underline cursor-pointer"
+                >
+                  Changer de dossier
+                </button>
+              </div>
+
+              {/* Step 1: Trip Type & Airport Dropdown (MANDATORY 3 AIRPORTS) */}
+              <div className="inst-card p-6 sm:p-8 space-y-6">
+                <h3 className="text-base font-bold text-[#0F172A] pb-3 border-b border-slate-200">
+                  1. Sélection du Trajet &amp; Aéroport d'Arrivée
+                </h3>
+
                 {/* Trip Type */}
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-2">
-                    Type de Trajet Navette
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                    Type de Transfert Souhaité
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-3 gap-3">
                     <button
                       type="button"
                       onClick={() => setTripType('arrival')}
-                      className={`p-3.5 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                      className={`p-3 rounded-lg border text-xs font-semibold cursor-pointer text-center transition-all ${
                         tripType === 'arrival'
-                          ? 'border-[#D4AF37] bg-[#121F38] text-[#F5E8C7] shadow-lg'
-                          : 'border-white/[0.08] bg-[#070D18] text-slate-400 hover:text-white'
+                          ? 'border-[#03396C] bg-blue-50 text-[#03396C] shadow-xs'
+                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                       }`}
                     >
-                      Arrivée (Aéroport → Hôtel)
+                      Arrivée Simple (Aéroport &rarr; Hôtel)
                     </button>
                     <button
                       type="button"
                       onClick={() => setTripType('departure')}
-                      className={`p-3.5 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                      className={`p-3 rounded-lg border text-xs font-semibold cursor-pointer text-center transition-all ${
                         tripType === 'departure'
-                          ? 'border-[#D4AF37] bg-[#121F38] text-[#F5E8C7] shadow-lg'
-                          : 'border-white/[0.08] bg-[#070D18] text-slate-400 hover:text-white'
+                          ? 'border-[#03396C] bg-blue-50 text-[#03396C] shadow-xs'
+                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                       }`}
                     >
-                      Départ (Hôtel → Aéroport)
+                      Départ Simple (Hôtel &rarr; Aéroport)
                     </button>
                     <button
                       type="button"
                       onClick={() => setTripType('roundtrip')}
-                      className={`p-3.5 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                      className={`p-3 rounded-lg border text-xs font-semibold cursor-pointer text-center transition-all ${
                         tripType === 'roundtrip'
-                          ? 'border-[#D4AF37] bg-[#121F38] text-[#F5E8C7] shadow-lg'
-                          : 'border-white/[0.08] bg-[#070D18] text-slate-400 hover:text-white'
+                          ? 'border-[#03396C] bg-blue-50 text-[#03396C] shadow-xs'
+                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                       }`}
                     >
-                      Aller-Retour (Aéroport ⇄ Hôtel)
+                      Aller-Retour Complet
                     </button>
                   </div>
                 </div>
 
-                {/* Exclusive Official Airport: Tunis-Carthage (TUN) */}
+                {/* MANDATORY DROPDOWN WITH THE 3 AIRPORTS */}
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-2">
-                    Aéroport International Officiel Exclusif
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                    Aéroport d'Atterrissage / Décollage *
                   </label>
-                  <div className="p-4 rounded-xl bg-[#091222] border border-[#D4AF37]/35 flex flex-wrap items-center justify-between gap-3 shadow-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2.5 rounded-lg bg-[#121E36] text-[#D4AF37] border border-[#D4AF37]/30 shrink-0">
-                        <Plane className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <div className="font-bold text-white text-sm">
-                          Aéroport International de Tunis-Carthage (TUN)
-                        </div>
-                        <div className="text-[11px] text-slate-400">
-                          Terminal 1 &bull; Accueil officiel des délégations &amp; navettes directes FIE (~18 km • ~20 min de Gammarth)
-                        </div>
-                      </div>
-                    </div>
-                    <span className="px-2.5 py-1 rounded bg-[#060B14] text-[#D4AF37] font-mono text-[10px] font-bold border border-[#D4AF37]/30 shrink-0">
-                      HUB OFFICIEL UNIQUE
-                    </span>
-                  </div>
+                  <select
+                    value={airport}
+                    onChange={(e) => setAirport(e.target.value as 'TUN' | 'NBE' | 'MIR')}
+                    className="w-full px-3.5 py-3 text-sm font-semibold"
+                  >
+                    <option value="TUN">Tunis-Carthage (TUN) — Aéroport Principal Recommandé (~15 km des hôtels)</option>
+                    <option value="NBE">Enfidha-Hammamet (NBE) — Prise en charge officielle (~105 km)</option>
+                    <option value="MIR">Monastir Habib-Bourguiba (MIR) — Prise en charge officielle (~160 km)</option>
+                  </select>
+                  <p className="text-[11px] text-slate-500 mt-1.5">
+                    Un agent d'accueil accrédité FIE avec pancarte nominative vous attendra dans le hall des arrivées de l'aéroport sélectionné.
+                  </p>
                 </div>
+
+              </div>
+
+              {/* Step 2: Flight Details */}
+              <div className="inst-card p-6 sm:p-8 space-y-6">
+                <h3 className="text-base font-bold text-[#0F172A] pb-3 border-b border-slate-200">
+                  2. Coordonnées des Vols
+                </h3>
 
                 {/* Arrival Flight */}
                 {(tripType === 'arrival' || tripType === 'roundtrip') && (
-                  <div className="p-4 rounded-xl bg-[#070D18] border border-white/[0.08] space-y-3">
-                    <div className="text-[11px] font-bold text-[#F5E8C7] uppercase tracking-wider flex items-center gap-2">
-                      <Plane className="w-4 h-4 text-[#D4AF37]" />
-                      <span>Vol d'Arrivée &amp; Horaires d'Atterrissage (TUN)</span>
-                    </div>
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                      <Plane className="w-4 h-4 text-emerald-600 rotate-45" />
+                      <span>Vol Aller (Arrivée en Tunisie)</span>
+                    </h4>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-[11px] font-medium text-slate-300 mb-1">Compagnie Aérienne *</label>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">Compagnie Aérienne *</label>
                         <input
                           type="text"
+                          required
                           value={arrivalAirline}
                           onChange={(e) => setArrivalAirline(e.target.value)}
-                          placeholder="Ex: Tunisair, Air France..."
-                          className="w-full bg-[#091122] border border-[#D4AF37]/25 rounded-lg px-3 py-2 text-xs text-white"
-                          required
+                          placeholder="ex: Air France / Tunisair"
+                          className="w-full px-3.5 py-2.5 text-xs"
                         />
                       </div>
+
                       <div>
-                        <label className="block text-[11px] font-medium text-slate-300 mb-1">Numéro de Vol *</label>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">Numéro de Vol *</label>
                         <input
                           type="text"
+                          required
                           value={arrivalFlightNumber}
                           onChange={(e) => setArrivalFlightNumber(e.target.value)}
-                          placeholder="Ex: AF1184, TU721"
-                          className="w-full bg-[#091122] border border-[#D4AF37]/25 rounded-lg px-3 py-2 text-xs text-white uppercase font-mono"
-                          required
+                          placeholder="ex: AF 1184 / TU 712"
+                          className="w-full px-3.5 py-2.5 text-xs font-mono"
                         />
                       </div>
+
                       <div>
-                        <label className="block text-[11px] font-medium text-slate-300 mb-1">Date &amp; Heure d'Atterrissage *</label>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">Date &amp; Heure d'Atterrissage *</label>
                         <input
                           type="datetime-local"
+                          required
                           value={arrivalDateTime}
                           onChange={(e) => setArrivalDateTime(e.target.value)}
-                          className="w-full bg-[#091122] border border-[#D4AF37]/25 rounded-lg px-3 py-2 text-xs text-white font-mono"
-                          required
+                          className="w-full px-3 py-2 text-xs font-mono"
                         />
                       </div>
                     </div>
@@ -337,54 +379,64 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
 
                 {/* Departure Flight */}
                 {(tripType === 'departure' || tripType === 'roundtrip') && (
-                  <div className="p-4 rounded-xl bg-[#070D18] border border-white/[0.08] space-y-3">
-                    <div className="text-[11px] font-bold text-[#F5E8C7] uppercase tracking-wider flex items-center gap-2">
-                      <Plane className="w-4 h-4 text-[#D4AF37] rotate-45" />
-                      <span>Vol de Départ (TUN &rarr; Retour)</span>
-                    </div>
+                  <div className="space-y-4 pt-4 border-t border-slate-200">
+                    <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                      <Plane className="w-4 h-4 text-blue-600 -rotate-45" />
+                      <span>Vol Retour (Départ de Tunisie)</span>
+                    </h4>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-[11px] font-medium text-slate-300 mb-1">Compagnie Aérienne *</label>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">Compagnie Aérienne *</label>
                         <input
                           type="text"
+                          required
                           value={departureAirline}
                           onChange={(e) => setDepartureAirline(e.target.value)}
-                          placeholder="Ex: Tunisair, Air France..."
-                          className="w-full bg-[#091122] border border-[#D4AF37]/25 rounded-lg px-3 py-2 text-xs text-white"
-                          required
+                          placeholder="ex: Air France / Tunisair"
+                          className="w-full px-3.5 py-2.5 text-xs"
                         />
                       </div>
+
                       <div>
-                        <label className="block text-[11px] font-medium text-slate-300 mb-1">Numéro de Vol *</label>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">Numéro de Vol *</label>
                         <input
                           type="text"
+                          required
                           value={departureFlightNumber}
                           onChange={(e) => setDepartureFlightNumber(e.target.value)}
-                          placeholder="Ex: AF1185, TU722"
-                          className="w-full bg-[#091122] border border-[#D4AF37]/25 rounded-lg px-3 py-2 text-xs text-white uppercase font-mono"
-                          required
+                          placeholder="ex: AF 1185 / TU 713"
+                          className="w-full px-3.5 py-2.5 text-xs font-mono"
                         />
                       </div>
+
                       <div>
-                        <label className="block text-[11px] font-medium text-slate-300 mb-1">Date &amp; Heure de Décollage *</label>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">Date &amp; Heure de Décollage *</label>
                         <input
                           type="datetime-local"
+                          required
                           value={departureDateTime}
                           onChange={(e) => setDepartureDateTime(e.target.value)}
-                          className="w-full bg-[#091122] border border-[#D4AF37]/25 rounded-lg px-3 py-2 text-xs text-white font-mono"
-                          required
+                          className="w-full px-3 py-2 text-xs font-mono"
                         />
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Passenger & Equipment Counters */}
+              </div>
+
+              {/* Step 3: Passengers & Equipment Logistics */}
+              <div className="inst-card p-6 sm:p-8 space-y-6">
+                <h3 className="text-base font-bold text-[#0F172A] pb-3 border-b border-slate-200">
+                  3. Passagers, Bagages &amp; Sacs d'Armes d'Escrime
+                </h3>
+
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-[11px] font-medium text-slate-300 mb-1">
-                      Nombre de Passagers
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Nombre de Passagers *</span>
                     </label>
                     <input
                       type="number"
@@ -392,120 +444,134 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
                       max={50}
                       value={passengerCount}
                       onChange={(e) => setPassengerCount(parseInt(e.target.value) || 1)}
-                      className="w-full bg-[#091122] border border-[#D4AF37]/25 rounded-lg px-3 py-2 text-sm text-white font-bold"
-                      required
+                      className="w-full px-3 py-2 text-sm font-mono font-bold"
                     />
                   </div>
+
                   <div>
-                    <label className="block text-[11px] font-medium text-slate-300 mb-1">
-                      Valises Standards
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                      <Luggage className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Valises Standards</span>
                     </label>
                     <input
                       type="number"
                       min={0}
+                      max={100}
                       value={luggageCount}
                       onChange={(e) => setLuggageCount(parseInt(e.target.value) || 0)}
-                      className="w-full bg-[#091122] border border-[#D4AF37]/25 rounded-lg px-3 py-2 text-sm text-white font-bold"
+                      className="w-full px-3 py-2 text-sm font-mono font-bold"
                     />
                   </div>
+
                   <div>
-                    <label className="block text-[11px] font-medium text-slate-300 mb-1 text-[#F5E8C7]">
-                      Sacs d'Escrime (Housses 1m40)
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[#C8102E]"></span>
+                      <span>Housses de Sabre (1m40) *</span>
                     </label>
                     <input
                       type="number"
                       min={0}
+                      max={60}
                       value={weaponBagsCount}
                       onChange={(e) => setWeaponBagsCount(parseInt(e.target.value) || 0)}
-                      className="w-full bg-[#091122] border border-[#D4AF37]/40 rounded-lg px-3 py-2 text-sm text-[#F5E8C7] font-bold"
+                      className="w-full px-3 py-2 text-sm font-mono font-bold"
                     />
                   </div>
                 </div>
 
-                {/* Contact Phone */}
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">
-                    Numéro de Téléphone Mobile pour le Chauffeur Accrédité *
+                {/* WhatsApp Phone for Driver */}
+                <div className="pt-2">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                    <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Numéro de Téléphone WhatsApp pour le Chauffeur / Régisseur *</span>
                   </label>
-                  <div className="relative">
-                    <Phone className="w-4 h-4 text-[#D4AF37] absolute left-3.5 top-3" />
-                    <input
-                      type="tel"
-                      value={driverContactPhone}
-                      onChange={(e) => setDriverContactPhone(e.target.value)}
-                      placeholder="+216 98 123 456 ou +33 6 12 34 56 78"
-                      className="w-full bg-[#091122] border border-[#D4AF37]/25 rounded-lg pl-10 pr-3 py-2.5 text-sm text-white"
-                      required
-                    />
-                  </div>
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    Le coordinateur de quai officiel et le chauffeur de navette vous contacteront via ce numéro dès votre atterrissage.
+                  <input
+                    type="tel"
+                    required
+                    value={driverWhatsApp}
+                    onChange={(e) => setDriverWhatsApp(e.target.value)}
+                    placeholder="+33 6 12 34 56 78 ou +216 ..."
+                    className="w-full px-3.5 py-2.5 text-xs font-mono"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Le coordinateur des transports FIE vous contactera sur ce numéro dès l'atterrissage de votre vol.
                   </p>
                 </div>
-
-                {/* Special Requests */}
-                <div>
-                  <label className="block text-[11px] font-medium text-slate-300 mb-1">
-                    Consignes Particulières (Optionnel)
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={specialRequests}
-                    onChange={(e) => setSpecialRequests(e.target.value)}
-                    placeholder="Ex: Sacs volumineux nécessitant un utilitaire dédié, assistance PMR..."
-                    className="w-full bg-[#091122] border border-white/[0.08] rounded-lg px-3 py-2 text-xs text-white"
-                  ></textarea>
-                </div>
-
-                {/* Submit */}
-                <button
-                  type="submit"
-                  className="w-full py-4 px-6 rounded-xl text-[#060B14] font-black text-xs uppercase tracking-wider bg-[#D4AF37] hover:bg-[#C59B27] shadow-xl shadow-black/50 transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <CheckCircle2 className="w-5 h-5" />
-                  <span>Enregistrer &amp; Valider ma Navette Officielle</span>
-                </button>
 
               </div>
 
             </div>
 
-            {/* Right Manifest Pillar (4 cols) */}
-            <div className="lg:col-span-4 space-y-6">
+            {/* Right Column (4 cols): Summary & Automatic Grouping */}
+            <div className="lg:col-span-4 sticky top-24 space-y-6">
               
-              <div className="palace-card rounded-2xl p-6 border border-[#D4AF37]/30 shadow-2xl space-y-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#091222] border border-[#D4AF37]/40 text-[#F5E8C7] text-xs font-bold uppercase tracking-wider">
-                  <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  <span>Regroupement Intelligent Actif</span>
-                </div>
-
-                <h4 className="font-heading font-black text-white text-base uppercase tracking-tight">
-                  Optimisation des Convois FIE
+              <div className="inst-card p-6 shadow-sm">
+                <h4 className="text-sm font-bold text-[#0F172A] pb-3 border-b border-slate-200 mb-4 flex items-center gap-2">
+                  <Bus className="w-4 h-4 text-[#03396C]" />
+                  <span>Protocole Navette FIE</span>
                 </h4>
-                <p className="text-xs text-slate-300 leading-relaxed font-medium">
-                  Le système mutualise les navettes pour les délégations atterrissant dans la même tranche de 45 minutes afin de garantir un départ immédiat vers votre hôtel à Gammarth avec un véhicule adapté au matériel d'escrime.
-                </p>
 
-                <div className="p-3.5 rounded-xl bg-[#060B14] border border-[#D4AF37]/25 text-xs space-y-2 text-slate-300">
-                  <div className="flex items-center gap-2 text-[#D4AF37] font-bold uppercase text-[11px]">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Point d'Accueil Officiel</span>
+                <div className="space-y-3 text-xs text-slate-600 mb-6">
+                  <div className="flex justify-between py-1 border-b border-slate-100">
+                    <span>Aéroport :</span>
+                    <strong className="text-slate-900 font-mono">{airport}</strong>
                   </div>
-                  <div>
-                    Aéroport Tunis-Carthage (TUN) &bull; Terminal 1, Sortie Arrivées, <strong>Desk d'Accueil Officiel Fédération Tunisienne d'Escrime (FTE)</strong>.
+                  <div className="flex justify-between py-1 border-b border-slate-100">
+                    <span>Trajet :</span>
+                    <strong className="text-slate-900 capitalize">{tripType === 'roundtrip' ? 'Aller-Retour' : tripType}</strong>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-slate-100">
+                    <span>Passagers :</span>
+                    <strong className="text-slate-900 font-mono">{passengerCount} pers.</strong>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-slate-100">
+                    <span>Housses de sabre :</span>
+                    <strong className="text-[#C8102E] font-mono">{weaponBagsCount} sacs 1m40</strong>
+                  </div>
+                  <div className="flex justify-between py-1">
+                    <span>Hôtel de destination :</span>
+                    <strong className="text-slate-900 text-right">
+                      {verifiedReservation.hotelId === 'el-mouradi-gammarth' ? 'El Mouradi Gammarth' : 'Golden Carthage'}
+                    </strong>
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-[#060B14] border border-white/[0.08] text-xs space-y-2">
-                  <div className="flex items-center gap-2 text-slate-200 font-bold uppercase text-[11px]">
-                    <Bus className="w-4 h-4 text-[#D4AF37]" />
-                    <span>Flotte Officielle FIE</span>
-                  </div>
-                  <div className="text-slate-300 text-[11px]">
-                    Autocars Mercedes Tourismo grand confort, Minibus Sprinter et Vans VIP climatisés équipés pour les housses d'armes 1m40.
-                  </div>
+                {/* Grouping explanation */}
+                <div className="p-3.5 rounded-lg bg-blue-50/70 border border-blue-200 text-xs text-slate-700 mb-6 leading-relaxed">
+                  <strong className="text-[#03396C] block mb-1">Optimisation &amp; Regroupement :</strong>
+                  Le régisseur FIE regroupe automatiquement les délégations atterrissant sur le même aéroport dans un créneau de 45 minutes pour des convois sécurisés vers Gammarth.
                 </div>
+
+                {/* Submit button */}
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full btn-primary cursor-pointer text-sm font-semibold py-3.5 shadow-sm disabled:opacity-50"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                      <span>Enregistrement Navette...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Valider ma Navette Officielle</span>
+                    </>
+                  )}
+                </button>
               </div>
+
+              {/* Status Success Banner */}
+              {isSuccess && (
+                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-start gap-3 animate-fadeIn">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="block mb-0.5">Navette Confirmée avec Succès</strong>
+                    Votre itinéraire a été synchronisé. Vous pouvez retrouver les détails et modifier vos horaires à tout moment dans l'onglet « Mes Réservations ».
+                  </div>
+                </div>
+              )}
 
             </div>
 

@@ -29,23 +29,23 @@ export async function notifyOnTelegram(notification: TelegramNotification): Prom
 
   let text = "";
   if (notification.kind === "order") {
-    text = `🍕 *NOUVELLE COMMANDE PER VOI (#${notification.id})*
+    text = `🍔 *NOUVELLE COMMANDE BEEF & BUNS (#${notification.id})*
 
 👤 *Client :* ${notification.customerName}
 📞 *Tél :* ${notification.phone}
 📦 *Mode :* ${notification.orderType === "delivery" ? `Livraison 🛵 (${notification.address || "Adresse non fournie"})` : "À emporter 🥡"}
 💰 *Total :* ${notification.totalDt} DT
 ${notification.notes ? `📝 *Note :* ${notification.notes}\n` : ""}
-👉 [Ouvrir l'Espace Gérant](https://per-voi-sousse-2.onrender.com/hote)`;
+👉 [Ouvrir l'Espace Gérant](https://beef-and-buns-sousse.vercel.app)`;
   } else {
-    text = `🍽️ *NOUVELLE RÉSERVATION PER VOI (#${notification.id})*
+    text = `🍽️ *NOUVELLE RÉSERVATION BEEF & BUNS (#${notification.id})*
 
 👤 *Client :* ${notification.name}
 📞 *Tél :* ${notification.phone}
 📅 *Date :* ${notification.date} à ${notification.time}
 👥 *Couverts :* ${notification.guests} personnes
 ${notification.notes ? `📝 *Notes :* ${notification.notes}\n` : ""}
-👉 [Ouvrir l'Espace Gérant](https://per-voi-sousse-2.onrender.com/hote)`;
+👉 [Ouvrir l'Espace Gérant](https://beef-and-buns-sousse.vercel.app)`;
   }
 
   try {

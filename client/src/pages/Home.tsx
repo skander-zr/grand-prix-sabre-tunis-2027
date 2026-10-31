@@ -92,7 +92,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050811] text-slate-100 flex flex-col selection:bg-[#D4AF37] selection:text-[#060B14]">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col">
       
       {/* Platform Header */}
       <Header
@@ -113,13 +113,13 @@ export default function Home() {
             ) : (
               <>
                 {/* Official Session Header */}
-                <div className="bg-[#071329] border-b border-[#D4AF37]/30 no-print py-2.5 px-4 sm:px-6">
+                <div className="bg-white border-b border-slate-200 no-print py-2.5 px-4 sm:px-6 shadow-xs">
                   <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
                     <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full touche-lamp-green"></span>
-                      <span className="text-slate-300">
+                      <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
+                      <span className="text-slate-600">
                         Session Accréditée :{' '}
-                        <strong className="text-[#F5E8C7]">
+                        <strong className="text-[#03396C]">
                           {adminRole === 'super-admin'
                             ? 'Comité Directeur FIE / FTE (Super-Admin)'
                             : adminRole === 'el-mouradi-gammarth'
@@ -131,15 +131,15 @@ export default function Home() {
                     <div className="flex items-center gap-4 ml-auto">
                       <button
                         onClick={() => setActiveTab('hotels')}
-                        className="text-[#D4AF37] hover:text-white transition-colors cursor-pointer"
+                        className="text-[#03396C] hover:underline font-semibold cursor-pointer"
                       >
-                        ← Consulter le site public
+                        &larr; Consulter le site public
                       </button>
                       <button
                         onClick={handleAdminLogout}
-                        className="px-2.5 py-1 rounded bg-rose-950/70 border border-rose-800 text-rose-300 hover:bg-rose-900 transition-colors text-[11px] font-bold cursor-pointer"
+                        className="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors text-[11px] font-semibold cursor-pointer"
                       >
-                        🔒 Déconnexion
+                        Déconnexion
                       </button>
                     </div>
                   </div>
@@ -162,22 +162,22 @@ export default function Home() {
 
             {/* Compact Official Breadcrumb for other tabs */}
             {activeTab !== 'hotels' && (
-              <div className="bg-[#060B14] border-b border-[#D4AF37]/20 py-3.5 px-4 sm:px-6 lg:px-8 no-print">
+              <div className="bg-white border-b border-slate-200 py-3.5 px-4 sm:px-6 lg:px-8 no-print">
                 <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <span className="font-bold text-[#D4AF37] uppercase">Grand Prix Sabre Tunis 2027</span>
-                    <span className="text-slate-600">&bull;</span>
-                    <span className="text-slate-200 font-medium">
+                  <div className="flex items-center gap-2 text-slate-600">
+                    <span className="font-bold text-[#03396C]">Grand Prix Sabre Tunis 2027</span>
+                    <span>&bull;</span>
+                    <span className="text-slate-700 font-medium">
                       {activeTab === 'booking' && 'Formulaire Officiel d\'Engagement & Réservation Hôtelière 5★'}
-                      {activeTab === 'shuttle' && 'Transferts Aéroports Exclusifs (TUN) & Salles de Radès'}
-                      {activeTab === 'client' && 'Portail Délégations & Voucher Officiel A4'}
+                      {activeTab === 'shuttle' && 'Transferts Aéroports Officiels (TUN, NBE, MIR)'}
+                      {activeTab === 'client' && 'Portail Délégations & Voucher / Facture A4'}
                     </span>
                   </div>
 
                   <button
                     type="button"
                     onClick={() => setActiveTab('hotels')}
-                    className="text-[#D4AF37] hover:text-[#F5E8C7] font-bold text-xs underline underline-offset-4 cursor-pointer"
+                    className="text-[#03396C] hover:underline font-semibold text-xs cursor-pointer"
                   >
                     &larr; Retour aux Hôtels 5★
                   </button>
@@ -202,10 +202,8 @@ export default function Home() {
               {activeTab === 'shuttle' && (
                 <ShuttleModule
                   initialCode={shuttleBookingCode}
-                  onShuttleSuccess={(res) => {
-                    setActiveTab('client');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
+                  onShuttleSuccess={handleBookingSuccess}
+                  onNavigateToBooking={() => setActiveTab('booking')}
                 />
               )}
 
@@ -224,7 +222,7 @@ export default function Home() {
         )}
       </main>
 
-      {/* Official Footer */}
+      {/* Platform Institutional Footer */}
       <Footer
         onNavigate={(tab) => {
           setActiveTab(tab);

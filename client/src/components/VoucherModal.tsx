@@ -25,28 +25,28 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ reservation, hotel, 
   const country = isGroup ? reservation.federationGroup?.country : reservation.individualLead?.nationality;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
-      <div className="relative w-full max-w-4xl bg-white text-slate-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn">
+      <div className="relative w-full max-w-4xl bg-white text-slate-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] border border-slate-200">
         
         {/* Top Control Bar (Hidden on print) */}
-        <div className="flex items-center justify-between px-6 py-3 bg-[#060B14] text-white border-b border-[#D4AF37]/30 no-print">
-          <div className="flex items-center gap-2 text-xs">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#D4AF37]"></span>
-            <span className="font-bold text-[#F5E8C7]">VOUCHER &amp; FACTURE OFFICIELLE FIE / FTE</span>
-            <span className="text-slate-400 font-mono">[{reservation.id}]</span>
+        <div className="flex items-center justify-between px-6 py-3 bg-[#03396C] text-white border-b border-blue-900 no-print">
+          <div className="flex items-center gap-2.5 text-xs font-semibold">
+            <span className="w-2 h-2 rounded-full bg-[#C8102E]"></span>
+            <span className="text-white font-bold">VOUCHER &amp; FACTURE OFFICIELLE FIE / FTE</span>
+            <span className="text-blue-200 font-mono">[{reservation.id}]</span>
           </div>
           
           <div className="flex items-center gap-3">
             <button
               onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#D4AF37] hover:bg-[#C59B27] text-[#060B14] font-black text-xs transition-colors shadow-sm cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-white text-[#03396C] font-bold text-xs transition-colors shadow-sm cursor-pointer hover:bg-slate-100"
             >
               <Printer className="w-4 h-4" />
               <span>{t('btn.print')}</span>
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="p-1.5 rounded-lg text-blue-200 hover:text-white hover:bg-[#005B96] transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -62,10 +62,10 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ reservation, hotel, 
               
               {/* Crests & Federation Titles */}
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-xl bg-[#09152b] text-white p-2 flex flex-col items-center justify-center text-center font-bold border border-slate-700">
-                  <span className="text-[12px] text-sky-400 font-black">FIE</span>
-                  <span className="text-[9px] text-amber-400">GP 2027</span>
-                  <span className="text-[8px] text-rose-400">TUNIS</span>
+                <div className="w-16 h-16 rounded-xl bg-[#03396C] text-white p-2 flex flex-col items-center justify-center text-center font-bold">
+                  <span className="text-sm font-black">FIE</span>
+                  <span className="text-[10px] text-blue-200">2027</span>
+                  <span className="text-[8px] text-red-200">TUNIS</span>
                 </div>
                 <div>
                   <h2 className="text-xs font-black uppercase tracking-widest text-slate-500">

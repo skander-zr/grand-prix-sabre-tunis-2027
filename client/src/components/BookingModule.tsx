@@ -13,20 +13,19 @@ import {
   Trash2,
   CheckCircle2,
   ShieldCheck,
-  Shield,
   AlertCircle,
   FileText,
   Bus,
-  Sparkles,
   Lock,
   ArrowRight,
-  Info,
-  Swords,
   Bed,
   BedDouble,
-  ChevronRight
+  ChevronRight,
+  Download,
+  Printer
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { VoucherModal } from './VoucherModal';
 
 interface BookingModuleProps {
   preselectedHotelId?: 'el-mouradi-gammarth' | 'golden-carthage';
@@ -95,7 +94,7 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
     contactPhone: ''
   });
 
-  // Group Members Roster
+  // Dynamic Group Members Roster
   const [members, setMembers] = useState<GroupMember[]>([
     {
       id: 'm-1',
@@ -129,17 +128,26 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
     }
   ]);
 
-  // Payment Options (Strictly Cash On-Site as per official rules)
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('onsite_federation');
+  // Payment Options: 'stripe_card' | 'bank_transfer' | 'onsite_federation'
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('stripe_card');
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+
+  // Stripe Card Simulation Fields
+  const [stripeCard, setStripeCard] = useState({
+    cardNumber: '•••• •••• •••• 4242',
+    cardExpiry: '12/28',
+    cardCvc: '123',
+    cardHolder: ''
+  });
 
   const [notes, setNotes] = useState('');
   const [createdReservation, setCreatedReservation] = useState<Reservation | null>(null);
+  const [showVoucherModal, setShowVoucherModal] = useState(false);
 
   // Hotel & Pricing
-  const selectedHotel = hotels[hotelId];
-  const singlePrice = selectedHotel.roomTypes.single.pricePerNight;
-  const doublePrice = selectedHotel.roomTypes.double.pricePerNight;
+  const selectedHotel = hotels[hotelId] || hotels['el-mouradi-gammarth'];
+  const singlePrice = selectedHotel.roomTypes?.single?.pricePerNight ?? 130;
+  const doublePrice = selectedHotel.roomTypes?.double?.pricePerNight ?? 180;
 
   // Auto-calculation of rooms for group
   const autoGroupSingleCount = members.filter(m => m.roomPreference === 'single').length;
@@ -234,58 +242,59 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
 
       setCreatedReservation(reservation);
       onBookingSuccess(reservation);
-    }, 1100);
+      toast.success(`Réservation ${reservation.id} enregistrée avec succès.`);
+    }, 900);
   };
 
   return (
-    <section id="booking-section" className="py-14 sm:py-20 bg-[#050811] text-white piste-bg">
+    <section id="booking-section" className="py-12 sm:py-16 bg-[#F8FAFC]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Module Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 border-b border-[#D4AF37]/25 pb-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-6 border-b border-slate-200">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#091222] border border-[#D4AF37]/40 text-[#F5E8C7] text-xs font-bold uppercase tracking-wider mb-2">
-              <Swords className="w-3.5 h-3.5 text-[#D4AF37]" />
-              <span>Module Officiel d'Engagement FIE</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-blue-50 border border-blue-200 text-[#03396C] text-xs font-semibold mb-2.5">
+              <Building2 className="w-3.5 h-3.5" />
+              <span>Engagement Officiel FIE &bull; Hôtellerie 5★</span>
             </div>
-            <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight uppercase font-heading">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight">
               Réservation Hôtelière Tournoi 2027
             </h2>
-            <p className="mt-1 text-xs sm:text-sm text-slate-300 max-w-2xl font-medium leading-relaxed">
-              Système officiel de réservation pour délégations sportives et athlètes. Tarifs négociés FIE avec buffet sportif et balnéothérapie inclus.
+            <p className="mt-1.5 text-sm text-slate-600 max-w-3xl leading-relaxed">
+              Formulaire officiel pour délégations nationales et sportifs indépendants. Tarifs négociés FIE avec buffets sportifs et balnéothérapie inclus.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-mono bg-[#091222] px-3.5 py-2 rounded-xl border border-[#D4AF37]/30">
-            <span className="w-2.5 h-2.5 rounded-full touche-lamp-green"></span>
-            <span className="text-[#F5E8C7] font-bold">Quotas Officiels FIE Ouverts</span>
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 bg-white px-3.5 py-2.5 rounded-xl border border-slate-200 shadow-xs">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+            <span>Quotas Officiels FIE Ouverts</span>
           </div>
         </div>
 
-        {/* Main Booking Form Grid */}
+        {/* Main Booking Form */}
         <form onSubmit={handleSubmitBooking} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Left Form Area (8 cols) */}
           <div className="lg:col-span-8 space-y-8">
             
             {/* Step 1: Hôtel & Dates */}
-            <div className="palace-card rounded-2xl p-6 sm:p-8 space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-[#D4AF37]/20">
+            <div className="inst-card p-6 sm:p-8 space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-200">
                 <div className="flex items-center gap-3">
-                  <span className="w-8 h-8 rounded-lg bg-[#121E38] border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37] font-mono font-bold text-sm">
-                    01
+                  <span className="w-7 h-7 rounded-md bg-blue-50 text-[#03396C] border border-blue-200 flex items-center justify-center font-bold text-xs">
+                    1
                   </span>
-                  <h3 className="text-base sm:text-lg font-black text-white uppercase tracking-tight font-heading">
-                    Choix de l'Hôtel &amp; Période du Séjour
+                  <h3 className="text-base font-bold text-[#0F172A]">
+                    Choix de l'Hôtel &amp; Dates du Séjour
                   </h3>
                 </div>
-                <span className="text-xs text-[#D4AF37] font-mono font-bold">2 Hôtels 5★ Gammarth</span>
+                <span className="text-xs font-semibold text-slate-500">2 Hôtels 5★ à Gammarth</span>
               </div>
 
               {/* The 2 Hotels Selection */}
               <div>
-                <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-3">
-                  Sélectionnez l'un des 2 Hôtels Officiels
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
+                  Sélectionnez l'Hôtel Officiel
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   
@@ -294,18 +303,20 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                     onClick={() => setHotelId('el-mouradi-gammarth')}
                     className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
                       hotelId === 'el-mouradi-gammarth'
-                        ? 'border-[#D4AF37] bg-[#121F38] shadow-xl'
-                        : 'border-white/[0.08] bg-[#070D18] hover:border-slate-700'
+                        ? 'border-[#03396C] bg-blue-50/40 shadow-xs'
+                        : 'border-slate-200 bg-white hover:border-slate-300'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="font-bold text-white text-sm uppercase">Hôtel El Mouradi Gammarth</span>
-                      <span className="text-xs text-[#D4AF37] font-bold">5 ★★★★★</span>
+                      <span className="text-sm font-bold text-[#0F172A]">Hôtel El Mouradi Gammarth</span>
+                      <span className="text-[11px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">5★ Luxe</span>
                     </div>
-                    <p className="text-xs text-slate-400 mb-3">Village Officiel Athlètes &bull; Front de mer &bull; Spa</p>
-                    <div className="p-2 rounded-lg bg-[#060B14] border border-[#D4AF37]/20 flex items-center justify-between text-xs font-mono">
-                      <span className="text-[#D4AF37] font-bold">Single: {hotels['el-mouradi-gammarth'].roomTypes.single.pricePerNight} €</span>
-                      <span className="text-[#F5E8C7] font-bold">Double: {hotels['el-mouradi-gammarth'].roomTypes.double.pricePerNight} €</span>
+                    <p className="text-xs text-slate-600 mb-2.5">
+                      Village officiel en bord de mer &bull; Balnéothérapie 1200 m² &bull; Buffet athlètes
+                    </p>
+                    <div className="text-xs font-semibold text-[#03396C] flex items-center justify-between pt-2 border-t border-slate-200/80">
+                      <span>Single: 130 € / Double: 180 €</span>
+                      {hotelId === 'el-mouradi-gammarth' && <CheckCircle2 className="w-4 h-4 text-[#03396C]" />}
                     </div>
                   </div>
 
@@ -314,443 +325,461 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                     onClick={() => setHotelId('golden-carthage')}
                     className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
                       hotelId === 'golden-carthage'
-                        ? 'border-[#D4AF37] bg-[#121F38] shadow-xl'
-                        : 'border-white/[0.08] bg-[#070D18] hover:border-slate-700'
+                        ? 'border-[#03396C] bg-blue-50/40 shadow-xs'
+                        : 'border-slate-200 bg-white hover:border-slate-300'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="font-bold text-white text-sm uppercase">Hôtel Golden Carthage</span>
-                      <span className="text-xs text-[#D4AF37] font-bold">5 ★★★★★</span>
+                      <span className="text-sm font-bold text-[#0F172A]">Hôtel Golden Carthage</span>
+                      <span className="text-[11px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">5★ Palace</span>
                     </div>
-                    <p className="text-xs text-slate-400 mb-3">QG Directoire FIE &bull; Arbitres &bull; Colline Gammarth</p>
-                    <div className="p-2 rounded-lg bg-[#060B14] border border-[#D4AF37]/20 flex items-center justify-between text-xs font-mono">
-                      <span className="text-[#D4AF37] font-bold">Single: {hotels['golden-carthage'].roomTypes.single.pricePerNight} €</span>
-                      <span className="text-[#F5E8C7] font-bold">Double: {hotels['golden-carthage'].roomTypes.double.pricePerNight} €</span>
+                    <p className="text-xs text-slate-600 mb-2.5">
+                      QG Exécutif FIE sur la colline &bull; Panorama Golfe de Tunis &bull; Salles diplomatiques
+                    </p>
+                    <div className="text-xs font-semibold text-[#03396C] flex items-center justify-between pt-2 border-t border-slate-200/80">
+                      <span>Single: 140 € / Double: 190 €</span>
+                      {hotelId === 'golden-carthage' && <CheckCircle2 className="w-4 h-4 text-[#03396C]" />}
                     </div>
                   </div>
 
                 </div>
               </div>
 
-              {/* Dates Grid */}
+              {/* Dates */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1.5">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                     Date d'Arrivée (Check-in)
                   </label>
                   <input
                     type="date"
                     value={checkInDate}
                     onChange={(e) => setCheckInDate(e.target.value)}
-                    className="w-full bg-[#060B14] border border-[#D4AF37]/30 rounded-lg px-3.5 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-[#D4AF37]"
                     required
+                    className="w-full px-3.5 py-2.5"
                   />
+                  <span className="text-[11px] text-slate-500 mt-1 block">Arrivée conseillée : 14 Janv.</span>
                 </div>
+
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1.5">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                     Date de Départ (Check-out)
                   </label>
                   <input
                     type="date"
                     value={checkOutDate}
                     onChange={(e) => setCheckOutDate(e.target.value)}
-                    className="w-full bg-[#060B14] border border-[#D4AF37]/30 rounded-lg px-3.5 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-[#D4AF37]"
                     required
+                    className="w-full px-3.5 py-2.5"
                   />
+                  <span className="text-[11px] text-slate-500 mt-1 block">Départ conseillé : 18 Janv.</span>
                 </div>
+
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1.5">
-                    Durée Totale
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Durée du Séjour
                   </label>
-                  <div className="w-full bg-[#060B14] border border-[#D4AF37]/30 rounded-lg px-3.5 py-2.5 text-sm font-black font-mono text-[#F5E8C7] flex items-center justify-between">
-                    <span>{nightsCount} Nuits</span>
-                    <span className="text-[10px] text-[#D4AF37] font-bold uppercase">Grand Prix FIE</span>
+                  <div className="h-[42px] px-3.5 flex items-center bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-[#0F172A] font-mono">
+                    {nightsCount} Nuitée{nightsCount > 1 ? 's' : ''}
                   </div>
+                  <span className="text-[11px] text-slate-500 mt-1 block">Calcul automatique</span>
                 </div>
               </div>
 
             </div>
 
-            {/* Step 2: Mode de Réservation (Individuel vs Groupe Fédération) */}
-            <div className="palace-card rounded-2xl p-6 sm:p-8 space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-[#D4AF37]/20">
+            {/* Step 2: Mode de Réservation (A ou B) */}
+            <div className="inst-card p-6 sm:p-8 space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-200">
                 <div className="flex items-center gap-3">
-                  <span className="w-8 h-8 rounded-lg bg-[#121E38] border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37] font-mono font-bold text-sm">
-                    02
+                  <span className="w-7 h-7 rounded-md bg-blue-50 text-[#03396C] border border-blue-200 flex items-center justify-center font-bold text-xs">
+                    2
                   </span>
-                  <h3 className="text-base sm:text-lg font-black text-white uppercase tracking-tight font-heading">
-                    Formule de Réservation &amp; Composition
+                  <h3 className="text-base font-bold text-[#0F172A]">
+                    Mode de Réservation
                   </h3>
                 </div>
+                <span className="text-xs font-semibold text-slate-500">Individuel ou Délégation</span>
               </div>
 
-              {/* Formula Switcher */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Selector Tabs A / B */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <button
                   type="button"
                   onClick={() => setBookingType('group')}
-                  className={`flex items-center justify-center gap-3 p-4 rounded-xl border-2 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
+                  className={`p-4 rounded-xl border-2 text-left cursor-pointer transition-all ${
                     bookingType === 'group'
-                      ? 'border-[#D4AF37] bg-[#121F38] text-[#F5E8C7] shadow-xl'
-                      : 'border-white/[0.08] bg-[#070D18] text-slate-400 hover:text-white'
+                      ? 'border-[#03396C] bg-blue-50/40 shadow-xs'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
                   }`}
                 >
-                  <Users className="w-4 h-4 text-[#D4AF37]" />
-                  <span>B) Réservation Groupe / Fédération</span>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-bold text-[#0F172A]">Mode B : Délégation / Groupe</span>
+                    {bookingType === 'group' && <CheckCircle2 className="w-4 h-4 text-[#03396C]" />}
+                  </div>
+                  <p className="text-xs text-slate-600">
+                    Pour Chefs de Délégation, Fédérations et Équipes. Tableau nominatif des membres, calcul automatique des chambres et facture unique.
+                  </p>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setBookingType('individual')}
-                  className={`flex items-center justify-center gap-3 p-4 rounded-xl border-2 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
+                  className={`p-4 rounded-xl border-2 text-left cursor-pointer transition-all ${
                     bookingType === 'individual'
-                      ? 'border-[#D4AF37] bg-[#121F38] text-[#F5E8C7] shadow-xl'
-                      : 'border-white/[0.08] bg-[#070D18] text-slate-400 hover:text-white'
+                      ? 'border-[#03396C] bg-blue-50/40 shadow-xs'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
                   }`}
                 >
-                  <User className="w-4 h-4 text-[#D4AF37]" />
-                  <span>A) Réservation Individuelle (1 Personne)</span>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-bold text-[#0F172A]">Mode A : Réservation Individuelle</span>
+                    {bookingType === 'individual' && <CheckCircle2 className="w-4 h-4 text-[#03396C]" />}
+                  </div>
+                  <p className="text-xs text-slate-600">
+                    Pour athlète indépendant, arbitre, entraîneur ou officiel venant à titre individuel.
+                  </p>
                 </button>
               </div>
 
-              {/* INDIVIDUAL FORM */}
+              {/* Mode A: Individuel Fields */}
               {bookingType === 'individual' && (
-                <div className="space-y-6 animate-fadeIn pt-2">
-                  
-                  {/* Room counters for individual */}
-                  <div className="p-4 rounded-xl bg-[#070D18] border border-white/[0.08]">
-                    <div className="text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-3">
-                      Choix de la Chambre Individuelle
+                <div className="pt-4 border-t border-slate-200 space-y-5 animate-fadeIn">
+                  <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Coordonnées de l'Athlète / Officiel
+                  </h4>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">Nom *</label>
+                      <input
+                        type="text"
+                        required
+                        value={individualData.lastName}
+                        onChange={(e) => setIndividualData({ ...individualData, lastName: e.target.value })}
+                        placeholder="ex: Dubois"
+                        className="w-full px-3.5 py-2.5"
+                      />
                     </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">Prénom *</label>
+                      <input
+                        type="text"
+                        required
+                        value={individualData.firstName}
+                        onChange={(e) => setIndividualData({ ...individualData, firstName: e.target.value })}
+                        placeholder="ex: Alexandre"
+                        className="w-full px-3.5 py-2.5"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">Nationalité *</label>
+                      <select
+                        value={individualData.nationality}
+                        onChange={(e) => setIndividualData({ ...individualData, nationality: e.target.value })}
+                        className="w-full px-3.5 py-2.5"
+                      >
+                        {COUNTRIES_LIST.map(c => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">Numéro de Passeport *</label>
+                      <input
+                        type="text"
+                        required
+                        value={individualData.passportNumber}
+                        onChange={(e) => setIndividualData({ ...individualData, passportNumber: e.target.value })}
+                        placeholder="ex: 24FA19283"
+                        className="w-full px-3.5 py-2.5 font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">Email Officiel *</label>
+                      <input
+                        type="email"
+                        required
+                        value={individualData.email}
+                        onChange={(e) => setIndividualData({ ...individualData, email: e.target.value })}
+                        placeholder="alexandre@escrime.fr"
+                        className="w-full px-3.5 py-2.5"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">Téléphone &bull; WhatsApp *</label>
+                      <input
+                        type="tel"
+                        required
+                        value={individualData.phone}
+                        onChange={(e) => setIndividualData({ ...individualData, phone: e.target.value })}
+                        placeholder="+33 6 12 34 56 78"
+                        className="w-full px-3.5 py-2.5 font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Room Selection for Individual */}
+                  <div className="pt-4 border-t border-slate-200">
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
+                      Choix du Type de Chambre
+                    </label>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="flex items-center justify-between p-3.5 rounded-xl bg-[#091122] border border-[#D4AF37]/25">
+                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between">
                         <div>
-                          <div className="font-bold text-white text-sm">Chambre Single</div>
-                          <div className="text-xs text-[#D4AF37] font-mono font-bold">{singlePrice} € / nuit</div>
+                          <div className="text-sm font-bold text-[#0F172A]">Chambre Single (1 pers)</div>
+                          <div className="text-xs text-slate-500 font-mono">{singlePrice} € / nuit</div>
                         </div>
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
                             onClick={() => setIndividualSingleQty(Math.max(0, individualSingleQty - 1))}
-                            className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 font-bold cursor-pointer"
-                          >-</button>
-                          <span className="w-6 text-center font-bold font-mono text-[#F5E8C7]">{individualSingleQty}</span>
+                            className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 cursor-pointer"
+                          >
+                            -
+                          </button>
+                          <span className="w-8 text-center font-bold text-sm font-mono">{individualSingleQty}</span>
                           <button
                             type="button"
                             onClick={() => setIndividualSingleQty(individualSingleQty + 1)}
-                            className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 font-bold cursor-pointer"
-                          >+</button>
+                            className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 cursor-pointer"
+                          >
+                            +
+                          </button>
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between p-3.5 rounded-xl bg-[#091122] border border-[#D4AF37]/25">
+                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between">
                         <div>
-                          <div className="font-bold text-white text-sm">Chambre Double / Twin</div>
-                          <div className="text-xs text-[#F5E8C7] font-mono font-bold">{doublePrice} € / nuit</div>
+                          <div className="text-sm font-bold text-[#0F172A]">Chambre Double (2 pers)</div>
+                          <div className="text-xs text-slate-500 font-mono">{doublePrice} € / nuit</div>
                         </div>
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
                             onClick={() => setIndividualDoubleQty(Math.max(0, individualDoubleQty - 1))}
-                            className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 font-bold cursor-pointer"
-                          >-</button>
-                          <span className="w-6 text-center font-bold font-mono text-[#F5E8C7]">{individualDoubleQty}</span>
+                            className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 cursor-pointer"
+                          >
+                            -
+                          </button>
+                          <span className="w-8 text-center font-bold text-sm font-mono">{individualDoubleQty}</span>
                           <button
                             type="button"
                             onClick={() => setIndividualDoubleQty(individualDoubleQty + 1)}
-                            className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 font-bold cursor-pointer"
-                          >+</button>
+                            className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 cursor-pointer"
+                          >
+                            +
+                          </button>
                         </div>
                       </div>
                     </div>
                   </div>
-
-                  {/* Personal details */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-300 mb-1">Prénom *</label>
-                      <input
-                        type="text"
-                        value={individualData.firstName}
-                        onChange={(e) => setIndividualData({ ...individualData, firstName: e.target.value })}
-                        placeholder="Ex: Fares"
-                        className="w-full bg-[#081224] border border-[#1a2d4c] rounded-xl px-3.5 py-2 text-xs text-white"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-300 mb-1">Nom de Famille *</label>
-                      <input
-                        type="text"
-                        value={individualData.lastName}
-                        onChange={(e) => setIndividualData({ ...individualData, lastName: e.target.value })}
-                        placeholder="Ex: Ferjani"
-                        className="w-full bg-[#081224] border border-[#1a2d4c] rounded-xl px-3.5 py-2 text-xs text-white"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-300 mb-1">Nationalité *</label>
-                      <select
-                        value={individualData.nationality}
-                        onChange={(e) => setIndividualData({ ...individualData, nationality: e.target.value })}
-                        className="w-full bg-[#081224] border border-[#1a2d4c] rounded-xl px-3.5 py-2 text-xs text-white"
-                      >
-                        {COUNTRIES_LIST.map((c) => (
-                          <option key={c.code} value={c.nameFr}>{c.flag} {c.nameFr}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-300 mb-1">Fédération Nationale / Club</label>
-                      <input
-                        type="text"
-                        value={individualData.federation}
-                        onChange={(e) => setIndividualData({ ...individualData, federation: e.target.value })}
-                        placeholder="Ex: Fédération Tunisienne d'Escrime"
-                        className="w-full bg-[#081224] border border-[#1a2d4c] rounded-xl px-3.5 py-2 text-xs text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-300 mb-1">Email Officiel *</label>
-                      <input
-                        type="email"
-                        value={individualData.email}
-                        onChange={(e) => setIndividualData({ ...individualData, email: e.target.value })}
-                        placeholder="contact@escrime.org"
-                        className="w-full bg-[#081224] border border-[#1a2d4c] rounded-xl px-3.5 py-2 text-xs text-white"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-300 mb-1">Téléphone / WhatsApp *</label>
-                      <input
-                        type="tel"
-                        value={individualData.phone}
-                        onChange={(e) => setIndividualData({ ...individualData, phone: e.target.value })}
-                        placeholder="+216 20 123 456"
-                        className="w-full bg-[#081224] border border-[#1a2d4c] rounded-xl px-3.5 py-2 text-xs text-white"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-300 mb-1">N° Passeport *</label>
-                      <input
-                        type="text"
-                        value={individualData.passportNumber}
-                        onChange={(e) => setIndividualData({ ...individualData, passportNumber: e.target.value })}
-                        placeholder="Numéro officiel"
-                        className="w-full bg-[#081224] border border-[#1a2d4c] rounded-xl px-3.5 py-2 text-xs text-white font-mono"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-300 mb-1">Fonction / Rôle *</label>
-                      <select
-                        value={individualData.role}
-                        onChange={(e) => setIndividualData({ ...individualData, role: e.target.value as RoleType })}
-                        className="w-full bg-[#081224] border border-[#1a2d4c] rounded-xl px-3.5 py-2 text-xs text-white"
-                      >
-                        <option value="athlete">Tireur / Athlète Sabre</option>
-                        <option value="coach">Entraîneur / Coach</option>
-                        <option value="referee">Arbitre FIE</option>
-                        <option value="medical">Staff Médical / Kiné</option>
-                        <option value="delegate">Chef de Délégation</option>
-                        <option value="guest">Accompagnateur / VIP</option>
-                      </select>
-                    </div>
-                  </div>
-
                 </div>
               )}
 
-              {/* GROUP FEDERATION ROSTER */}
+              {/* Mode B: Groupe / Fédération */}
               {bookingType === 'group' && (
-                <div className="space-y-6 animate-fadeIn pt-2">
-                  
-                  {/* Federation info */}
-                  <div className="p-4 rounded-xl bg-[#070D18] border border-white/[0.08] space-y-4">
-                    <div className="text-[11px] font-bold uppercase tracking-wider text-[#F5E8C7] flex items-center gap-2">
-                      <Shield className="w-4 h-4 text-[#D4AF37]" />
-                      <span>Coordonnées de la Fédération &amp; Chef de Délégation</span>
-                    </div>
+                <div className="pt-4 border-t border-slate-200 space-y-6 animate-fadeIn">
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
+                      Coordonnées de la Fédération &amp; Contact Officiel
+                    </h4>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-[11px] font-medium text-slate-300 mb-1">Nom de la Fédération / Équipe *</label>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">Nom de la Fédération / Organisation *</label>
                         <input
                           type="text"
+                          required
                           value={federationData.federationName}
                           onChange={(e) => setFederationData({ ...federationData, federationName: e.target.value })}
-                          placeholder="Ex: Fédération Française d'Escrime (FFE)"
-                          className="w-full bg-[#091122] border border-[#D4AF37]/25 rounded-lg px-3.5 py-2 text-xs text-white"
-                          required
+                          placeholder="ex: Fédération Française d'Escrime (FFE)"
+                          className="w-full px-3.5 py-2.5"
                         />
                       </div>
+
                       <div>
-                        <label className="block text-[11px] font-medium text-slate-300 mb-1">Pays Représenté *</label>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">Pays *</label>
                         <select
                           value={federationData.country}
                           onChange={(e) => setFederationData({ ...federationData, country: e.target.value })}
-                          className="w-full bg-[#091122] border border-[#D4AF37]/25 rounded-lg px-3.5 py-2 text-xs text-white"
+                          className="w-full px-3.5 py-2.5"
                         >
-                          {COUNTRIES_LIST.map((c) => (
-                            <option key={c.code} value={c.nameFr}>{c.flag} {c.nameFr}</option>
+                          {COUNTRIES_LIST.map(c => (
+                            <option key={c} value={c}>{c}</option>
                           ))}
                         </select>
                       </div>
+
                       <div>
-                        <label className="block text-[11px] font-medium text-slate-300 mb-1">Chef de Délégation (Nom &amp; Prénom) *</label>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">Nom &amp; Prénom du Chef de Délégation *</label>
                         <input
                           type="text"
+                          required
                           value={federationData.contactPersonName}
                           onChange={(e) => setFederationData({ ...federationData, contactPersonName: e.target.value })}
-                          placeholder="Ex: Jean-Christophe Durand"
-                          className="w-full bg-[#091122] border border-[#D4AF37]/25 rounded-lg px-3.5 py-2 text-xs text-white"
-                          required
+                          placeholder="ex: Jean-Christophe Durand"
+                          className="w-full px-3.5 py-2.5"
                         />
                       </div>
+
                       <div>
-                        <label className="block text-[11px] font-medium text-slate-300 mb-1">Email Officiel Fédération *</label>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">Rôle / Fonction *</label>
+                        <input
+                          type="text"
+                          required
+                          value={federationData.contactRole}
+                          onChange={(e) => setFederationData({ ...federationData, contactRole: e.target.value })}
+                          placeholder="ex: Chef de Délégation / DTN"
+                          className="w-full px-3.5 py-2.5"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">Email Officiel *</label>
                         <input
                           type="email"
+                          required
                           value={federationData.contactEmail}
                           onChange={(e) => setFederationData({ ...federationData, contactEmail: e.target.value })}
-                          placeholder="contact@escrime.fr"
-                          className="w-full bg-[#091122] border border-[#D4AF37]/25 rounded-lg px-3.5 py-2 text-xs text-white"
+                          placeholder="delegation@escrime.fr"
+                          className="w-full px-3.5 py-2.5"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">Téléphone &bull; WhatsApp *</label>
+                        <input
+                          type="tel"
                           required
+                          value={federationData.contactPhone}
+                          onChange={(e) => setFederationData({ ...federationData, contactPhone: e.target.value })}
+                          placeholder="+33 6 12 34 56 78"
+                          className="w-full px-3.5 py-2.5 font-mono"
                         />
                       </div>
                     </div>
                   </div>
 
-                  {/* Delegation Members Roster Manifest */}
-                  <div className="space-y-3">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
+                  {/* Dynamic Members Table */}
+                  <div className="pt-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                       <div>
-                        <h4 className="text-sm font-bold text-white uppercase tracking-tight flex items-center gap-2 font-heading">
-                          <span>Feuille d'Engagement Délégation (Roster)</span>
-                          <span className="text-xs px-2.5 py-0.5 rounded bg-[#0A1220] text-[#D4AF37] border border-[#D4AF37]/30 font-mono font-bold">
-                            {members.length} inscrits
-                          </span>
+                        <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                          Liste des Membres de la Délégation ({members.length} inscrits)
                         </h4>
-                        <p className="text-xs text-slate-400">
-                          Renseignez chaque tireur, entraîneur et arbitre. Le système calcule automatiquement le nombre de chambres Single et Twin nécessaires.
-                        </p>
+                        <span className="text-[11px] text-slate-500">
+                          Renseignez le souhait de chambre (Single ou Double) et le binôme de partage pour chaque athlète.
+                        </span>
                       </div>
 
                       <button
                         type="button"
                         onClick={addMember}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#D4AF37] hover:bg-[#C59B27] text-[#060B14] font-black text-xs uppercase tracking-wider transition-all shadow-md cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-[#03396C] hover:bg-blue-100 font-semibold text-xs border border-blue-200 transition-colors cursor-pointer"
                       >
-                        <Plus className="w-4 h-4" />
-                        <span>Ajouter un Tireur / Membre</span>
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Ajouter un membre</span>
                       </button>
                     </div>
 
                     {/* Table */}
-                    <div className="overflow-x-auto rounded-2xl border border-[#14233c] bg-[#070f1f]">
+                    <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white">
                       <table className="w-full text-left text-xs">
-                        <thead className="bg-[#050b17] text-slate-400 uppercase tracking-wider font-semibold border-b border-[#14233c]">
+                        <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
                           <tr>
                             <th className="py-2.5 px-3">#</th>
-                            <th className="py-2.5 px-3">Nom & Prénom *</th>
-                            <th className="py-2.5 px-3">Rôle / Discipline</th>
+                            <th className="py-2.5 px-3">Nom *</th>
+                            <th className="py-2.5 px-3">Prénom *</th>
+                            <th className="py-2.5 px-3">Rôle</th>
                             <th className="py-2.5 px-3">Passeport</th>
-                            <th className="py-2.5 px-3">Chambre Souhaitée</th>
-                            <th className="py-2.5 px-3">Colocataire si Double</th>
+                            <th className="py-2.5 px-3">Type Chambre</th>
+                            <th className="py-2.5 px-3">Binôme (si Double)</th>
                             <th className="py-2.5 px-3 text-center">Action</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#14233c]">
-                          {members.map((member, mIdx) => (
-                            <tr key={member.id} className="hover:bg-[#0c1a33]/40 transition-colors">
-                              <td className="py-2.5 px-3 text-slate-500 font-mono font-bold">{mIdx + 1}</td>
-                              
-                              <td className="py-2 px-3">
-                                <div className="flex gap-1.5">
-                                  <input
-                                    type="text"
-                                    value={member.firstName}
-                                    onChange={(e) => updateMember(member.id, { firstName: e.target.value })}
-                                    placeholder="Prénom"
-                                    className="w-24 bg-[#0a1529] border border-[#1a2d4c] rounded px-2 py-1 text-xs text-white"
-                                    required
-                                  />
-                                  <input
-                                    type="text"
-                                    value={member.lastName}
-                                    onChange={(e) => updateMember(member.id, { lastName: e.target.value })}
-                                    placeholder="Nom"
-                                    className="w-24 bg-[#0a1529] border border-[#1a2d4c] rounded px-2 py-1 text-xs text-white font-bold"
-                                    required
-                                  />
-                                </div>
+                        <tbody className="divide-y divide-slate-100 text-slate-800">
+                          {members.map((member, idx) => (
+                            <tr key={member.id} className="hover:bg-slate-50/70">
+                              <td className="py-2.5 px-3 text-slate-400 font-mono font-bold">{idx + 1}</td>
+                              <td className="py-2.5 px-3">
+                                <input
+                                  type="text"
+                                  required
+                                  value={member.lastName}
+                                  onChange={(e) => updateMember(member.id, { lastName: e.target.value })}
+                                  placeholder="Nom"
+                                  className="w-28 px-2 py-1 text-xs"
+                                />
                               </td>
-
-                              <td className="py-2 px-3">
+                              <td className="py-2.5 px-3">
+                                <input
+                                  type="text"
+                                  required
+                                  value={member.firstName}
+                                  onChange={(e) => updateMember(member.id, { firstName: e.target.value })}
+                                  placeholder="Prénom"
+                                  className="w-28 px-2 py-1 text-xs"
+                                />
+                              </td>
+                              <td className="py-2.5 px-3">
                                 <select
                                   value={member.role}
                                   onChange={(e) => updateMember(member.id, { role: e.target.value as RoleType })}
-                                  className="bg-[#0a1529] border border-[#1a2d4c] rounded px-2 py-1 text-xs text-white"
+                                  className="px-2 py-1 text-xs"
                                 >
-                                  <option value="athlete">Athlète Sabre</option>
+                                  <option value="athlete">Athlète</option>
                                   <option value="coach">Entraîneur</option>
-                                  <option value="referee">Arbitre FIE</option>
-                                  <option value="medical">Kiné / Médical</option>
-                                  <option value="delegate">Chef Délégation</option>
-                                  <option value="guest">Accompagnateur</option>
+                                  <option value="referee">Arbitre</option>
+                                  <option value="delegate">Délégué</option>
+                                  <option value="medical">Médical</option>
                                 </select>
                               </td>
-
-                              <td className="py-2 px-3">
+                              <td className="py-2.5 px-3">
                                 <input
                                   type="text"
                                   value={member.passportNumber}
                                   onChange={(e) => updateMember(member.id, { passportNumber: e.target.value })}
                                   placeholder="N° Passeport"
-                                  className="w-28 bg-[#0a1529] border border-[#1a2d4c] rounded px-2 py-1 text-xs text-white font-mono"
+                                  className="w-24 px-2 py-1 text-xs font-mono"
                                 />
                               </td>
-
-                              <td className="py-2 px-3">
+                              <td className="py-2.5 px-3">
                                 <select
                                   value={member.roomPreference}
                                   onChange={(e) => updateMember(member.id, { roomPreference: e.target.value as 'single' | 'double' })}
-                                  className={`rounded px-2 py-1 text-xs font-bold ${
-                                    member.roomPreference === 'single'
-                                      ? 'bg-amber-950/80 border border-amber-600/60 text-amber-300'
-                                      : 'bg-[#091222] border border-[#D4AF37]/30 text-[#F5E8C7]'
-                                  }`}
+                                  className="px-2 py-1 text-xs font-semibold"
                                 >
-                                  <option value="single">Single (1 pers)</option>
-                                  <option value="double">Double / Twin</option>
+                                  <option value="single">Single (1 lit)</option>
+                                  <option value="double">Double (2 lits)</option>
                                 </select>
                               </td>
-
-                              <td className="py-2 px-3">
+                              <td className="py-2.5 px-3">
                                 {member.roomPreference === 'double' ? (
                                   <input
                                     type="text"
                                     value={member.roommateName || ''}
                                     onChange={(e) => updateMember(member.id, { roommateName: e.target.value })}
-                                    placeholder="Nom du colocataire"
-                                    className="w-32 bg-[#060B14] border border-[#D4AF37]/25 rounded px-2 py-1 text-xs text-slate-200"
+                                    placeholder="Partagé avec..."
+                                    className="w-32 px-2 py-1 text-xs"
                                   />
                                 ) : (
-                                  <span className="text-[11px] text-slate-500 italic">Non applicable</span>
+                                  <span className="text-slate-400 text-[11px]">— Usage Single —</span>
                                 )}
                               </td>
-
-                              <td className="py-2 px-3 text-center">
+                              <td className="py-2.5 px-3 text-center">
                                 <button
                                   type="button"
                                   onClick={() => removeMember(member.id)}
-                                  className="p-1 rounded text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 transition-colors cursor-pointer"
+                                  className="p-1 text-slate-400 hover:text-red-600 rounded transition-colors cursor-pointer"
                                   title="Supprimer ce membre"
                                 >
-                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <Trash2 className="w-4 h-4" />
                                 </button>
                               </td>
                             </tr>
@@ -759,89 +788,170 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                       </table>
                     </div>
 
-                    {/* Automatic Room Calculator Banner */}
-                    <div className="p-4 rounded-xl bg-[#091222] border border-[#D4AF37]/35 flex flex-wrap items-center justify-between gap-4">
-                      <div>
-                        <div className="text-xs font-bold text-[#D4AF37] uppercase tracking-wider flex items-center gap-1.5 font-heading">
-                          <Sparkles className="w-4 h-4 text-[#D4AF37]" />
-                          <span>Calculateur Automatique de Chambres FIE</span>
-                        </div>
-                        <p className="text-xs text-slate-300 mt-0.5">
-                          Facture globale unique et confirmation instantanée délivrées au nom de la Fédération.
-                        </p>
+                    {/* Auto Calculated Rooms Summary Banner */}
+                    <div className="mt-3 p-3.5 bg-blue-50/70 border border-blue-200 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs text-slate-700">
+                      <div className="flex items-center gap-3">
+                        <span className="font-bold text-[#03396C]">Calcul automatique des chambres :</span>
+                        <span><strong>{autoGroupSingleCount}</strong> Chambre{autoGroupSingleCount > 1 ? 's' : ''} Single</span>
+                        <span>&bull;</span>
+                        <span><strong>{autoGroupDoubleCount}</strong> Chambre{autoGroupDoubleCount > 1 ? 's' : ''} Double ({doublePreferencesCount} athlètes)</span>
                       </div>
-
-                      <div className="flex items-center gap-3 text-xs font-bold">
-                        <div className="bg-[#060B14] px-3 py-1.5 rounded-lg border border-[#D4AF37]/30 text-[#D4AF37] font-mono">
-                          Single requises : <span className="text-base font-black text-white ml-1">{autoGroupSingleCount}</span>
-                        </div>
-                        <div className="bg-[#060B14] px-3 py-1.5 rounded-lg border border-[#D4AF37]/30 text-[#F5E8C7] font-mono">
-                          Double requises : <span className="text-base font-black text-white ml-1">{autoGroupDoubleCount}</span>
-                        </div>
-                      </div>
+                      <span className="text-slate-500 font-medium">Facturation unique pour toute la délégation</span>
                     </div>
 
                   </div>
-
                 </div>
               )}
 
             </div>
 
-            {/* Step 3: Paiement Sécurisé & Prise en Charge */}
-            <div className="palace-card rounded-2xl p-6 sm:p-8 space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-[#D4AF37]/20">
+            {/* Step 3: Paiement Sécurisé (3 Modes) */}
+            <div className="inst-card p-6 sm:p-8 space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-200">
                 <div className="flex items-center gap-3">
-                  <span className="w-8 h-8 rounded-lg bg-[#121E38] border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37] font-mono font-bold text-sm">
-                    03
+                  <span className="w-7 h-7 rounded-md bg-blue-50 text-[#03396C] border border-blue-200 flex items-center justify-center font-bold text-xs">
+                    3
                   </span>
-                  <h3 className="text-base sm:text-lg font-black text-white uppercase tracking-tight font-heading">
-                    Modalités de Règlement &amp; Facturation Officielle
+                  <h3 className="text-base font-bold text-[#0F172A]">
+                    Mode de Règlement Sécurisé
                   </h3>
                 </div>
+                <span className="text-xs font-semibold text-slate-500">3 Options Officielles</span>
               </div>
 
-              {/* Unique Payment Mode: Cash Sur Place */}
-              <div className="p-5 rounded-2xl border-2 border-emerald-500/60 bg-[#081729] shadow-xl">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-400 shrink-0">
-                    <ShieldCheck className="w-6 h-6" />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-black text-white text-base">Paiement en Espèces (Cash) sur Place à l'Arrivée</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 font-mono font-bold border border-emerald-700">
-                        RÈGLEMENT OFFICIEL AU CHECK-IN
-                      </span>
+              {/* Payment Methods Cards */}
+              <div className="space-y-3">
+                
+                {/* Method 1: Stripe Card */}
+                <div
+                  onClick={() => setPaymentMethod('stripe_card')}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    paymentMethod === 'stripe_card'
+                      ? 'border-[#03396C] bg-blue-50/40 shadow-xs'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-blue-100/70 text-[#03396C] flex items-center justify-center">
+                        <CreditCard className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-[#0F172A]">Paiement en ligne par carte (Stripe)</div>
+                        <div className="text-xs text-slate-600">Visa, Mastercard, Carte Bancaire &bull; Reçu et confirmation immédiats</div>
+                      </div>
                     </div>
-                    <p className="text-xs text-slate-300 leading-relaxed font-medium">
-                      Aucun prépaiement par carte ni virement n'est requis en ligne. La totalité de votre réservation sera réglée directement <strong>en espèces (Cash)</strong> à la réception de votre hôtel lors de votre check-in et de la remise de votre badge d'accréditation FIE.
-                    </p>
-                    <div className="flex flex-wrap items-center gap-4 text-xs font-mono pt-1 text-slate-300">
-                      <span className="flex items-center gap-1.5 text-amber-300 font-bold">
-                        <span>💶</span> Devises acceptées : Euros (€) ou Dinars Tunisiens (TND)
-                      </span>
-                      <span className="text-slate-500">&bull;</span>
-                      <span className="text-emerald-300">
-                        ✓ Facture et reçu fiscal FIE remis immédiatement
-                      </span>
-                    </div>
+                    {paymentMethod === 'stripe_card' && <CheckCircle2 className="w-5 h-5 text-[#03396C]" />}
                   </div>
+
+                  {paymentMethod === 'stripe_card' && (
+                    <div className="mt-4 pt-4 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-3 animate-fadeIn">
+                      <div className="sm:col-span-2">
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">Numéro de Carte Bancaire</label>
+                        <input
+                          type="text"
+                          value={stripeCard.cardNumber}
+                          onChange={(e) => setStripeCard({ ...stripeCard, cardNumber: e.target.value })}
+                          className="w-full px-3 py-2 text-xs font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">Expiration / CVC</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={stripeCard.cardExpiry}
+                            onChange={(e) => setStripeCard({ ...stripeCard, cardExpiry: e.target.value })}
+                            className="w-1/2 px-2 py-2 text-xs font-mono text-center"
+                          />
+                          <input
+                            type="text"
+                            value={stripeCard.cardCvc}
+                            onChange={(e) => setStripeCard({ ...stripeCard, cardCvc: e.target.value })}
+                            className="w-1/2 px-2 py-2 text-xs font-mono text-center"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
+
+                {/* Method 2: Bank Transfer (IBAN/SWIFT) */}
+                <div
+                  onClick={() => setPaymentMethod('bank_transfer')}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    paymentMethod === 'bank_transfer'
+                      ? 'border-[#03396C] bg-blue-50/40 shadow-xs'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-blue-100/70 text-[#03396C] flex items-center justify-center">
+                        <FileText className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-[#0F172A]">Virement Bancaire Officiel (IBAN / SWIFT)</div>
+                        <div className="text-xs text-slate-600">Recommandé pour Fédérations &bull; Facture proforma émise instantanément</div>
+                      </div>
+                    </div>
+                    {paymentMethod === 'bank_transfer' && <CheckCircle2 className="w-5 h-5 text-[#03396C]" />}
+                  </div>
+
+                  {paymentMethod === 'bank_transfer' && (
+                    <div className="mt-4 pt-4 border-t border-slate-200 text-xs text-slate-700 bg-white p-3.5 rounded-lg border border-slate-200 space-y-1 font-mono animate-fadeIn">
+                      <div><strong>Bénéficiaire :</strong> Fédération Tunisienne d'Escrime (Grand Prix 2027)</div>
+                      <div><strong>Banque :</strong> Banque Internationale Arabe de Tunisie (BIAT)</div>
+                      <div><strong>IBAN :</strong> TN59 0800 1000 1234 5678 9012</div>
+                      <div><strong>SWIFT / BIC :</strong> BIATTNTT</div>
+                      <div className="text-blue-700 pt-1"><strong>Référence :</strong> Votre code GPS2027-XXXX généré à la validation</div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Method 3: On-site Payment */}
+                <div
+                  onClick={() => setPaymentMethod('onsite_federation')}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    paymentMethod === 'onsite_federation'
+                      ? 'border-[#03396C] bg-blue-50/40 shadow-xs'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-blue-100/70 text-[#03396C] flex items-center justify-center">
+                        <ShieldCheck className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-[#0F172A]">Règlement sur Place pour Fédérations</div>
+                        <div className="text-xs text-slate-600">Règlement direct lors de l'accréditation officielle FIE &amp; check-in hôtel</div>
+                      </div>
+                    </div>
+                    {paymentMethod === 'onsite_federation' && <CheckCircle2 className="w-5 h-5 text-[#03396C]" />}
+                  </div>
+
+                  {paymentMethod === 'onsite_federation' && (
+                    <div className="mt-4 pt-4 border-t border-slate-200 text-xs text-slate-600 animate-fadeIn">
+                      Paiement en espèces (Euros ou Dinars TND) ou par carte bancaire directement au bureau d'accréditation du Palais des Sports de Radès ou à la réception de votre hôtel 5★.
+                    </div>
+                  )}
+                </div>
+
               </div>
 
-              {/* Special requests */}
-              <div>
-                <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">
-                  Remarques ou consignes particulières délégation
+              {/* Notes */}
+              <div className="pt-2">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Remarques Spécifiques &amp; Régimes Alimentaires (Optionnel)
                 </label>
                 <textarea
-                  rows={2}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Ex: Régime alimentaire spécifique athlète, arrivée décalée, matériel d'escrime lourd..."
-                  className="w-full bg-[#081224] border border-[#162640] rounded-xl px-3 py-2 text-xs text-white"
-                ></textarea>
+                  rows={2}
+                  placeholder="Besoins spécifiques en matériel, horaires particuliers, régimes sportifs..."
+                  className="w-full px-3.5 py-2.5 text-xs"
+                />
               </div>
 
             </div>
@@ -851,75 +961,76 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
           {/* Right Sticky Summary (4 cols) */}
           <div className="lg:col-span-4 sticky top-24 space-y-6">
             
-            <div className="tournament-card-gold rounded-3xl p-6 shadow-2xl relative overflow-hidden border border-amber-500/40">
-              
-              <div className="flex items-center justify-between pb-4 border-b border-amber-900/40 mb-4">
+            <div className="inst-card p-6 shadow-sm">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-200 mb-4">
                 <div className="flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-amber-400" />
-                  <span className="font-black text-white text-base uppercase">Bilan Financier FIE</span>
+                  <FileText className="w-5 h-5 text-[#03396C]" />
+                  <span className="font-bold text-[#0F172A] text-base">Récapitulatif Officiel</span>
                 </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-950 text-amber-300 font-bold border border-amber-600">
-                  OFFICIEL
+                <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-blue-50 text-[#03396C] font-bold border border-blue-200">
+                  FIE 2027
                 </span>
               </div>
 
               {/* Selected Hotel */}
               <div className="mb-4 text-xs space-y-1">
-                <span className="text-slate-400">Établissement retenu :</span>
-                <div className="font-black text-white text-sm uppercase">{selectedHotel.name} (5★)</div>
-                <div className="text-slate-300 text-[11px]">{selectedHotel.location}</div>
+                <span className="text-slate-500">Établissement retenu :</span>
+                <div className="font-bold text-[#0F172A] text-sm">{selectedHotel.name} (5★)</div>
+                <div className="text-slate-500 text-[11px]">{selectedHotel.location}</div>
               </div>
 
-              {/* Lines */}
-              <div className="space-y-2.5 text-xs py-3 border-y border-[#182842] mb-4 font-mono">
-                <div className="flex justify-between text-slate-300">
+              {/* Calculation Lines */}
+              <div className="space-y-2.5 text-xs py-3 border-y border-slate-200 mb-4 font-mono">
+                <div className="flex justify-between text-slate-600">
                   <span>Période :</span>
-                  <span className="font-bold text-white">{nightsCount} Nuits</span>
+                  <span className="font-bold text-[#0F172A]">{nightsCount} Nuitées</span>
                 </div>
-                <div className="flex justify-between text-slate-300">
+                <div className="flex justify-between text-slate-600">
                   <span>Chambres Single :</span>
-                  <span className="font-bold text-white">
+                  <span className="font-bold text-[#0F172A]">
                     {effectiveSingleRooms} × {singlePrice} € = {effectiveSingleRooms * singlePrice * nightsCount} €
                   </span>
                 </div>
-                <div className="flex justify-between text-slate-300">
+                <div className="flex justify-between text-slate-600">
                   <span>Chambres Double :</span>
-                  <span className="font-bold text-white">
+                  <span className="font-bold text-[#0F172A]">
                     {effectiveDoubleRooms} × {doublePrice} € = {effectiveDoubleRooms * doublePrice * nightsCount} €
                   </span>
                 </div>
-                <div className="flex justify-between text-slate-300">
+                <div className="flex justify-between text-slate-600">
                   <span>Participants Totaux :</span>
-                  <span className="font-bold text-[#F5E8C7]">{effectiveGuestsCount} Personnes</span>
+                  <span className="font-bold text-[#03396C]">{effectiveGuestsCount} Personnes</span>
                 </div>
-                <div className="flex justify-between text-slate-300">
-                  <span>Taxe & Frais FIE (3€/n/pers) :</span>
-                  <span className="font-bold text-white">{cityTax} €</span>
+                <div className="flex justify-between text-slate-600">
+                  <span>Taxe &amp; Frais FIE (3€/n/pers) :</span>
+                  <span className="font-bold text-[#0F172A]">{cityTax} €</span>
                 </div>
               </div>
 
               {/* Total Display */}
               <div className="mb-6">
                 <div className="flex items-baseline justify-between">
-                  <span className="text-xs font-bold uppercase text-slate-300">Total à Régler :</span>
+                  <span className="text-xs font-bold uppercase text-slate-500">Montant Total TTC :</span>
                   <div className="text-right">
-                    <div className="text-3xl font-black text-[#F5E8C7] font-mono">{totalAmount} €</div>
-                    <div className="text-xs text-[#D4AF37] font-mono">(~{Math.round(totalAmount * 3.35)} TND)</div>
+                    <div className="text-2xl font-black text-[#0F172A] font-mono">{totalAmount} €</div>
+                    <div className="text-xs text-slate-500 font-mono">(~{Math.round(totalAmount * 3.3)} TND)</div>
                   </div>
                 </div>
-                <div className="text-[10px] text-slate-400 mt-1 font-medium">Règlement 100% en espèces sur place au Check-in / Bureau FIE.</div>
+                <div className="text-[11px] text-slate-500 mt-1">
+                  Buffets sportifs &amp; petits déjeuners inclus &bull; TVA comprise.
+                </div>
               </div>
 
               {/* Submit CTA Button */}
               <button
                 type="submit"
                 disabled={isProcessingPayment}
-                className="w-full py-4 px-4 rounded-xl text-[#060B14] font-black text-xs uppercase tracking-wider bg-[#D4AF37] hover:bg-[#C59B27] shadow-xl shadow-black/50 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full btn-primary cursor-pointer text-sm font-semibold py-3.5 shadow-sm disabled:opacity-50"
               >
                 {isProcessingPayment ? (
                   <>
-                    <span className="w-4 h-4 border-2 border-[#060B14] border-t-transparent rounded-full animate-spin"></span>
-                    <span>Validation Sécurisée FIE...</span>
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    <span>Validation du dossier FIE...</span>
                   </>
                 ) : (
                   <>
@@ -929,19 +1040,19 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                 )}
               </button>
 
-              <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-slate-400">
-                <Lock className="w-3.5 h-3.5 text-[#D4AF37]" />
-                <span>Paiement 100% Cash sur place &bull; Code unique GPS2027</span>
+              <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
+                <Lock className="w-3.5 h-3.5 text-slate-400" />
+                <span>Validation instantanée &bull; Code unique GPS2027</span>
               </div>
 
             </div>
 
             {/* Hint Box: Airport Transfer Unlock */}
-            <div className="p-4 rounded-xl bg-[#091222] border border-[#D4AF37]/25 text-xs text-slate-300 flex gap-3">
-              <Bus className="w-5 h-5 text-[#D4AF37] shrink-0 mt-0.5" />
+            <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-200 text-xs text-slate-700 flex gap-3">
+              <Bus className="w-5 h-5 text-[#03396C] shrink-0 mt-0.5" />
               <div>
-                <strong className="text-white block mb-0.5">Navette Aéroport TUN Incluse</strong>
-                Une fois votre réservation validée, vous recevrez votre code unique pour programmer immédiatement votre navette aéroport gratuite ou personnalisée.
+                <strong className="text-[#03396C] block mb-0.5">Navette Aéroport Incluse</strong>
+                Une fois votre hébergement confirmé, votre code de réservation vous permettra de planifier immédiatement vos navettes aéroport (TUN, NBE, MIR).
               </div>
             </div>
 
@@ -951,37 +1062,37 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
 
       </div>
 
-      {/* Booking Success Modal */}
+      {/* Booking Success Confirmation Modal */}
       {createdReservation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-          <div className="relative w-full max-w-xl palace-card rounded-2xl p-6 sm:p-8 text-center text-white border border-[#D4AF37] shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn">
+          <div className="relative w-full max-w-lg inst-card p-6 sm:p-8 text-center shadow-2xl">
             
-            <div className="w-16 h-16 rounded-xl bg-[#121E38] border border-[#D4AF37]/50 flex items-center justify-center text-[#D4AF37] mx-auto mb-4">
-              <CheckCircle2 className="w-8 h-8 text-[#D4AF37]" />
+            <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 className="w-8 h-8" />
             </div>
 
-            <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-1 font-heading">
-              Réservation Validée avec Succès !
+            <h3 className="text-xl sm:text-2xl font-extrabold text-[#0F172A] tracking-tight mb-1">
+              Réservation Confirmée avec Succès
             </h3>
-            <p className="text-xs sm:text-sm text-slate-300 mb-6 font-medium">
-              Votre réservation pour le <strong>Grand Prix Sabre Tunis 2027</strong> a été confirmée et enregistrée.
+            <p className="text-xs sm:text-sm text-slate-600 mb-6">
+              Votre dossier pour le <strong>Grand Prix Sabre Tunis 2027</strong> a été enregistré. Un email de confirmation automatique a été consigné.
             </p>
 
             {/* Code */}
-            <div className="p-4 rounded-xl bg-[#060B14] border border-[#D4AF37]/40 mb-6">
-              <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 mb-6">
+              <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                 VOTRE CODE DE RÉSERVATION UNIQUE
               </div>
-              <div className="text-3xl sm:text-4xl font-black text-[#F5E8C7] font-mono tracking-widest select-all">
+              <div className="text-3xl font-black text-[#03396C] font-mono tracking-wider select-all">
                 {createdReservation.id}
               </div>
-              <p className="text-[11px] text-[#D4AF37] mt-1 font-medium">
-                Conservez ce code. Il est indispensable pour réserver votre navette aéroport (TUN) et télécharger votre voucher officiel A4.
+              <p className="text-xs text-slate-600 mt-1.5 font-medium">
+                Conservez ce code. Il est indispensable pour réserver votre navette aéroport et accéder à votre dossier officiel.
               </p>
             </div>
 
             {/* Actions */}
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               <button
                 type="button"
                 onClick={() => {
@@ -989,23 +1100,43 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                   setCreatedReservation(null);
                   onGoToShuttle(code);
                 }}
-                className="w-full py-3.5 px-4 rounded-2xl text-slate-950 font-black text-xs uppercase tracking-wider bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                className="w-full btn-primary cursor-pointer text-sm font-semibold py-3"
               >
                 <Bus className="w-4 h-4" />
-                <span>Réserver la Navette Aéroport Maintenant →</span>
+                <span>Réserver la Navette Aéroport Maintenant &rarr;</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowVoucherModal(true);
+                }}
+                className="w-full btn-outline cursor-pointer text-sm font-semibold py-2.5"
+              >
+                <Download className="w-4 h-4 text-slate-600" />
+                <span>Télécharger le Voucher &amp; Facture PDF</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setCreatedReservation(null)}
-                className="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition-colors"
+                className="w-full text-xs text-slate-500 hover:text-slate-800 py-1 font-semibold cursor-pointer"
               >
-                Fermer & Continuer
+                Fermer
               </button>
             </div>
 
           </div>
         </div>
+      )}
+
+      {/* Voucher & Invoice Modal */}
+      {showVoucherModal && createdReservation && (
+        <VoucherModal
+          reservation={createdReservation}
+          hotel={selectedHotel}
+          onClose={() => setShowVoucherModal(false)}
+        />
       )}
 
     </section>

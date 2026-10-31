@@ -15,11 +15,11 @@ import {
   ChevronRight,
   ExternalLink,
   CheckCircle2,
-  Swords,
   BedDouble,
   Bed,
-  Banknote,
-  Sparkles,
+  CreditCard,
+  Building2,
+  Users,
   Award
 } from 'lucide-react';
 import { MapModal } from './MapModal';
@@ -56,69 +56,70 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
   const hotelList = [hotels['el-mouradi-gammarth'], hotels['golden-carthage']];
 
   return (
-    <section id="hotels-section" className="py-14 sm:py-20 bg-[#050811] text-slate-100 piste-bg">
+    <section id="hotels-section" className="py-12 sm:py-16 bg-[#F8FAFC]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Championship Hospitality Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-b border-[#D4AF37]/25 pb-8">
+        {/* Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-6 border-b border-slate-200">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#091222] border border-[#D4AF37]/40 text-[#F5E8C7] text-xs font-bold uppercase tracking-wider mb-3">
-              <Swords className="w-3.5 h-3.5 text-[#D4AF37]" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-blue-50 border border-blue-200 text-[#03396C] text-xs font-semibold mb-2.5">
+              <Building2 className="w-3.5 h-3.5" />
               <span>Hébergement Officiel FIE &bull; Gammarth, Tunisie</span>
             </div>
-            <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight uppercase font-heading">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight">
               Les 2 Hôtels 5★ Officiels de la Compétition
             </h2>
-            <p className="mt-2 text-xs sm:text-sm text-slate-300 max-w-2xl font-medium leading-relaxed">
-              Deux prestigieux complexes hôteliers 5 étoiles situés sur la côte de Gammarth, réservés exclusivement pour les délégations de la Coupe du Monde de Sabre 2027. Nutrition sportive sur-mesure, balnéothérapie de récupération et liaisons directes vers Radès.
+            <p className="mt-1.5 text-sm text-slate-600 max-w-3xl leading-relaxed">
+              Deux prestigieux complexes hôteliers 5 étoiles situés sur la côte de Gammarth, réservés exclusivement pour les délégations de la Coupe du Monde de Sabre 2027. Nutrition sportive adaptée, balnéothérapie de récupération et liaisons directes vers la Salle de Radès.
             </p>
           </div>
 
-          <div className="text-left md:text-right shrink-0 bg-[#0A1222] p-4 rounded-xl border border-[#D4AF37]/30">
-            <span className="text-[11px] text-slate-400 block font-mono">Distance vers Salle Omnisports de Radès :</span>
-            <span className="text-lg font-black text-[#D4AF37] font-mono">13 - 14 KM &bull; ~16 MIN</span>
-            <span className="text-[10px] text-emerald-400 block font-semibold mt-0.5">Navettes FIE directes toutes les 20 min</span>
+          <div className="shrink-0 bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+            <span className="text-xs text-slate-500 block font-medium">Distance vers la Salle Omnisports de Radès :</span>
+            <span className="text-base font-bold text-[#03396C] font-mono">13 - 14 KM &bull; ~16 MIN</span>
+            <span className="text-xs text-emerald-700 font-semibold block mt-0.5">Navettes FIE directes toutes les 20 min</span>
           </div>
         </div>
 
-        {/* The 2 Luxury Hotels Showcase */}
-        <div className="space-y-16">
+        {/* The 2 Official Hotels Cards */}
+        <div className="space-y-12">
           {hotelList.map((hotel) => {
             const currentPhotoIdx = photoIndexes[hotel.id] || 0;
-            const rawSingle = hotel.roomTypes?.single?.pricePerNight;
-            const singleEur = typeof rawSingle === 'number' ? rawSingle : rawSingle?.eur ?? 130;
-            const singleTnd = typeof rawSingle === 'number' ? Math.round(rawSingle * 3.3) : rawSingle?.tnd ?? 430;
+            const singlePriceEur = hotel.roomTypes?.single?.pricePerNight ?? 130;
+            const doublePriceEur = hotel.roomTypes?.double?.pricePerNight ?? 180;
+            const singlePriceTnd = Math.round(singlePriceEur * 3.3);
+            const doublePriceTnd = Math.round(doublePriceEur * 3.3);
 
-            const rawDouble = hotel.roomTypes?.double?.pricePerNight;
-            const doubleEur = typeof rawDouble === 'number' ? rawDouble : rawDouble?.eur ?? 180;
-            const doubleTnd = typeof rawDouble === 'number' ? Math.round(rawDouble * 3.3) : rawDouble?.tnd ?? 595;
+            // Availability stats
+            const singleAvail = (hotel.roomTypes?.single?.totalInventory ?? 90) - (hotel.roomTypes?.single?.blockedInventory ?? 15);
+            const doubleAvail = (hotel.roomTypes?.double?.totalInventory ?? 130) - (hotel.roomTypes?.double?.blockedInventory ?? 20);
 
             return (
               <div
                 key={hotel.id}
-                className="palace-card rounded-2xl overflow-hidden border border-[#D4AF37]/30 shadow-2xl transition-all"
+                className="inst-card overflow-hidden shadow-xs hover:shadow-md transition-shadow"
               >
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
                   
                   {/* Photo Gallery Column (5 cols) */}
-                  <div className="lg:col-span-5 relative bg-[#04070E] min-h-[360px] sm:min-h-[440px] flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-[#D4AF37]/20">
+                  <div className="lg:col-span-5 relative bg-slate-100 min-h-[340px] sm:min-h-[420px] flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-200">
                     
                     {/* Active Photo Container */}
                     <div className="relative w-full h-full flex-1 overflow-hidden group">
                       <img
                         src={hotel.photos[currentPhotoIdx]?.url}
                         alt={hotel.photos[currentPhotoIdx]?.caption?.[lang] || hotel.name}
-                        className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                        className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-102"
                       />
                       
-                      {/* Rich Mediterranean Vignette */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#050811] via-transparent to-black/40 pointer-events-none"></div>
+                      {/* Gradient for caption legibility */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/30 pointer-events-none"></div>
 
                       {/* Photo Navigation Controls */}
                       <button
                         type="button"
                         onClick={() => prevPhoto(hotel.id, hotel.photos.length)}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-[#060B14]/80 hover:bg-[#D4AF37] text-white hover:text-[#060B14] backdrop-blur border border-white/20 transition-all cursor-pointer"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 hover:bg-white text-slate-800 shadow-md transition-all cursor-pointer"
                         title="Photo précédente"
                       >
                         <ChevronLeft className="w-4 h-4" />
@@ -126,7 +127,7 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
                       <button
                         type="button"
                         onClick={() => nextPhoto(hotel.id, hotel.photos.length)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-[#060B14]/80 hover:bg-[#D4AF37] text-white hover:text-[#060B14] backdrop-blur border border-white/20 transition-all cursor-pointer"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 hover:bg-white text-slate-800 shadow-md transition-all cursor-pointer"
                         title="Photo suivante"
                       >
                         <ChevronRight className="w-4 h-4" />
@@ -134,35 +135,35 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
 
                       {/* Official Designation Badges */}
                       <div className="absolute top-4 left-4 flex items-center gap-2">
-                        <span className="px-3 py-1 rounded bg-[#060B14]/90 backdrop-blur border border-[#D4AF37]/50 text-[#F5E8C7] font-bold text-xs flex items-center gap-1.5">
-                          <Award className="w-3.5 h-3.5 text-[#D4AF37]" />
+                        <span className="px-3 py-1 rounded-md bg-white/95 text-[#03396C] font-bold text-xs flex items-center gap-1.5 shadow-xs">
+                          <Award className="w-3.5 h-3.5 text-amber-500" />
                           <span>5 ★★★★★ LUXE</span>
                         </span>
-                        <span className="px-2.5 py-1 rounded bg-[#121F38]/90 backdrop-blur text-[#D4AF37] font-mono text-[10px] font-bold uppercase tracking-wider border border-[#D4AF37]/30">
+                        <span className="px-2.5 py-1 rounded-md bg-[#03396C]/90 text-white font-mono text-[10px] font-bold uppercase tracking-wider">
                           {hotel.id === 'el-mouradi-gammarth' ? 'VILLAGE ATHLÈTES' : 'QG OFFICIEL & VIP'}
                         </span>
                       </div>
 
                       {/* Photo Caption & Counter */}
-                      <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-xs text-slate-200">
-                        <span className="font-semibold truncate pr-2 drop-shadow">
+                      <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-xs text-white">
+                        <span className="font-medium truncate pr-2 drop-shadow-sm">
                           {hotel.photos[currentPhotoIdx]?.caption?.[lang] || ''}
                         </span>
-                        <span className="px-2 py-0.5 rounded bg-black/80 font-mono text-[10px] shrink-0 border border-white/10 font-bold text-[#F5E8C7]">
+                        <span className="px-2 py-0.5 rounded bg-black/70 font-mono text-[10px] shrink-0 font-bold">
                           {currentPhotoIdx + 1} / {hotel.photos.length}
                         </span>
                       </div>
                     </div>
 
-                    {/* Thumbnail Strip with Real Authentic Photos */}
-                    <div className="p-2.5 bg-[#03060C] border-t border-[#D4AF37]/20 flex items-center gap-2 overflow-x-auto">
+                    {/* Thumbnail Strip with Real Photos */}
+                    <div className="p-2.5 bg-slate-900 flex items-center gap-2 overflow-x-auto">
                       {hotel.photos.map((photo, pIdx) => (
                         <button
                           key={pIdx}
                           type="button"
                           onClick={() => setPhotoIndexes(prev => ({ ...prev, [hotel.id]: pIdx }))}
-                          className={`relative rounded overflow-hidden w-16 h-11 shrink-0 border-2 transition-all cursor-pointer ${
-                            currentPhotoIdx === pIdx ? 'border-[#D4AF37] scale-105 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'
+                          className={`relative rounded-md overflow-hidden w-16 h-11 shrink-0 border-2 transition-all cursor-pointer ${
+                            currentPhotoIdx === pIdx ? 'border-[#C8102E] scale-105 opacity-100' : 'border-transparent opacity-60 hover:opacity-100'
                           }`}
                         >
                           <img src={photo.url} alt="" className="w-full h-full object-cover" />
@@ -173,55 +174,55 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
                   </div>
 
                   {/* Hotel Details Column (7 cols) */}
-                  <div className="lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between space-y-6">
+                  <div className="lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between space-y-6 bg-white">
                     <div>
                       
                       {/* Category Tagline & Google Maps Button */}
                       <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded text-[11px] font-bold uppercase tracking-wider bg-[#0C1527] border border-[#D4AF37]/30 text-[#F5E8C7]">
-                          <ShieldCheck className="w-3.5 h-3.5 text-[#D4AF37]" />
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs font-semibold bg-blue-50 text-[#03396C] border border-blue-200">
+                          <ShieldCheck className="w-3.5 h-3.5 text-[#03396C]" />
                           <span>{hotel.id === 'el-mouradi-gammarth' ? 'Village Officiel des Délégations & Athlètes' : 'QG Directoire Technique, Arbitres & Officiels'}</span>
                         </span>
                         
                         <button
                           type="button"
                           onClick={() => setSelectedMapHotel(hotel)}
-                          className="inline-flex items-center gap-1 text-xs text-[#D4AF37] hover:text-[#F5E8C7] font-bold transition-colors cursor-pointer group"
+                          className="inline-flex items-center gap-1.5 text-xs text-[#03396C] hover:text-[#005B96] font-semibold transition-colors cursor-pointer group"
                         >
-                          <MapPin className="w-3.5 h-3.5 text-rose-400 group-hover:scale-110 transition-transform" />
+                          <MapPin className="w-3.5 h-3.5 text-[#C8102E]" />
                           <span className="underline underline-offset-4">Voir sur Google Maps</span>
-                          <ExternalLink className="w-3 h-3" />
+                          <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-[#03396C]" />
                         </button>
                       </div>
 
                       {/* Hotel Name */}
-                      <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight uppercase font-heading">
+                      <h3 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight">
                         {hotel.name}
                       </h3>
-                      <p className="text-xs font-bold text-[#D4AF37] mt-1 mb-4 font-mono">
+                      <p className="text-xs font-bold text-slate-500 mt-1 mb-4">
                         {hotel.tagline?.[lang] || ''}
                       </p>
 
                       {/* Distance to Radès Competition Venue Banner */}
-                      <div className="p-3.5 rounded-xl bg-[#091322] border border-[#D4AF37]/25 mb-5 flex flex-wrap items-center justify-between gap-3 text-xs">
-                        <div className="flex items-center gap-2 text-slate-200">
-                          <MapPin className="w-4 h-4 text-rose-400 shrink-0" />
+                      <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 mb-5 flex flex-wrap items-center justify-between gap-3 text-xs">
+                        <div className="flex items-center gap-2 text-slate-700">
+                          <MapPin className="w-4 h-4 text-[#C8102E] shrink-0" />
                           <span>
-                            <strong>Salle de Radès :</strong> <span className="font-mono text-[#F5E8C7] font-bold">{hotel.competitionDistance.distanceKm} km</span>
+                            <strong>Salle de Radès :</strong> <span className="font-mono text-slate-900 font-bold">{hotel.competitionDistance.distanceKm} km</span>
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 text-slate-200 font-mono">
-                          <Clock className="w-4 h-4 text-[#D4AF37] shrink-0" />
+                        <div className="flex items-center gap-2 text-slate-700 font-mono">
+                          <Clock className="w-4 h-4 text-[#03396C] shrink-0" />
                           <span>~{hotel.competitionDistance.travelTimeMin} min de route directe</span>
                         </div>
-                        <div className="flex items-center gap-2 text-emerald-400 font-bold">
+                        <div className="flex items-center gap-2 text-emerald-700 font-semibold">
                           <Bus className="w-4 h-4 shrink-0" />
                           <span>Navette FIE toutes les 20 min</span>
                         </div>
                       </div>
 
                       {/* Editorial Hotel Description */}
-                      <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-5">
+                      <p className="text-sm text-slate-600 leading-relaxed mb-5">
                         {hotel.description?.[lang] || ''}
                       </p>
 
@@ -230,10 +231,10 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
                         {hotel.amenities?.slice(0, 6).map((amenity, aIdx) => (
                           <div
                             key={aIdx}
-                            className="flex items-center gap-2 p-2 rounded bg-[#070D18] border border-white/[0.06] text-[11px] text-slate-300 font-medium"
+                            className="flex items-center gap-2 p-2 rounded-md bg-slate-50 border border-slate-200 text-xs text-slate-700 font-medium"
                           >
-                            <Sparkles className="w-3 h-3 text-[#D4AF37] shrink-0" />
-                            <span className="truncate">{amenity.label?.[lang] || (amenity as any).name?.[lang] || (amenity as any).label || ''}</span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#03396C] shrink-0"></span>
+                            <span className="truncate">{amenity.label?.[lang] || (amenity as any).name?.[lang] || ''}</span>
                           </div>
                         ))}
                       </div>
@@ -241,63 +242,69 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
                     </div>
 
                     {/* Room Types & Official Negotiated Rates Strip */}
-                    <div className="border-t border-[#D4AF37]/20 pt-5">
-                      <div className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center justify-between">
-                        <span>Tarifs Officiels Négociés FIE (TTC &amp; Buffet Inclus)</span>
-                        <span className="text-[#D4AF37]">Par nuitée</span>
+                    <div className="border-t border-slate-200 pt-5">
+                      <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 flex items-center justify-between">
+                        <span>Tarifs Officiels Négociés FIE (TTC &amp; Buffets Inclus)</span>
+                        <span className="text-[#03396C] font-semibold">Par nuitée</span>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                         
                         {/* Single Room */}
-                        <div className="p-3.5 rounded-xl bg-[#091120] border border-[#D4AF37]/30 flex items-center justify-between">
+                        <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between">
                           <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded bg-[#101C32] border border-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37]">
+                            <div className="w-8 h-8 rounded bg-white border border-slate-200 flex items-center justify-center text-[#03396C] shadow-xs">
                               <Bed className="w-4 h-4" />
                             </div>
                             <div>
-                              <div className="text-xs font-bold text-white uppercase">Chambre Single</div>
-                              <div className="text-[10px] text-slate-400">1 Athlète / Officiel</div>
+                              <div className="text-xs font-bold text-slate-900">Chambre Single</div>
+                              <div className="text-[11px] text-slate-500">1 Athlète / Officiel</div>
+                              <div className="text-[10px] text-emerald-700 font-semibold mt-0.5">
+                                {singleAvail} chambres disp.
+                              </div>
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className="text-base font-black text-[#F5E8C7] font-mono tabular-price">
-                              {singleEur} €
+                            <div className="text-base font-black text-[#0F172A] font-mono tabular-price">
+                              {singlePriceEur} €
                             </div>
-                            <div className="text-[10px] text-[#C59B27] font-mono font-bold">
-                              {singleTnd} TND
+                            <div className="text-[11px] text-slate-500 font-mono">
+                              ~{singlePriceTnd} TND
                             </div>
                           </div>
                         </div>
 
                         {/* Double Room */}
-                        <div className="p-3.5 rounded-xl bg-[#091120] border border-[#D4AF37]/30 flex items-center justify-between">
+                        <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between">
                           <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded bg-[#101C32] border border-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37]">
+                            <div className="w-8 h-8 rounded bg-white border border-slate-200 flex items-center justify-center text-[#03396C] shadow-xs">
                               <BedDouble className="w-4 h-4" />
                             </div>
                             <div>
-                              <div className="text-xs font-bold text-white uppercase">Chambre Double</div>
-                              <div className="text-[10px] text-slate-400">2 Lits séparés Twin</div>
+                              <div className="text-xs font-bold text-slate-900">Chambre Double</div>
+                              <div className="text-[11px] text-slate-500">2 Lits séparés Twin</div>
+                              <div className="text-[10px] text-emerald-700 font-semibold mt-0.5">
+                                {doubleAvail} chambres disp.
+                              </div>
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className="text-base font-black text-[#F5E8C7] font-mono tabular-price">
-                              {doubleEur} €
+                            <div className="text-base font-black text-[#0F172A] font-mono tabular-price">
+                              {doublePriceEur} €
                             </div>
-                            <div className="text-[10px] text-[#C59B27] font-mono font-bold">
-                              {doubleTnd} TND
+                            <div className="text-[11px] text-slate-500 font-mono">
+                              ~{doublePriceTnd} TND
                             </div>
                           </div>
                         </div>
 
                       </div>
 
-                      {/* Official Cash upon Check-in Notice */}
-                      <div className="p-3 rounded-lg bg-[#0E1B32] border border-[#D4AF37]/40 mb-4 flex items-center gap-3">
-                        <Banknote className="w-4 h-4 text-[#D4AF37] shrink-0" />
-                        <span className="text-[11px] text-slate-200">
-                          <strong>Paiement Officiel FIE :</strong> 100% en espèces (Euros € ou Dinars TND) lors de votre arrivée / check-in sur place.
+                      {/* Payment Methods Notice (Stripe, Transfer, Onsite) */}
+                      <div className="p-3 rounded-lg bg-blue-50/70 border border-blue-200 mb-4 flex items-center gap-3">
+                        <CreditCard className="w-4 h-4 text-[#03396C] shrink-0" />
+                        <span className="text-xs text-slate-700">
+                          <strong>Paiement au choix :</strong> Carte bancaire en ligne (Stripe), virement bancaire pour les délégations, ou règlement sur place au bureau d'accréditation.
                         </span>
                       </div>
 
@@ -305,9 +312,9 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
                       <button
                         type="button"
                         onClick={() => onSelectHotel(hotel.id)}
-                        className="w-full py-3.5 px-6 rounded-xl bg-[#D4AF37] hover:bg-[#C59B27] text-[#060B14] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl shadow-black/50 transition-all cursor-pointer"
+                        className="w-full btn-primary cursor-pointer text-sm font-semibold py-3"
                       >
-                        <span>Réserver à {hotel.name}</span>
+                        <span>Réserver à l'{hotel.name}</span>
                         <ChevronRight className="w-4 h-4" />
                       </button>
 

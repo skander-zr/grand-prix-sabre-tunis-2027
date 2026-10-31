@@ -16,13 +16,11 @@ import {
   AlertCircle,
   FileText,
   Users,
-  Shield,
-  ExternalLink,
+  ShieldCheck,
   Save,
   X,
-  Swords,
-  QrCode,
-  Award
+  Printer,
+  CreditCard
 } from 'lucide-react';
 import { VoucherModal } from './VoucherModal';
 import { toast } from 'sonner';
@@ -39,13 +37,14 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
   const { lang, t } = useLanguage();
   const { getReservation, hotels, updateFlightInfo } = useReservation();
 
-  const [searchCode, setSearchCode] = useState(initialCode || 'GPS2027-FR48');
+  const [searchCode, setSearchCode] = useState(initialCode);
   const [activeReservation, setActiveReservation] = useState<Reservation | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
 
   // Flight Edit Modal
   const [isEditingFlight, setIsEditingFlight] = useState(false);
   const [editFlightData, setEditFlightData] = useState<Partial<ShuttleDetails>>({
+    airport: 'TUN',
     arrivalAirline: '',
     arrivalFlightNumber: '',
     arrivalDateTime: '',
@@ -67,7 +66,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
     const res = getReservation(code);
     if (res) {
       setActiveReservation(res);
-      toast.success(`Dossier ${res.id} chargé avec succès !`);
+      toast.success(`Dossier ${res.id} chargé avec succès.`);
     } else {
       setActiveReservation(null);
       toast.error('Aucune réservation trouvée pour ce code.');
@@ -78,17 +77,16 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
     if (initialCode) {
       setSearchCode(initialCode);
       handleSearch(initialCode);
-    } else {
-      handleSearch('GPS2027-FR48');
     }
   }, [initialCode]);
 
   const handleOpenEditFlight = () => {
     if (!activeReservation?.shuttle) {
-      toast.info('Aucune navette configurée.');
+      toast.info('Aucune navette configurée pour ce dossier.');
       return;
     }
     setEditFlightData({
+      airport: activeReservation.shuttle.airport || 'TUN',
       arrivalAirline: activeReservation.shuttle.arrivalAirline || '',
       arrivalFlightNumber: activeReservation.shuttle.arrivalFlightNumber || '',
       arrivalDateTime: activeReservation.shuttle.arrivalDateTime || '',
@@ -106,410 +104,376 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
 
     const success = updateFlightInfo(activeReservation.id, editFlightData);
     if (success) {
-      const updated = getReservation(activeReservation.id);
-      if (updated) setActiveReservation(updated);
+      setActiveReservation({
+        ...activeReservation,
+        shuttle: {
+          ...activeReservation.shuttle!,
+          ...editFlightData
+        }
+      });
       setIsEditingFlight(false);
+      toast.success('Coordonnées de vol mises à jour avec succès.');
     }
   };
 
-  const selectedHotel: Hotel | null = activeReservation ? hotels[activeReservation.hotelId] : null;
+  const hotel = activeReservation ? hotels[activeReservation.hotelId] : null;
 
   return (
-    <section id="client-section" className="py-14 sm:py-20 bg-[#050811] text-white piste-bg">
+    <section id="client-portal-section" className="py-12 sm:py-16 bg-[#F8FAFC]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 border-b border-[#D4AF37]/25 pb-6">
+        {/* Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-6 border-b border-slate-200">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#091222] border border-[#D4AF37]/40 text-[#F5E8C7] text-xs font-bold uppercase tracking-wider mb-2">
-              <Swords className="w-3.5 h-3.5 text-[#D4AF37]" />
-              <span>Espace Délégations &amp; Athlètes FIE</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-blue-50 border border-blue-200 text-[#03396C] text-xs font-semibold mb-2.5">
+              <FileText className="w-3.5 h-3.5" />
+              <span>Espace Délégations &bull; Suivi de Dossier Officiel</span>
             </div>
-            <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight uppercase font-heading">
-              Mon Dossier &amp; Voucher Tournoi
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight">
+              Mes Réservations &amp; Documents Officiels
             </h2>
-            <p className="mt-1 text-xs sm:text-sm text-slate-300 max-w-2xl font-medium leading-relaxed">
-              Consultez vos réservations hôtelières 5★ à Gammarth, la coordination de vos transferts à l'Aéroport Tunis-Carthage (TUN), téléchargez votre voucher officiel A4 avec QR Code d'accréditation et mettez à jour vos numéros de vol.
+            <p className="mt-1.5 text-sm text-slate-600 max-w-3xl leading-relaxed">
+              Consultez les détails de votre hébergement 5★, téléchargez vos vouchers et factures officiels avec QR Code, et ajustez vos coordonnées de vol à tout moment.
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-mono text-[#F5E8C7] font-bold bg-[#091222] px-3.5 py-2 rounded-xl border border-[#D4AF37]/30">
-              Permanence FIE / FTE : +216 71 840 500
-            </span>
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 bg-white px-3.5 py-2.5 rounded-xl border border-slate-200 shadow-xs">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+            <span>Portail Accréditation Sécurisé</span>
           </div>
         </div>
 
-        {/* Search Bar & Quick Picks */}
-        <div className="max-w-3xl mx-auto mb-10">
-          <div className="palace-card rounded-2xl p-5 sm:p-7 border border-[#D4AF37]/35 shadow-2xl">
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-2">
-              Saisissez votre Référence Officielle (Format GPS2027-XXXX)
-            </label>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
-                <input
-                  type="text"
-                  value={searchCode}
-                  onChange={(e) => setSearchCode(e.target.value.toUpperCase())}
-                  placeholder="Ex: GPS2027-FR48 ou GPS2027-IT92"
-                  className="w-full bg-[#060B14] border border-[#D4AF37]/30 rounded-xl pl-10 pr-4 py-3 text-sm sm:text-base font-mono uppercase tracking-widest text-[#F5E8C7] font-bold placeholder:text-slate-600 focus:outline-none focus:border-[#D4AF37]"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => handleSearch()}
-                className="px-6 py-3 rounded-xl bg-[#D4AF37] hover:bg-[#C59B27] text-[#060B14] font-black text-xs uppercase tracking-wider shadow-lg transition-all cursor-pointer"
-              >
-                Rechercher Dossier
-              </button>
-            </div>
-
-            {/* Quick demo pills */}
-            <div className="mt-3.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-              <span>Dossiers d'équipes enregistrés :</span>
-              <button
-                type="button"
-                onClick={() => { setSearchCode('GPS2027-FR48'); handleSearch('GPS2027-FR48'); }}
-                className="px-2.5 py-1 rounded-lg bg-[#091122] hover:bg-[#101C32] text-[#F5E8C7] font-mono text-[11px] border border-[#D4AF37]/30 cursor-pointer font-bold"
-              >
-                🇫🇷 FFE France (10 pers)
-              </button>
-              <button
-                type="button"
-                onClick={() => { setSearchCode('GPS2027-IT92'); handleSearch('GPS2027-IT92'); }}
-                className="px-2.5 py-1 rounded-lg bg-[#091122] hover:bg-[#101C32] text-[#F5E8C7] font-mono text-[11px] border border-[#D4AF37]/30 cursor-pointer font-bold"
-              >
-                🇮🇹 FIS Italie (8 pers)
-              </button>
-              <button
-                type="button"
-                onClick={() => { setSearchCode('GPS2027-TN01'); handleSearch('GPS2027-TN01'); }}
-                className="px-2.5 py-1 rounded-lg bg-[#091122] hover:bg-[#101C32] text-[#F5E8C7] font-mono text-[11px] border border-[#D4AF37]/30 cursor-pointer font-bold"
-              >
-                🇹🇳 Ferjani (Tunisie)
-              </button>
-              <button
-                type="button"
-                onClick={() => { setSearchCode('GPS2027-US15'); handleSearch('GPS2027-US15'); }}
-                className="px-2.5 py-1 rounded-lg bg-[#091122] hover:bg-[#101C32] text-[#F5E8C7] font-mono text-[11px] border border-[#D4AF37]/30 cursor-pointer font-bold"
-              >
-                🇺🇸 US Fencing (7 pers)
-              </button>
-            </div>
+        {/* Search Bar */}
+        <div className="max-w-2xl mx-auto inst-card p-6 sm:p-8 mb-10">
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+            Rechercher un dossier par code unique
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={searchCode}
+              onChange={(e) => setSearchCode(e.target.value)}
+              placeholder="ex: GPS2027-FR48"
+              className="flex-1 px-4 py-3 font-mono font-bold uppercase tracking-wider text-sm"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSearch();
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => handleSearch()}
+              className="btn-primary cursor-pointer text-sm font-semibold px-6"
+            >
+              <Search className="w-4 h-4" />
+              <span>Consulter</span>
+            </button>
           </div>
+          <span className="text-[11px] text-slate-500 mt-2 block">
+            Saisissez le code de réservation à 11 caractères délivré lors de votre confirmation.
+          </span>
         </div>
 
-        {/* Loaded Reservation Display */}
-        {activeReservation && selectedHotel && (
-          <div className="space-y-8 animate-fadeIn">
+        {/* Display Verified Reservation File */}
+        {activeReservation && hotel && (
+          <div className="space-y-8 animate-fadeIn max-w-5xl mx-auto">
             
-            {/* Top Pass Card: Olympic / FIE Official Accreditation Pass */}
-            <div className="palace-card rounded-2xl p-6 sm:p-8 border border-[#D4AF37]/45 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-6">
-              
-              <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="text-2xl sm:text-3xl font-black font-mono text-[#F5E8C7] tracking-wider">
-                    {activeReservation.id}
-                  </span>
-                  <span className="px-3 py-1 rounded text-xs font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                    {activeReservation.status === 'confirmed' ? '✓ RÉSERVATION CONFIRMÉE' : activeReservation.status}
-                  </span>
-                  <span className="px-3 py-1 rounded text-xs font-mono font-bold uppercase tracking-wider bg-[#0C1527] text-[#D4AF37] border border-[#D4AF37]/40">
-                    Règlement : 100% Cash sur Place (€ / TND)
-                  </span>
+            {/* Top Pass / File Summary Card */}
+            <div className="inst-card p-6 sm:p-8 border-t-4 border-t-[#03396C]">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-[#03396C] text-white flex flex-col items-center justify-center font-bold">
+                    <span className="text-sm font-black">FIE</span>
+                    <span className="text-[9px] text-blue-200 uppercase font-mono">2027</span>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2.5">
+                      <h3 className="text-xl sm:text-2xl font-black text-[#0F172A] font-mono tracking-wider">
+                        {activeReservation.id}
+                      </h3>
+                      <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Confirmé</span>
+                      </span>
+                    </div>
+                    <div className="text-sm font-semibold text-slate-700 mt-0.5">
+                      {activeReservation.type === 'group'
+                        ? activeReservation.federationGroup?.federationName
+                        : `${activeReservation.individualLead?.firstName} ${activeReservation.individualLead?.lastName}`}
+                      {' '}&bull; {activeReservation.federationGroup?.country || activeReservation.individualLead?.nationality}
+                    </div>
+                  </div>
                 </div>
 
-                <div className="text-sm font-bold text-white">
-                  Délégation / Titulaire : <span className="text-[#F5E8C7] text-base">{activeReservation.type === 'group' ? activeReservation.federationGroup?.federationName : `${activeReservation.individualLead?.firstName} ${activeReservation.individualLead?.lastName}`}</span>
-                </div>
-                <div className="text-xs text-slate-400">
-                  Enregistré pour le <strong>Grand Prix Sabre Tunis 2027</strong> &bull; Salle Omnisports de Radès &bull; Hôtels 5★ Gammarth
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex flex-wrap items-center gap-3 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setIsVoucherOpen(true)}
-                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#D4AF37] hover:bg-[#C59B27] text-[#060B14] font-black text-xs uppercase tracking-wider shadow-xl transition-all cursor-pointer"
-                >
-                  <FileText className="w-4 h-4" />
-                  <span>Imprimer Voucher A4 Officiel</span>
-                </button>
-
-                {activeReservation.hasShuttle ? (
+                {/* PDF Actions */}
+                <div className="flex flex-wrap items-center gap-2.5">
                   <button
                     type="button"
-                    onClick={handleOpenEditFlight}
-                    className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-[#0F1A2E] hover:bg-[#14233C] text-white font-bold text-xs uppercase tracking-wider transition-colors border border-[#D4AF37]/30 cursor-pointer"
+                    onClick={() => setIsVoucherOpen(true)}
+                    className="btn-primary cursor-pointer text-xs font-semibold px-4 py-2.5"
                   >
-                    <Edit className="w-4 h-4 text-[#D4AF37]" />
-                    <span>Modifier Coordonnées Vol</span>
+                    <Printer className="w-4 h-4" />
+                    <span>Imprimer Voucher &amp; Facture A4</span>
                   </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => onGoToShuttleBooking?.(activeReservation.id)}
-                    className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-[#121F38] hover:bg-[#1A2C4C] text-[#F5E8C7] border border-[#D4AF37]/40 font-bold text-xs uppercase tracking-wider transition-colors shadow-md"
-                  >
-                    <Bus className="w-4 h-4 text-[#D4AF37]" />
-                    <span>Réserver la Navette Aéroport TUN</span>
-                  </button>
-                )}
-              </div>
-
-            </div>
-
-            {/* Split Cards: Hotel & Shuttle */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              
-              {/* Hotel Summary */}
-              <div className="palace-card rounded-2xl p-6 sm:p-8 space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-[#D4AF37]/20">
-                  <div className="flex items-center gap-2 text-sm font-black uppercase tracking-tight text-white font-heading">
-                    <Building2 className="w-5 h-5 text-[#D4AF37]" />
-                    <span>Hébergement Officiel Attribué</span>
-                  </div>
-                  <span className="text-xs text-[#D4AF37] font-bold">5 ★★★★★</span>
-                </div>
-
-                <div className="space-y-1">
-                  <div className="text-xl font-black text-white uppercase font-heading">{selectedHotel.name}</div>
-                  <div className="text-xs text-slate-400">{selectedHotel.location}</div>
-                  <div className="p-2.5 rounded-lg bg-[#060B14] border border-[#D4AF37]/20 text-xs text-slate-300 mt-2">
-                    Trajet vers la Salle de Radès : <strong>{selectedHotel.competitionDistance.distanceKm} km</strong> (~{selectedHotel.competitionDistance.travelTimeMin} min via navettes FIE directes)
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-3 py-3 border-y border-[#D4AF37]/20 text-xs font-mono">
-                  <div>
-                    <span className="text-slate-400 block text-[10px] uppercase font-sans">Arrivée</span>
-                    <strong className="text-white">{activeReservation.checkInDate}</strong>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 block text-[10px] uppercase font-sans">Départ</span>
-                    <strong className="text-white">{activeReservation.checkOutDate}</strong>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 block text-[10px] uppercase font-sans">Durée</span>
-                    <strong className="text-[#F5E8C7]">{activeReservation.nightsCount} nuits</strong>
-                  </div>
-                </div>
-
-                <div className="text-xs space-y-1">
-                  <div className="text-slate-400">Chambres attribuées :</div>
-                  <div className="font-bold text-white text-sm">
-                    {activeReservation.singleRoomCount > 0 && `${activeReservation.singleRoomCount} Chambre(s) Single`}
-                    {activeReservation.singleRoomCount > 0 && activeReservation.doubleRoomCount > 0 && ' • '}
-                    {activeReservation.doubleRoomCount > 0 && `${activeReservation.doubleRoomCount} Chambre(s) Double / Twin`}
-                  </div>
-                  <div className="text-slate-300 pt-1">
-                    Montant à Régler : <strong className="text-[#F5E8C7] font-mono text-base">{activeReservation.totalAmount} € (~{Math.round(activeReservation.totalAmount * 3.35)} TND)</strong> &bull; <span className="text-emerald-400 font-semibold">En Espèces (Cash) au Check-in</span>
-                  </div>
                 </div>
               </div>
 
-              {/* Shuttle Summary */}
-              <div className="palace-card rounded-2xl p-6 sm:p-8 space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-[#D4AF37]/20">
-                  <div className="flex items-center gap-2 text-sm font-black uppercase tracking-tight text-white font-heading">
-                    <Bus className="w-5 h-5 text-[#D4AF37]" />
-                    <span>Navette &amp; Transfert Aéroport TUN</span>
+              {/* Grid 3 Columns: Hotel, Pricing, Shuttle */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
+                
+                {/* 1. Hotel & Stay */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    <Building2 className="w-4 h-4 text-[#03396C]" />
+                    <span>Hébergement 5★ Retenu</span>
                   </div>
-                  {activeReservation.hasShuttle ? (
-                    <span className="text-xs font-bold text-emerald-300 bg-emerald-950/80 border border-emerald-600/40 px-2.5 py-0.5 rounded font-mono">
-                      ✓ CONFIRMÉ (TUN)
-                    </span>
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
+                    <strong className="text-sm text-[#0F172A] block">{hotel.name}</strong>
+                    <div className="text-slate-600">{hotel.location}</div>
+                    <div className="text-slate-700 font-mono pt-1">
+                      Du <strong>{activeReservation.checkInDate}</strong> au <strong>{activeReservation.checkOutDate}</strong> ({activeReservation.nightsCount} nuits)
+                    </div>
+                    <div className="text-slate-600 pt-1">
+                      {activeReservation.singleRoomCount > 0 && `${activeReservation.singleRoomCount} Single `}
+                      {activeReservation.doubleRoomCount > 0 && `• ${activeReservation.doubleRoomCount} Double (Twin)`}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Financial & Payment */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    <CreditCard className="w-4 h-4 text-[#03396C]" />
+                    <span>Règlement &amp; Facturation</span>
+                  </div>
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5 font-mono">
+                    <div className="flex justify-between text-slate-600">
+                      <span>Total Séjour TTC :</span>
+                      <strong className="text-[#0F172A] text-sm">{activeReservation.totalAmount} €</strong>
+                    </div>
+                    <div className="flex justify-between text-slate-600">
+                      <span>Équivalent local :</span>
+                      <span>~{Math.round(activeReservation.totalAmount * 3.3)} TND</span>
+                    </div>
+                    <div className="pt-2 border-t border-slate-200 flex justify-between items-center">
+                      <span className="text-slate-600">Mode :</span>
+                      <span className="font-sans font-bold text-xs text-[#03396C]">
+                        {activeReservation.paymentMethod === 'stripe_card' && 'Carte Bancaire (Stripe)'}
+                        {activeReservation.paymentMethod === 'bank_transfer' && 'Virement Bancaire FIE'}
+                        {activeReservation.paymentMethod === 'onsite_federation' && 'Règlement sur Place'}
+                      </span>
+                    </div>
+                    <div className="text-emerald-700 font-sans font-semibold text-[11px] flex items-center gap-1 pt-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>
+                        {activeReservation.paymentStatus === 'paid' ? 'Payé & Encaissé' : 'Enregistré & Validé'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. Airport Shuttle Status */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      <Bus className="w-4 h-4 text-[#03396C]" />
+                      <span>Transfert Aéroport</span>
+                    </div>
+                    {activeReservation.hasShuttle && (
+                      <button
+                        type="button"
+                        onClick={handleOpenEditFlight}
+                        className="text-xs text-[#03396C] hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                      >
+                        <Edit className="w-3 h-3" />
+                        <span>Modifier vol</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {activeReservation.hasShuttle && activeReservation.shuttle ? (
+                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Aéroport :</span>
+                        <strong className="text-slate-900 font-mono">{activeReservation.shuttle.airport}</strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Trajet :</span>
+                        <strong className="text-slate-900 capitalize">{activeReservation.shuttle.tripType}</strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Vol Arrivée :</span>
+                        <strong className="text-slate-900 font-mono">
+                          {activeReservation.shuttle.arrivalFlightNumber || 'N/A'} ({activeReservation.shuttle.arrivalDateTime ? activeReservation.shuttle.arrivalDateTime.replace('T', ' ') : 'N/A'})
+                        </strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">WhatsApp chauffeur :</span>
+                        <strong className="text-slate-900 font-mono">{activeReservation.shuttle.driverWhatsApp}</strong>
+                      </div>
+                      <div className="pt-2 border-t border-slate-200 text-emerald-700 font-semibold text-[11px] flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Véhicule assigné : {activeReservation.shuttle.assignedVehicle || 'Minibus Officiel FIE'}</span>
+                      </div>
+                    </div>
                   ) : (
-                    <span className="text-xs font-bold text-[#D4AF37] bg-[#0E1728] border border-[#D4AF37]/30 px-2.5 py-0.5 rounded">
-                      Non Programmée
-                    </span>
+                    <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 text-xs text-amber-900 space-y-2">
+                      <p>Aucune navette aéroport n'a encore été programmée pour ce dossier.</p>
+                      <button
+                        type="button"
+                        onClick={() => onGoToShuttleBooking?.(activeReservation.id)}
+                        className="w-full btn-primary text-xs py-2"
+                      >
+                        Programmer ma Navette Maintenant
+                      </button>
+                    </div>
                   )}
                 </div>
 
-                {activeReservation.hasShuttle && activeReservation.shuttle ? (
-                  <div className="space-y-4 text-xs">
-                    
-                    <div className="p-3.5 rounded-xl bg-[#060B14] border border-[#D4AF37]/25 flex items-center justify-between">
-                      <div>
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-[#D4AF37]">Code Convoi FIE :</div>
-                        <div className="font-mono text-sm font-bold text-white">{activeReservation.shuttle.assignedGroupCode || 'SHT-TUN-OPT'}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Véhicule Assigné :</div>
-                        <div className="font-bold text-[#F5E8C7]">{activeReservation.shuttle.assignedVehicle || 'Minibus Mercedes Sprinter'}</div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 text-slate-300 font-mono">
-                      <div>
-                        <span className="text-slate-500 block text-[10px] uppercase font-sans">Aéroport Officiel</span>
-                        <strong className="text-white font-sans">Tunis-Carthage (TUN)</strong>
-                      </div>
-                      <div>
-                        <span className="text-slate-500 block text-[10px] uppercase font-sans">Passagers / Sacs armes</span>
-                        <strong className="text-white font-sans">{activeReservation.shuttle.passengerCount} pers. &bull; {activeReservation.shuttle.weaponBagsCount} housses 1m40</strong>
-                      </div>
-                      <div>
-                        <span className="text-slate-500 block text-[10px] uppercase font-sans">Vol Arrivée</span>
-                        <strong className="text-white font-sans">{activeReservation.shuttle.arrivalAirline} {activeReservation.shuttle.arrivalFlightNumber}</strong>
-                        <div className="text-[10px] text-slate-400">{activeReservation.shuttle.arrivalDateTime?.replace('T', ' à ')}</div>
-                      </div>
-                      <div>
-                        <span className="text-slate-500 block text-[10px] uppercase font-sans">Vol Départ</span>
-                        <strong className="text-white font-sans">{activeReservation.shuttle.departureAirline || 'N/A'} {activeReservation.shuttle.departureFlightNumber || ''}</strong>
-                        <div className="text-[10px] text-slate-400">{activeReservation.shuttle.departureDateTime?.replace('T', ' à ') || 'Non renseigné'}</div>
-                      </div>
-                    </div>
-
-                    {/* Driver Direct Contact */}
-                    <div className="p-3.5 rounded-xl bg-[#081224] border border-[#D4AF37]/25 flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <Phone className="w-4 h-4 text-[#D4AF37]" />
-                        <div>
-                          <div className="font-bold text-white text-xs">Chauffeur / Desk Accueil FTE (TUN)</div>
-                          <div className="text-slate-300 font-mono text-[11px]">{activeReservation.shuttle.driverWhatsApp}</div>
-                        </div>
-                      </div>
-                      <a
-                        href={`tel:${activeReservation.shuttle.driverWhatsApp.replace(/[^0-9+]/g, '')}`}
-                        className="px-3.5 py-1.5 rounded-lg bg-[#D4AF37] hover:bg-[#C59B27] text-[#060B14] font-bold text-xs transition-colors shadow-sm"
-                      >
-                        Appeler
-                      </a>
-                    </div>
-
-                  </div>
-                ) : (
-                  <div className="text-center py-6 text-xs text-slate-400 space-y-3">
-                    <p>Aucune navette configurée pour ce séjour.</p>
-                    <button
-                      type="button"
-                      onClick={() => onGoToShuttleBooking?.(activeReservation.id)}
-                      className="px-4 py-2 rounded-xl bg-[#D4AF37] hover:bg-[#C59B27] text-[#060B14] font-bold text-xs cursor-pointer"
-                    >
-                      Programmer ma Navette Aéroport TUN
-                    </button>
-                  </div>
-                )}
               </div>
+
+              {/* Delegation Members Roster (if Group) */}
+              {activeReservation.type === 'group' && activeReservation.federationGroup?.members && (
+                <div className="mt-8 pt-6 border-t border-slate-200">
+                  <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
+                    Membres Enregistrés de la Délégation ({activeReservation.federationGroup.members.length} participants)
+                  </h4>
+
+                  <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                        <tr>
+                          <th className="py-2.5 px-3">#</th>
+                          <th className="py-2.5 px-3">Nom &amp; Prénom</th>
+                          <th className="py-2.5 px-3">Rôle</th>
+                          <th className="py-2.5 px-3">Passeport</th>
+                          <th className="py-2.5 px-3">Chambre</th>
+                          <th className="py-2.5 px-3">Binôme de Chambre</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 text-slate-800">
+                        {activeReservation.federationGroup.members.map((m, i) => (
+                          <tr key={m.id || i} className="hover:bg-slate-50/70">
+                            <td className="py-2 px-3 text-slate-400 font-mono">{i + 1}</td>
+                            <td className="py-2 px-3 font-semibold text-slate-900">{m.firstName} {m.lastName}</td>
+                            <td className="py-2 px-3 capitalize text-slate-600">{m.role}</td>
+                            <td className="py-2 px-3 font-mono text-slate-600">{m.passportNumber || '—'}</td>
+                            <td className="py-2 px-3 font-semibold text-[#03396C]">
+                              {m.roomPreference === 'single' ? 'Chambre Single' : 'Chambre Double'}
+                            </td>
+                            <td className="py-2 px-3 text-slate-600">{m.roommateName || '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
 
             </div>
 
-            {/* Delegation Member Roster (If Group) */}
-            {activeReservation.type === 'group' && activeReservation.federationGroup?.members && (
-              <div className="palace-card rounded-2xl p-6 sm:p-8 space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-[#D4AF37]/20">
-                  <div className="flex items-center gap-2 text-sm font-black uppercase tracking-tight text-white font-heading">
-                    <Users className="w-5 h-5 text-[#D4AF37]" />
-                    <span>Feuille d'Engagement Délégation ({activeReservation.federationGroup.members.length} participants)</span>
-                  </div>
-                  <span className="text-xs text-slate-400">Chef de Délégation : {activeReservation.federationGroup.contactPersonName}</span>
-                </div>
+          </div>
+        )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                  {activeReservation.federationGroup.members.map((m, idx) => (
-                    <div key={idx} className="p-3.5 rounded-xl bg-[#060B14] border border-white/[0.08] text-xs">
-                      <div className="font-bold text-white text-sm">{m.firstName} {m.lastName}</div>
-                      <div className="text-slate-400 text-[11px] mt-0.5">
-                        Rôle : <span className="text-[#F5E8C7] font-bold uppercase">{m.role}</span>
-                      </div>
-                      <div className="text-slate-400 text-[11px]">
-                        Hébergement : <strong>{m.roomPreference === 'single' ? 'Chambre Single' : `Double (Colocataire : ${m.roommateName || 'À attribuer'})`}</strong>
-                      </div>
-                      {m.passportNumber && (
-                        <div className="text-[10px] text-slate-500 font-mono mt-1">Passeport : {m.passportNumber}</div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
+        {/* Not Found Notice */}
+        {hasSearched && !activeReservation && (
+          <div className="max-w-md mx-auto p-6 bg-white border border-slate-200 rounded-xl text-center space-y-3">
+            <AlertCircle className="w-8 h-8 text-amber-500 mx-auto" />
+            <h4 className="text-sm font-bold text-slate-900">Aucun Dossier Trouvé</h4>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Vérifiez le code de réservation saisi. Assurez-vous d'avoir finalisé votre réservation d'hôtel pour obtenir une référence GPS2027.
+            </p>
           </div>
         )}
 
       </div>
 
-      {/* Flight Modification Modal */}
+      {/* Edit Flight Information Modal */}
       {isEditingFlight && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-          <div className="relative w-full max-w-lg palace-card rounded-2xl border border-[#D4AF37]/50 shadow-2xl p-6 text-white">
-            <div className="flex items-center justify-between pb-3 border-b border-[#D4AF37]/20 mb-4">
-              <h3 className="font-heading font-black text-white text-base uppercase tracking-tight flex items-center gap-2">
-                <Plane className="w-5 h-5 text-[#D4AF37]" />
-                <span>Modifier mes coordonnées de vol (Aéroport TUN)</span>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn">
+          <div className="relative w-full max-w-lg inst-card p-6 sm:p-8 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
+              <h3 className="text-base font-bold text-[#0F172A] flex items-center gap-2">
+                <Plane className="w-4 h-4 text-[#03396C]" />
+                <span>Modifier les Informations de Vol</span>
               </h3>
               <button
+                type="button"
                 onClick={() => setIsEditingFlight(false)}
-                className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white cursor-pointer"
+                className="text-slate-400 hover:text-slate-700"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveFlight} className="space-y-4 text-xs">
+            <form onSubmit={handleSaveFlight} className="space-y-4">
               <div>
-                <label className="block text-slate-300 font-bold mb-1">Compagnie Aérienne Arrivée</label>
-                <input
-                  type="text"
-                  value={editFlightData.arrivalAirline}
-                  onChange={(e) => setEditFlightData({ ...editFlightData, arrivalAirline: e.target.value })}
-                  className="w-full bg-[#060B14] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white"
-                  required
-                />
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Aéroport de Prise en Charge *</label>
+                <select
+                  value={editFlightData.airport}
+                  onChange={(e) => setEditFlightData({ ...editFlightData, airport: e.target.value as any })}
+                  className="w-full px-3 py-2 text-xs font-semibold"
+                >
+                  <option value="TUN">Tunis-Carthage (TUN)</option>
+                  <option value="NBE">Enfidha-Hammamet (NBE)</option>
+                  <option value="MIR">Monastir Habib-Bourguiba (MIR)</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Compagnie Aérienne</label>
+                  <input
+                    type="text"
+                    value={editFlightData.arrivalAirline}
+                    onChange={(e) => setEditFlightData({ ...editFlightData, arrivalAirline: e.target.value })}
+                    className="w-full px-3 py-2 text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Numéro de Vol</label>
+                  <input
+                    type="text"
+                    value={editFlightData.arrivalFlightNumber}
+                    onChange={(e) => setEditFlightData({ ...editFlightData, arrivalFlightNumber: e.target.value })}
+                    className="w-full px-3 py-2 text-xs font-mono"
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="block text-slate-300 font-bold mb-1">Numéro de Vol Arrivée (TUN)</label>
-                <input
-                  type="text"
-                  value={editFlightData.arrivalFlightNumber}
-                  onChange={(e) => setEditFlightData({ ...editFlightData, arrivalFlightNumber: e.target.value })}
-                  className="w-full bg-[#060B14] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white font-mono uppercase"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-bold mb-1">Date et Heure d'Atterrissage</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Date &amp; Heure d'Atterrissage</label>
                 <input
                   type="datetime-local"
                   value={editFlightData.arrivalDateTime}
                   onChange={(e) => setEditFlightData({ ...editFlightData, arrivalDateTime: e.target.value })}
-                  className="w-full bg-[#060B14] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white font-mono"
-                  required
+                  className="w-full px-3 py-2 text-xs font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-300 font-bold mb-1">Numéro Téléphone Mobile de Contact</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Numéro WhatsApp Coordinateur Chauffeur</label>
                 <input
                   type="tel"
                   value={editFlightData.driverWhatsApp}
                   onChange={(e) => setEditFlightData({ ...editFlightData, driverWhatsApp: e.target.value })}
-                  className="w-full bg-[#060B14] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white"
-                  required
+                  className="w-full px-3 py-2 text-xs font-mono"
                 />
               </div>
 
-              <div className="pt-3 border-t border-[#D4AF37]/20 flex items-center justify-end gap-3">
+              <div className="pt-3 border-t border-slate-200 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsEditingFlight(false)}
-                  className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold cursor-pointer"
+                  className="btn-outline text-xs px-4 py-2"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-lg bg-[#D4AF37] hover:bg-[#C59B27] text-[#060B14] font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-md"
+                  className="btn-primary text-xs px-5 py-2"
                 >
                   <Save className="w-4 h-4" />
-                  <span>Enregistrer Modifications</span>
+                  <span>Enregistrer les modifications</span>
                 </button>
               </div>
             </form>
@@ -517,11 +481,11 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
         </div>
       )}
 
-      {/* Official Voucher Printable Modal */}
-      {isVoucherOpen && activeReservation && selectedHotel && (
+      {/* Official Voucher & Invoice Modal */}
+      {isVoucherOpen && activeReservation && hotel && (
         <VoucherModal
           reservation={activeReservation}
-          hotel={selectedHotel}
+          hotel={hotel}
           onClose={() => setIsVoucherOpen(false)}
         />
       )}

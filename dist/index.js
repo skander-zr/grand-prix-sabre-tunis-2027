@@ -1297,7 +1297,7 @@ async function notifyOnTelegram(notification) {
   if (!token || !chatId) return false;
   let text2 = "";
   if (notification.kind === "order") {
-    text2 = `\u{1F355} *NOUVELLE COMMANDE PER VOI (#${notification.id})*
+    text2 = `\u{1F354} *NOUVELLE COMMANDE BEEF & BUNS (#${notification.id})*
 
 \u{1F464} *Client :* ${notification.customerName}
 \u{1F4DE} *T\xE9l :* ${notification.phone}
@@ -1305,9 +1305,9 @@ async function notifyOnTelegram(notification) {
 \u{1F4B0} *Total :* ${notification.totalDt} DT
 ${notification.notes ? `\u{1F4DD} *Note :* ${notification.notes}
 ` : ""}
-\u{1F449} [Ouvrir l'Espace G\xE9rant](https://per-voi-sousse-2.onrender.com/hote)`;
+\u{1F449} [Ouvrir l'Espace G\xE9rant](https://beef-and-buns-sousse.vercel.app)`;
   } else {
-    text2 = `\u{1F37D}\uFE0F *NOUVELLE R\xC9SERVATION PER VOI (#${notification.id})*
+    text2 = `\u{1F37D}\uFE0F *NOUVELLE R\xC9SERVATION BEEF & BUNS (#${notification.id})*
 
 \u{1F464} *Client :* ${notification.name}
 \u{1F4DE} *T\xE9l :* ${notification.phone}
@@ -1315,7 +1315,7 @@ ${notification.notes ? `\u{1F4DD} *Note :* ${notification.notes}
 \u{1F465} *Couverts :* ${notification.guests} personnes
 ${notification.notes ? `\u{1F4DD} *Notes :* ${notification.notes}
 ` : ""}
-\u{1F449} [Ouvrir l'Espace G\xE9rant](https://per-voi-sousse-2.onrender.com/hote)`;
+\u{1F449} [Ouvrir l'Espace G\xE9rant](https://beef-and-buns-sousse.vercel.app)`;
   }
   try {
     const url = `https://api.telegram.org/bot${token}/sendMessage`;
