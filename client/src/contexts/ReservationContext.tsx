@@ -184,42 +184,12 @@ export const ReservationProvider: React.FC<{ children: React.ReactNode }> = ({ c
     const roomSubtotal = (params.singleRoomCount * singlePrice * params.nightsCount) +
                          (params.doubleRoomCount * doublePrice * params.nightsCount);
 
-    // Upsells calculation
-    let computedUpsells = params.upsellsAmount ?? 0;
-    if (params.upsells && computedUpsells === 0) {
-      if (params.upsells.lateCheckout) computedUpsells += 50 * totalRooms;
-      if (params.upsells.vipShuttle) {
-        const tripMultiplier = params.shuttle?.tripType === 'roundtrip' ? 2 : 1;
-        computedUpsells += 90 * tripMultiplier;
-      }
-      if (params.upsells.physioRoomDays && params.upsells.physioRoomDays > 0) {
-        computedUpsells += 100 * params.upsells.physioRoomDays;
-      }
-    }
-
-    // Airport distance surcharge calculation
-    let computedAirportSurcharge = params.airportSurcharge ?? 0;
-    if (params.shuttle && computedAirportSurcharge === 0) {
-      const isRoundTrip = params.shuttle.tripType === 'roundtrip';
-      const roundMultiplier = isRoundTrip ? 2 : 1;
-      if (params.shuttle.airport === 'NBE') {
-        computedAirportSurcharge = params.shuttle.isVipVan 
-          ? (160 * roundMultiplier) 
-          : (35 * params.shuttle.passengerCount * roundMultiplier);
-      } else if (params.shuttle.airport === 'MIR') {
-        computedAirportSurcharge = params.shuttle.isVipVan 
-          ? (220 * roundMultiplier) 
-          : (45 * params.shuttle.passengerCount * roundMultiplier);
-      }
-    }
-
-    // Onsite payment administrative surcharge (+15 EUR / room / night)
-    const computedOnsiteSurcharge = params.onsiteAdminSurcharge !== undefined
-      ? params.onsiteAdminSurcharge
-      : (params.paymentMethod === 'onsite_federation' ? (15 * totalRooms * params.nightsCount) : 0);
-
-    const cityTax = 3 * params.totalGuestsCount * params.nightsCount;
-    const total = roomSubtotal + computedUpsells + computedAirportSurcharge + computedOnsiteSurcharge + cityTax;
+    // Zero additional fees: airport transfers and on-site payments are strictly 0 EUR extra
+    const computedUpsells = 0;
+    const computedAirportSurcharge = 0;
+    const computedOnsiteSurcharge = 0;
+    const cityTax = 0;
+    const total = roomSubtotal; // Le seul montant facturé est le prix des chambres (Single / Double × nombre de nuits)
 
     const newReservation: Reservation = {
       id: code,
@@ -237,11 +207,11 @@ export const ReservationProvider: React.FC<{ children: React.ReactNode }> = ({ c
       singleRoomPricePerNight: singlePrice,
       doubleRoomPricePerNight: doublePrice,
       subtotalAmount: roomSubtotal,
-      upsellsAmount: computedUpsells,
-      airportSurcharge: computedAirportSurcharge,
-      onsiteAdminSurcharge: computedOnsiteSurcharge,
+      upsellsAmount: 0,
+      airportSurcharge: 0,
+      onsiteAdminSurcharge: 0,
       upsells: params.upsells,
-      cityTaxAmount: cityTax,
+      cityTaxAmount: 0,
       totalAmount: total,
       currency: 'EUR',
       paymentMethod: params.paymentMethod,

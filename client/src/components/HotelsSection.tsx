@@ -70,20 +70,26 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-blue-50 border border-blue-200 text-[#03396C] text-xs font-semibold mb-2.5">
               <Building2 className="w-3.5 h-3.5" />
-              <span>Hébergement Officiel FIE &bull; Gammarth, Tunisie</span>
+              <span>{lang === 'fr' ? 'Hébergement Officiel FIE • Gammarth, Tunisie' : 'Official FIE Accommodation • Gammarth, Tunisia'}</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight">
-              Les 2 Hôtels 5★ Officiels de la Compétition
+              {lang === 'fr' ? 'Les 2 Hôtels 5★ Officiels de la Compétition' : 'The 2 Official 5★ Tournament Hotels'}
             </h2>
             <p className="mt-1.5 text-sm text-slate-600 max-w-3xl leading-relaxed">
-              Deux prestigieux complexes hôteliers 5 étoiles situés sur la côte de Gammarth, réservés exclusivement pour les délégations du Grand Prix Sabre Tunis 2027. Nutrition sportive adaptée, balnéothérapie de récupération et liaisons directes vers la Salle de Radès.
+              {lang === 'fr'
+                ? 'Deux prestigieux complexes hôteliers 5 étoiles situés sur la côte de Gammarth, réservés exclusivement pour les délégations du Grand Prix Sabre Tunis 2027. Nutrition sportive adaptée, balnéothérapie de récupération et liaisons directes vers la Salle de Radès.'
+                : 'Two prestigious 5-star seaside resorts located on the Gammarth coast, exclusively reserved for Sabre Grand Prix Tunis 2027 delegations. Tailored sports nutrition, balneotherapy recovery, and direct shuttles to Radès Venue.'}
             </p>
           </div>
 
           <div className="shrink-0 bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-            <span className="text-xs text-slate-500 block font-medium">Distance vers la Salle Omnisports de Radès :</span>
+            <span className="text-xs text-slate-500 block font-medium">
+              {lang === 'fr' ? 'Distance vers la Salle Omnisports de Radès :' : 'Distance to Radès Sports Venue:'}
+            </span>
             <span className="text-base font-bold text-[#03396C] font-mono">13 - 14 KM &bull; ~16 MIN</span>
-            <span className="text-xs text-emerald-700 font-semibold block mt-0.5">Navettes FIE directes toutes les 20 min</span>
+            <span className="text-xs text-emerald-700 font-semibold block mt-0.5">
+              {lang === 'fr' ? 'Navettes FIE directes toutes les 20 min' : 'Direct FIE shuttles every 20 mins'}
+            </span>
           </div>
         </div>
 
@@ -93,11 +99,11 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#C8102E]"></span>
               <h3 className="text-xs font-extrabold uppercase tracking-wider text-[#03396C]">
-                Avantages Exclusifs Inclus dans le Pack Officiel FTE
+                {lang === 'fr' ? 'Avantages Exclusifs Inclus dans le Pack Officiel FTE' : 'Exclusive Benefits Included in Official FTE Pack'}
               </h3>
             </div>
             <span className="text-[11px] font-semibold text-slate-500 hidden sm:inline">
-              Réservé aux délégations inscrites via la plateforme officielle
+              {lang === 'fr' ? 'Réservé aux délégations inscrites via la plateforme officielle' : 'Reserved for delegations registered via official platform'}
             </span>
           </div>
 
@@ -105,56 +111,70 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
               <div className="font-bold text-xs text-[#0F172A] mb-1 flex items-center gap-1.5">
                 <span className="w-5 h-5 rounded-md bg-blue-100 text-[#03396C] flex items-center justify-center text-[10px] font-black shrink-0">1</span>
-                <span>Accréditation Directe Hôtel</span>
+                <span>{lang === 'fr' ? 'Accréditation Directe Hôtel' : 'Direct Hotel Accreditation'}</span>
               </div>
               <p className="text-[11px] text-slate-600 leading-relaxed">
-                Remise des badges FIE directement au desk officiel de votre hôtel, sans aucune file d'attente à la salle.
+                {lang === 'fr'
+                  ? 'Remise des badges FIE directement au desk officiel de votre hôtel, sans aucune file d\'attente à la salle.'
+                  : 'FIE badges delivered directly at your hotel official desk, zero waiting lines at venue.'}
               </p>
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
               <div className="font-bold text-xs text-[#0F172A] mb-1 flex items-center gap-1.5">
                 <span className="w-5 h-5 rounded-md bg-blue-100 text-[#03396C] flex items-center justify-center text-[10px] font-black shrink-0">2</span>
-                <span>Navettes Directes Radès</span>
+                <span>{lang === 'fr' ? 'Navettes Directes Radès' : 'Direct Radès Shuttles'}</span>
               </div>
               <p className="text-[11px] text-slate-600 leading-relaxed">
-                Liaisons cadencées Hôtel ↔ Salle Omnisports de Radès toutes les 30 min, dédiées aux tireurs et staffs.
+                {lang === 'fr'
+                  ? 'Liaisons cadencées Hôtel ↔ Salle Omnisports de Radès toutes les 30 min, dédiées aux tireurs et staffs.'
+                  : 'Scheduled transfers Hotel ↔ Radès Arena every 30 mins dedicated to athletes and staff.'}
               </p>
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
               <div className="font-bold text-xs text-[#0F172A] mb-1 flex items-center gap-1.5">
                 <span className="w-5 h-5 rounded-md bg-blue-100 text-[#03396C] flex items-center justify-center text-[10px] font-black shrink-0">3</span>
-                <span>Buffet Sportif Haut Niveau</span>
+                <span>{lang === 'fr' ? 'Buffet Sportif Haut Niveau' : 'Pro Athletic Buffets'}</span>
               </div>
               <p className="text-[11px] text-slate-600 leading-relaxed">
-                Pension complète avec menus diététiques pour sportifs de haut niveau et accès balnéothérapie.
+                {lang === 'fr'
+                  ? 'Pension complète avec menus diététiques pour sportifs de haut niveau et accès balnéothérapie.'
+                  : 'Full board with dietary nutrition tailored for elite athletes and balneotherapy access.'}
               </p>
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
               <div className="font-bold text-xs text-[#0F172A] mb-1 flex items-center gap-1.5">
                 <span className="w-5 h-5 rounded-md bg-blue-100 text-[#03396C] flex items-center justify-center text-[10px] font-black shrink-0">4</span>
-                <span>Transport Housses 1m40</span>
+                <span>{lang === 'fr' ? 'Transport Housses 1m40' : '1m40 Sabre Bag Transfer'}</span>
               </div>
               <p className="text-[11px] text-slate-600 leading-relaxed">
-                Véhicules dimensionnés et sécurisés spécialement pour les rouleaux et housses de sabre volumineuses.
+                {lang === 'fr'
+                  ? 'Véhicules dimensionnés et sécurisés spécialement pour les rouleaux et housses de sabre volumineuses.'
+                  : 'Vehicles sized and secured specifically for rollbags and large sabre bags.'}
               </p>
             </div>
           </div>
 
-          {/* Early Bird Guarantee Notice */}
+          {/* Official Pack Guarantee Notice */}
           <div className="mt-4 pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
             <div className="flex items-center gap-2 text-slate-700">
               <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px] uppercase tracking-wide">
-                Tarif Early Bird
+                {lang === 'fr' ? 'Tarifs Officiels FIE' : 'Official FIE Rates'}
               </span>
               <span>
-                Tarifs de <strong>Pré-réservation officielle</strong> valables jusqu'au <strong>25 décembre 2026</strong>.
+                {lang === 'fr' ? (
+                  <>Tarifs de <strong>Pré-réservation officielle</strong> garantis pour toutes les délégations.</>
+                ) : (
+                  <>Official <strong>pre-booking rates</strong> guaranteed for all delegations.</>
+                )}
               </span>
             </div>
-            <span className="text-[11px] text-amber-800 font-medium bg-amber-50 px-2.5 py-1 rounded border border-amber-200">
-              Majoration administrative de +15 € / nuit / chambre en cas de règlement sur place
+            <span className="text-[11px] text-emerald-800 font-semibold bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200">
+              {lang === 'fr'
+                ? 'Navettes Aéroports (TUN, NBE, MIR) incluses à 0 € • Zéro frais supplémentaires'
+                : 'Airport Shuttles (TUN, NBE, MIR) included at 0 € • Zero extra fees'}
             </span>
           </div>
         </div>
@@ -322,8 +342,8 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
                     {/* Room Types & Official Negotiated Rates Strip */}
                     <div className="border-t border-slate-200 pt-5">
                       <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 flex items-center justify-between">
-                        <span>Tarifs Officiels Négociés FIE (TTC &amp; Buffets Inclus)</span>
-                        <span className="text-[#03396C] font-semibold">Par nuitée</span>
+                        <span>{lang === 'fr' ? 'Tarifs Officiels Négociés FIE (TTC & Buffets Inclus)' : 'Official Negotiated FIE Rates (VAT & Buffets Included)'}</span>
+                        <span className="text-[#03396C] font-semibold">{lang === 'fr' ? 'Par nuitée' : 'Per night'}</span>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
@@ -335,10 +355,14 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
                               <Bed className="w-4 h-4" />
                             </div>
                             <div>
-                              <div className="text-xs font-bold text-slate-900">Chambre Single</div>
-                              <div className="text-[11px] text-slate-500">1 Athlète / Officiel</div>
+                              <div className="text-xs font-bold text-slate-900">
+                                {lang === 'fr' ? 'Chambre Single' : 'Single Room'}
+                              </div>
+                              <div className="text-[11px] text-slate-500">
+                                {lang === 'fr' ? '1 Athlète / Officiel' : '1 Athlete / Official'}
+                              </div>
                               <div className="text-[10px] text-emerald-700 font-semibold mt-0.5">
-                                {singleAvail} chambres disp.
+                                {singleAvail} {lang === 'fr' ? 'chambres disp.' : 'rooms left'}
                               </div>
                             </div>
                           </div>
@@ -359,10 +383,14 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
                               <BedDouble className="w-4 h-4" />
                             </div>
                             <div>
-                              <div className="text-xs font-bold text-slate-900">Chambre Double</div>
-                              <div className="text-[11px] text-slate-500">2 Lits séparés Twin</div>
+                              <div className="text-xs font-bold text-slate-900">
+                                {lang === 'fr' ? 'Chambre Double' : 'Double / Twin Room'}
+                              </div>
+                              <div className="text-[11px] text-slate-500">
+                                {lang === 'fr' ? '2 Lits séparés Twin' : '2 Ergonomic Twin Beds'}
+                              </div>
                               <div className="text-[10px] text-emerald-700 font-semibold mt-0.5">
-                                {doubleAvail} chambres disp.
+                                {doubleAvail} {lang === 'fr' ? 'chambres disp.' : 'rooms left'}
                               </div>
                             </div>
                           </div>
@@ -382,7 +410,11 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
                       <div className="p-3 rounded-lg bg-blue-50/70 border border-blue-200 mb-4 flex items-center gap-3">
                         <CreditCard className="w-4 h-4 text-[#03396C] shrink-0" />
                         <span className="text-xs text-slate-700">
-                          <strong>Paiement au choix :</strong> Carte bancaire en ligne (Stripe), virement bancaire pour les délégations, ou règlement sur place au bureau d'accréditation.
+                          {lang === 'fr' ? (
+                            <><strong>Paiement au choix :</strong> Carte bancaire en ligne (Stripe), virement bancaire pour les délégations, ou règlement sur place au bureau d'accréditation sans aucun frais supplémentaire.</>
+                          ) : (
+                            <><strong>Flexible payment:</strong> Online card (Stripe), official bank transfer, or on-site payment upon hotel accreditation with zero additional fees.</>
+                          )}
                         </span>
                       </div>
 
@@ -392,7 +424,7 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
                         onClick={() => onSelectHotel(hotel.id)}
                         className="w-full btn-primary cursor-pointer text-sm font-semibold py-3"
                       >
-                        <span>Réserver à l'{hotel.name}</span>
+                        <span>{lang === 'fr' ? `Réserver à l'${hotel.name}` : `Book at ${hotel.name}`}</span>
                         <ChevronRight className="w-4 h-4" />
                       </button>
 

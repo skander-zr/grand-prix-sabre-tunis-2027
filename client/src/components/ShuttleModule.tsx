@@ -62,18 +62,8 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
   const [driverWhatsApp, setDriverWhatsApp] = useState('+33 6 12 34 56 78');
   const [specialRequests, setSpecialRequests] = useState('');
 
-  // Smart Airport Pricing Calculation
-  const isRoundTrip = tripType === 'roundtrip';
-  const tripMultiplier = isRoundTrip ? 2 : 1;
-
-  let shuttlePriceEur = 0;
-  if (airport === 'TUN') {
-    shuttlePriceEur = isVipVan ? (90 * tripMultiplier) : 0;
-  } else if (airport === 'NBE') {
-    shuttlePriceEur = isVipVan ? (160 * tripMultiplier) : (35 * passengerCount * tripMultiplier);
-  } else if (airport === 'MIR') {
-    shuttlePriceEur = isVipVan ? (220 * tripMultiplier) : (45 * passengerCount * tripMultiplier);
-  }
+  // All 3 airports (TUN, NBE, MIR) are included at 0 EUR for confirmed hotel reservations
+  const shuttlePriceEur = 0;
 
   // Flights
   const [arrivalAirline, setArrivalAirline] = useState('Air France');
@@ -92,22 +82,22 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
     if (res) {
       setVerifiedReservation(res);
       setPassengerCount(res.totalGuestsCount || 1);
-      toast.success(`Dossier ${res.id} vérifié avec succès !`);
+      toast.success(lang === 'fr' ? `Dossier ${res.id} vérifié avec succès !` : `Booking ${res.id} verified successfully!`);
     } else {
       setVerifiedReservation(null);
-      toast.error('Code introuvable. Veuillez vérifier votre référence (ex: GPS2027-FR48).');
+      toast.error(lang === 'fr' ? 'Code introuvable. Veuillez vérifier votre référence (ex: GPS2027-FR48).' : 'Code not found. Please verify your reference (e.g. GPS2027-FR48).');
     }
   };
 
   const handleSubmitShuttle = (e: React.FormEvent) => {
     e.preventDefault();
     if (!verifiedReservation) {
-      toast.error('Veuillez d\'abord valider votre code de réservation.');
+      toast.error(lang === 'fr' ? 'Veuillez d\'abord valider votre code de réservation.' : 'Please verify your booking reference first.');
       return;
     }
 
     if (!driverWhatsApp) {
-      toast.error('Veuillez renseigner un numéro WhatsApp pour la coordination du chauffeur.');
+      toast.error(lang === 'fr' ? 'Veuillez renseigner un numéro de téléphone de contact.' : 'Please provide a contact phone number.');
       return;
     }
 
@@ -119,8 +109,8 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
       const details: ShuttleDetails = {
         tripType,
         airport,
-        isVipVan,
-        surchargeEur: shuttlePriceEur,
+        isVipVan: false,
+        surchargeEur: 0,
         arrivalAirline: (tripType === 'arrival' || tripType === 'roundtrip') ? arrivalAirline : undefined,
         arrivalFlightNumber: (tripType === 'arrival' || tripType === 'roundtrip') ? arrivalFlightNumber : undefined,
         arrivalDateTime: (tripType === 'arrival' || tripType === 'roundtrip') ? arrivalDateTime : undefined,
@@ -133,16 +123,14 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
         driverWhatsApp,
         specialRequests,
         assignedGroupCode: `SHT-${airport}-${verifiedReservation.hotelId === 'el-mouradi-gammarth' ? 'ELM' : 'GDC'}-14H`,
-        assignedVehicle: isVipVan
-          ? 'Van VIP Privatif Dédié Mercedes V-Class (Sans Attente)'
-          : (passengerCount > 4 ? 'Minibus Mercedes Sprinter FIE #1' : 'Berline VIP Officielle FIE #3'),
+        assignedVehicle: passengerCount > 4 ? 'Minibus Mercedes Sprinter FIE #1' : 'Berline VIP Officielle FIE #3',
         status: 'grouped'
       };
 
       const success = bookShuttle(verifiedReservation.id, details);
       if (success) {
         setIsSuccess(true);
-        toast.success(`Navette aéroport assignée au dossier ${verifiedReservation.id}`);
+        toast.success(lang === 'fr' ? `Navette aéroport assignée au dossier ${verifiedReservation.id}` : `Airport shuttle assigned to booking ${verifiedReservation.id}`);
         onShuttleSuccess({
           ...verifiedReservation,
           hasShuttle: true,
@@ -161,19 +149,21 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-blue-50 border border-blue-200 text-[#03396C] text-xs font-semibold mb-2.5">
               <Bus className="w-3.5 h-3.5" />
-              <span>Service Officiel de Transport FIE &bull; Aéroports de Tunisie</span>
+              <span>{lang === 'fr' ? 'Service Officiel de Transport FIE • Aéroports de Tunisie' : 'Official FIE Transport Service • Tunisia Airports'}</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight">
-              Réservation Navettes Aéroport &bull; Grand Prix Sabre 2027
+              {lang === 'fr' ? 'Réservation Navettes Aéroport • Grand Prix Sabre 2027' : 'Airport Shuttle Booking • Sabre Grand Prix 2027'}
             </h2>
             <p className="mt-1.5 text-sm text-slate-600 max-w-3xl leading-relaxed">
-              Prise en charge officielle réservée aux délégations enregistrées. Desserte des 3 aéroports internationaux vers les 2 hôtels 5★ de Gammarth avec véhicules dédiés et transport sécurisé des housses d'escrime.
+              {lang === 'fr'
+                ? 'Prise en charge officielle réservée aux délégations enregistrées. Desserte des 3 aéroports internationaux (TUN, NBE, MIR) vers les 2 hôtels 5★ de Gammarth avec véhicules dédiés et transport sécurisé des housses d\'escrime (0 € de supplément).'
+                : 'Official transfer service reserved for registered delegations. Serving the 3 international airports (TUN, NBE, MIR) to both 5★ Gammarth hotels with dedicated vehicles and secure fencing bag transport (0 € extra fee).'}
             </p>
           </div>
 
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 bg-white px-3.5 py-2.5 rounded-xl border border-slate-200 shadow-xs">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-            <span>Aéroports : TUN &bull; NBE &bull; MIR</span>
+            <span>{lang === 'fr' ? 'Aéroports : TUN • NBE • MIR (0 € Inclus)' : 'Airports: TUN • NBE • MIR (0 € Included)'}</span>
           </div>
         </div>
 
@@ -186,10 +176,14 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
 
             <div>
               <h3 className="text-xl font-bold text-[#0F172A] mb-2">
-                Accès Verrouillé par Réservation Hôtelière
+                {lang === 'fr' ? 'Accès Verrouillé par Réservation Hôtelière' : 'Locked by Hotel Reservation'}
               </h3>
               <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
-                Ce module de navette officielle est réservé exclusivement aux délégations et athlètes disposant déjà d'une réservation hôtelière confirmée (code format <strong>GPS2027-XXXX</strong>).
+                {lang === 'fr' ? (
+                  <>Ce module de navette officielle est réservé exclusivement aux délégations et athlètes disposant déjà d'une réservation hôtelière confirmée (code format <strong>GPS2027-XXXX</strong>).</>
+                ) : (
+                  <>This official shuttle module is exclusively available to delegations and athletes holding a confirmed hotel reservation (format <strong>GPS2027-XXXX</strong>).</>
+                )}
               </p>
             </div>
 
@@ -209,26 +203,26 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
                   className="btn-primary cursor-pointer text-sm font-semibold px-5"
                 >
                   <Search className="w-4 h-4" />
-                  <span>Vérifier</span>
+                  <span>{lang === 'fr' ? 'Vérifier' : 'Verify'}</span>
                 </button>
               </div>
 
               {hasSearched && !verifiedReservation && (
                 <div className="p-3 bg-red-50 text-red-700 border border-red-200 rounded-lg text-xs flex items-center gap-2 text-left">
                   <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>Aucun dossier trouvé avec ce code. Vérifiez votre référence ou effectuez votre réservation hôtelière.</span>
+                  <span>{lang === 'fr' ? 'Aucun dossier trouvé avec ce code. Vérifiez votre référence ou effectuez votre réservation hôtelière.' : 'No file found with this code. Please check your reference or complete your hotel booking.'}</span>
                 </div>
               )}
             </form>
 
             <div className="pt-4 border-t border-slate-200 text-xs text-slate-500">
-              <span>Vous n'avez pas encore réservé votre hôtel ? </span>
+              <span>{lang === 'fr' ? 'Vous n\'avez pas encore réservé votre hôtel ? ' : 'Haven\'t booked your hotel yet? '}</span>
               <button
                 type="button"
                 onClick={onNavigateToBooking}
                 className="text-[#03396C] font-semibold underline underline-offset-4 cursor-pointer hover:text-[#005B96]"
               >
-                Réserver votre hébergement 5★ ici
+                {lang === 'fr' ? 'Réserver votre hébergement 5★ ici' : 'Book your 5★ hotel here'}
               </button>
             </div>
           </div>
@@ -247,7 +241,7 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-[#0F172A]">Dossier Validé :</span>
+                      <span className="text-sm font-bold text-[#0F172A]">{lang === 'fr' ? 'Dossier Validé :' : 'Verified Booking:'}</span>
                       <span className="font-mono font-black text-[#03396C] text-base">{verifiedReservation.id}</span>
                     </div>
                     <div className="text-xs text-slate-600">
@@ -267,20 +261,20 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
                   }}
                   className="text-xs text-slate-500 hover:text-slate-800 underline cursor-pointer"
                 >
-                  Changer de dossier
+                  {lang === 'fr' ? 'Changer de dossier' : 'Change booking'}
                 </button>
               </div>
 
               {/* Step 1: Trip Type & Airport Dropdown (MANDATORY 3 AIRPORTS) */}
               <div className="inst-card p-6 sm:p-8 space-y-6">
                 <h3 className="text-base font-bold text-[#0F172A] pb-3 border-b border-slate-200">
-                  1. Sélection du Trajet &amp; Aéroport d'Arrivée
+                  {lang === 'fr' ? '1. Sélection du Trajet & Aéroport d\'Arrivée' : '1. Route & Arrival Airport Selection'}
                 </h3>
 
                 {/* Trip Type */}
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                    Type de Transfert Souhaité
+                    {lang === 'fr' ? 'Type de Transfert Souhaité' : 'Transfer Type'}
                   </label>
                   <div className="grid grid-cols-3 gap-3">
                     <button
@@ -291,7 +285,7 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
                         : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                         }`}
                     >
-                      Arrivée Simple (Aéroport &rarr; Hôtel)
+                      {lang === 'fr' ? 'Arrivée Simple (Aéroport → Hôtel)' : 'One-way Arrival (Airport → Hotel)'}
                     </button>
                     <button
                       type="button"
@@ -301,7 +295,7 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
                         : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                         }`}
                     >
-                      Départ Simple (Hôtel &rarr; Aéroport)
+                      {lang === 'fr' ? 'Départ Simple (Hôtel → Aéroport)' : 'One-way Departure (Hotel → Airport)'}
                     </button>
                     <button
                       type="button"
@@ -311,7 +305,7 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
                         : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                         }`}
                     >
-                      Aller-Retour Complet
+                      {lang === 'fr' ? 'Aller-Retour Complet' : 'Roundtrip Transfer'}
                     </button>
                   </div>
                 </div>
@@ -319,58 +313,28 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
                 {/* MANDATORY DROPDOWN WITH THE 3 AIRPORTS */}
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                    Aéroport d'Atterrissage / Décollage *
+                    {lang === 'fr' ? 'Aéroport d\'Atterrissage / Décollage *' : 'Airport of Arrival / Departure *'}
                   </label>
                   <select
                     value={airport}
                     onChange={(e) => setAirport(e.target.value as 'TUN' | 'NBE' | 'MIR')}
                     className="w-full px-3.5 py-3 text-sm font-semibold"
                   >
-                    <option value="TUN">Tunis-Carthage (TUN) — Aéroport Principal (0 € inclus dans le pack officiel)</option>
-                    <option value="NBE">Enfidha-Hammamet (NBE - 100 km) — Supplément longue distance 35 €/pers</option>
-                    <option value="MIR">Monastir Habib-Bourguiba (MIR - 165 km) — Supplément longue distance 45 €/pers</option>
+                    <option value="TUN">Tunis-Carthage (TUN) — {lang === 'fr' ? 'Inclus à 0 €' : '0 € Included'}</option>
+                    <option value="NBE">Enfidha-Hammamet (NBE - 100 km) — {lang === 'fr' ? 'Inclus à 0 €' : '0 € Included'}</option>
+                    <option value="MIR">Monastir Habib-Bourguiba (MIR - 165 km) — {lang === 'fr' ? 'Inclus à 0 €' : '0 € Included'}</option>
                   </select>
 
-                  {/* Pricing alert based on airport */}
-                  <div className="mt-2.5">
-                    {airport === 'TUN' ? (
-                      <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                        <span><strong>Inclus dans le Pack Officiel :</strong> Transfert 0 € en navette cadencée toutes les 45 min.</span>
-                      </div>
-                    ) : (
-                      <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2">
-                        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                        <div>
-                          <strong>Transfert Longue Distance {airport === 'NBE' ? 'Enfidha (100 km)' : 'Monastir (165 km)'} :</strong>
-                          <div className="text-[11px] text-amber-800 mt-0.5">
-                            Supplément automatique de {airport === 'NBE' ? '35 €' : '45 €'} / passager {isRoundTrip ? '(aller-retour comptabilisé)' : '(aller simple)'} en navette groupée officielle (ou forfait Van VIP dédié).
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Van VIP Toggle */}
-                  <div className="mt-3 p-3 rounded-lg bg-slate-50 border border-slate-200 flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      id="shuttle-vip-van"
-                      checked={isVipVan}
-                      onChange={(e) => setIsVipVan(e.target.checked)}
-                      className="mt-0.5 w-4 h-4 text-[#03396C] rounded border-slate-300"
-                    />
-                    <label htmlFor="shuttle-vip-van" className="text-xs text-slate-800 cursor-pointer">
-                      <div className="font-bold text-[#0F172A] flex items-center gap-2">
-                        <span>Privatiser un Van VIP Mercedes (Sans aucune attente)</span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-100 text-[#03396C] font-black">
-                          {airport === 'TUN' ? '+90 €/trajet' : (airport === 'NBE' ? '+160 €/trajet' : '+220 €/trajet')}
-                        </span>
-                      </div>
-                      <div className="text-slate-500 text-[11px] mt-0.5">
-                        Accueil personnalisé avec pancarte nominative à la sortie bagages et départ immédiat vers votre hôtel 5★.
-                      </div>
-                    </label>
+                  {/* Guaranteed 0 € badge for all 3 airports */}
+                  <div className="mt-2.5 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>
+                      {lang === 'fr' ? (
+                        <><strong>Inclus dans le Pack Officiel FTE :</strong> Transferts 100% pris en charge à 0 € pour les aéroports de Tunis-Carthage (TUN), Enfidha (NBE) et Monastir (MIR).</>
+                      ) : (
+                        <><strong>Included in Official FTE Pack:</strong> 100% free transfers (0 €) for Tunis-Carthage (TUN), Enfidha (NBE), and Monastir (MIR) airports.</>
+                      )}
+                    </span>
                   </div>
                 </div>
 
@@ -379,7 +343,7 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
               {/* Step 2: Flight Details */}
               <div className="inst-card p-6 sm:p-8 space-y-6">
                 <h3 className="text-base font-bold text-[#0F172A] pb-3 border-b border-slate-200">
-                  2. Coordonnées des Vols
+                  {lang === 'fr' ? '2. Coordonnées des Vols' : '2. Flight Details'}
                 </h3>
 
                 {/* Arrival Flight */}
@@ -387,7 +351,7 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
                   <div className="space-y-4">
                     <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
                       <Plane className="w-4 h-4 text-emerald-600 rotate-45" />
-                      <span>Vol Aller (Arrivée en Tunisie)</span>
+                      <span>{lang === 'fr' ? 'Vol Aller (Arrivée en Tunisie)' : 'Inbound Flight (Arrival in Tunisia)'}</span>
                     </h4>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -434,12 +398,12 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
                   <div className="space-y-4 pt-4 border-t border-slate-200">
                     <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
                       <Plane className="w-4 h-4 text-blue-600 -rotate-45" />
-                      <span>Vol Retour (Départ de Tunisie)</span>
+                      <span>{lang === 'fr' ? 'Vol Retour (Départ de Tunisie)' : 'Outbound Flight (Departure from Tunisia)'}</span>
                     </h4>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1">Compagnie Aérienne *</label>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">{lang === 'fr' ? 'Compagnie Aérienne *' : 'Airline *'}</label>
                         <input
                           type="text"
                           required
@@ -451,7 +415,7 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1">Numéro de Vol *</label>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">{lang === 'fr' ? 'Numéro de Vol *' : 'Flight Number *'}</label>
                         <input
                           type="text"
                           required
@@ -463,7 +427,7 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1">Date &amp; Heure de Décollage *</label>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">{lang === 'fr' ? 'Date & Heure de Décollage *' : 'Departure Date & Time *'}</label>
                         <input
                           type="datetime-local"
                           required
@@ -481,14 +445,14 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
               {/* Step 3: Passengers & Equipment Logistics */}
               <div className="inst-card p-6 sm:p-8 space-y-6">
                 <h3 className="text-base font-bold text-[#0F172A] pb-3 border-b border-slate-200">
-                  3. Passagers, Bagages &amp; Sacs d'Armes d'Escrime
+                  {lang === 'fr' ? '3. Passagers, Bagages & Sacs d\'Armes d\'Escrime' : '3. Passengers, Luggage & Sabre Bags'}
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
                       <Users className="w-3.5 h-3.5 text-slate-500" />
-                      <span>Nombre de Passagers *</span>
+                      <span>{lang === 'fr' ? 'Nombre de Passagers *' : 'Number of Passengers *'}</span>
                     </label>
                     <input
                       type="number"
@@ -503,7 +467,7 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
                       <Luggage className="w-3.5 h-3.5 text-slate-500" />
-                      <span>Valises Standards</span>
+                      <span>{lang === 'fr' ? 'Valises Standards' : 'Standard Luggage'}</span>
                     </label>
                     <input
                       type="number"
@@ -518,7 +482,7 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-[#C8102E]"></span>
-                      <span>Housses de Sabre (1m40) *</span>
+                      <span>{lang === 'fr' ? 'Housses de Sabre (1m40) *' : 'Sabre Bags (1m40) *'}</span>
                     </label>
                     <input
                       type="number"
@@ -531,11 +495,11 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
                   </div>
                 </div>
 
-                {/* WhatsApp Phone for Driver */}
+                {/* Driver Contact Phone */}
                 <div className="pt-2">
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
                     <Phone className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Numéro de Téléphone WhatsApp pour le Chauffeur / Régisseur *</span>
+                    <span>{lang === 'fr' ? 'Numéro de Téléphone Chauffeur / Régie *' : 'Driver / Coordinator Phone Number *'}</span>
                   </label>
                   <input
                     type="tel"
@@ -546,7 +510,9 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
                     className="w-full px-3.5 py-2.5 text-xs font-mono"
                   />
                   <p className="text-[11px] text-slate-500 mt-1">
-                    Le coordinateur des transports FIE vous contactera sur ce numéro dès l'atterrissage de votre vol.
+                    {lang === 'fr'
+                      ? 'Le coordinateur des transports FIE vous contactera sur ce numéro direct dès l\'atterrissage de votre vol.'
+                      : 'The official FIE transport coordinator will reach you at this number upon flight landing.'}
                   </p>
                 </div>
 
@@ -560,50 +526,56 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
               <div className="inst-card p-6 shadow-sm">
                 <h4 className="text-sm font-bold text-[#0F172A] pb-3 border-b border-slate-200 mb-4 flex items-center gap-2">
                   <Bus className="w-4 h-4 text-[#03396C]" />
-                  <span>Protocole Navette FIE</span>
+                  <span>{lang === 'fr' ? 'Protocole Navette FIE' : 'FIE Shuttle Protocol'}</span>
                 </h4>
 
                 <div className="space-y-3 text-xs text-slate-600 mb-6">
                   <div className="flex justify-between py-1 border-b border-slate-100">
-                    <span>Aéroport :</span>
+                    <span>{lang === 'fr' ? 'Aéroport :' : 'Airport:'}</span>
                     <strong className="text-slate-900 font-mono">{airport}</strong>
                   </div>
                   <div className="flex justify-between py-1 border-b border-slate-100">
-                    <span>Trajet :</span>
-                    <strong className="text-slate-900 capitalize">{tripType === 'roundtrip' ? 'Aller-Retour' : tripType}</strong>
+                    <span>{lang === 'fr' ? 'Trajet :' : 'Route:'}</span>
+                    <strong className="text-slate-900 capitalize">
+                      {tripType === 'roundtrip' ? (lang === 'fr' ? 'Aller-Retour' : 'Roundtrip') : (tripType === 'arrival' ? (lang === 'fr' ? 'Arrivée' : 'Arrival') : (lang === 'fr' ? 'Départ' : 'Departure'))}
+                    </strong>
                   </div>
                   <div className="flex justify-between py-1 border-b border-slate-100">
-                    <span>Passagers :</span>
+                    <span>{lang === 'fr' ? 'Passagers :' : 'Passengers:'}</span>
                     <strong className="text-slate-900 font-mono">{passengerCount} pers.</strong>
                   </div>
                   <div className="flex justify-between py-1 border-b border-slate-100">
-                    <span>Housses de sabre :</span>
+                    <span>{lang === 'fr' ? 'Housses de sabre :' : 'Sabre Bags:'}</span>
                     <strong className="text-[#C8102E] font-mono">{weaponBagsCount} sacs 1m40</strong>
                   </div>
                   <div className="flex justify-between py-1 border-b border-slate-100">
-                    <span>Hôtel de destination :</span>
+                    <span>{lang === 'fr' ? 'Hôtel de destination :' : 'Destination Hotel:'}</span>
                     <strong className="text-slate-900 text-right">
                       {verifiedReservation.hotelId === 'el-mouradi-gammarth' ? 'El Mouradi Gammarth' : 'Golden Carthage'}
                     </strong>
                   </div>
                   <div className="flex justify-between py-1 border-b border-slate-100">
-                    <span>Véhicule sélectionné :</span>
+                    <span>{lang === 'fr' ? 'Véhicule assigné :' : 'Assigned Vehicle:'}</span>
                     <strong className="text-slate-900 text-right">
-                      {isVipVan ? 'Van VIP Mercedes Dédié' : 'Navette Minibus FIE'}
+                      {lang === 'fr' ? 'Minibus Officiel FIE Sprinter' : 'Official FIE Sprinter Minibus'}
                     </strong>
                   </div>
                   <div className="flex justify-between py-1 text-slate-900 font-bold">
-                    <span>Tarif Transfert :</span>
-                    <span className="font-mono text-[#03396C] text-sm">
-                      {shuttlePriceEur === 0 ? 'Inclus dans le pack (0 €)' : `+${shuttlePriceEur} €`}
+                    <span>{lang === 'fr' ? 'Tarif Transfert :' : 'Transfer Cost:'}</span>
+                    <span className="font-mono text-emerald-700 text-sm font-black">
+                      {lang === 'fr' ? 'Inclus dans le pack (0 €)' : 'Included in pack (0 €)'}
                     </span>
                   </div>
                 </div>
 
                 {/* Grouping explanation */}
                 <div className="p-3.5 rounded-lg bg-blue-50/70 border border-blue-200 text-xs text-slate-700 mb-6 leading-relaxed">
-                  <strong className="text-[#03396C] block mb-1">Optimisation &amp; Regroupement :</strong>
-                  Le régisseur FIE regroupe automatiquement les délégations atterrissant sur le même aéroport dans un créneau de 45 minutes pour des convois sécurisés vers Gammarth.
+                  <strong className="text-[#03396C] block mb-1">
+                    {lang === 'fr' ? 'Optimisation & Regroupement FIE :' : 'FIE Grouping & Optimization:'}
+                  </strong>
+                  {lang === 'fr'
+                    ? 'Le régisseur FIE regroupe automatiquement les délégations atterrissant sur le même aéroport dans un créneau de 45 minutes pour des convois directs et sécurisés vers Gammarth.'
+                    : 'The FIE coordinator automatically groups delegations arriving at the same airport within a 45-minute window for direct, secured convoys to Gammarth.'}
                 </div>
 
                 {/* Submit button */}
@@ -615,12 +587,12 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
                   {isSubmitting ? (
                     <>
                       <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                      <span>Enregistrement Navette...</span>
+                      <span>{lang === 'fr' ? 'Enregistrement Navette...' : 'Saving Shuttle...'}</span>
                     </>
                   ) : (
                     <>
                       <CheckCircle2 className="w-4 h-4" />
-                      <span>Valider ma Navette Officielle</span>
+                      <span>{lang === 'fr' ? 'Valider ma Navette Officielle' : 'Confirm Official Shuttle'}</span>
                     </>
                   )}
                 </button>
@@ -631,8 +603,12 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
                 <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-start gap-3 animate-fadeIn">
                   <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                   <div>
-                    <strong className="block mb-0.5">Navette Confirmée avec Succès</strong>
-                    Votre itinéraire a été synchronisé. Vous pouvez retrouver les détails et modifier vos horaires à tout moment dans l'onglet « Mes Réservations ».
+                    <strong className="block mb-0.5">
+                      {lang === 'fr' ? 'Navette Confirmée avec Succès' : 'Shuttle Successfully Confirmed'}
+                    </strong>
+                    {lang === 'fr'
+                      ? 'Votre itinéraire a été synchronisé. Vous pouvez retrouver les détails et modifier vos horaires à tout moment dans l\'onglet « Mes Réservations ».'
+                      : 'Your transfer itinerary is synchronized. You can review details and update flight times anytime in "My Bookings".'}
                   </div>
                 </div>
               )}

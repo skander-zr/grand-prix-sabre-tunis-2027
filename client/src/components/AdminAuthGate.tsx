@@ -49,13 +49,15 @@ export const AdminAuthGate: React.FC<AdminAuthGateProps> = ({ onSuccess, onCance
             <Lock className="w-6 h-6" />
           </div>
           <div className="inline-block px-2.5 py-0.5 rounded bg-slate-100 text-[10px] font-mono font-bold text-slate-600 uppercase tracking-widest mb-1.5">
-            Accès Restreint &bull; Commissaires FIE
+            {lang === 'fr' ? 'Accès Restreint • Commissaires FIE' : 'Restricted Access • FIE Commissioners'}
           </div>
           <h1 className="text-xl font-extrabold text-[#0F172A] tracking-tight">
-            Espace Hôte &amp; Super Admin
+            {lang === 'fr' ? 'Espace Hôte & Super Admin' : 'Host & Super Admin Portal'}
           </h1>
           <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
-            Portail réservé aux directions des 2 hôtels 5★ officiels et aux commissaires du comité d'organisation FIE/FTE.
+            {lang === 'fr'
+              ? 'Portail réservé aux directions des 2 hôtels 5★ officiels et aux commissaires du comité d\'organisation FIE/FTE.'
+              : 'Portal reserved for official 5★ hotel management and FIE/FTE organizing committee commissioners.'}
           </p>
         </div>
 
@@ -65,24 +67,24 @@ export const AdminAuthGate: React.FC<AdminAuthGateProps> = ({ onSuccess, onCance
           {/* Role selector */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Profil d'Accréditation
+              {lang === 'fr' ? 'Profil d\'Accréditation' : 'Accreditation Profile'}
             </label>
             <div className="space-y-2">
               {[
                 {
                   id: 'super-admin',
-                  title: 'Comité Exécutif FIE / FTE',
-                  desc: 'Super-Admin global (tous les hôtels & navettes)'
+                  title: lang === 'fr' ? 'Comité Exécutif FIE / FTE' : 'FIE / FTE Executive Committee',
+                  desc: lang === 'fr' ? 'Super-Admin global (tous les hôtels & navettes)' : 'Global Super-Admin (all hotels & shuttles)'
                 },
                 {
                   id: 'el-mouradi-gammarth',
-                  title: 'Hôtel El Mouradi Gammarth (5★)',
-                  desc: 'Village Athlètes (Gestion chambres & check-in)'
+                  title: lang === 'fr' ? 'Hôtel El Mouradi Gammarth (5★)' : 'El Mouradi Gammarth Hotel (5★)',
+                  desc: lang === 'fr' ? 'Village Athlètes (Gestion chambres & check-in)' : 'Athletes Village (Rooms & check-in)'
                 },
                 {
                   id: 'golden-carthage',
-                  title: 'Hôtel Golden Carthage (5★)',
-                  desc: 'Hub VIP Arbitres (Gestion quotas & check-in)'
+                  title: lang === 'fr' ? 'Hôtel Golden Carthage (5★)' : 'Golden Carthage Hotel (5★)',
+                  desc: lang === 'fr' ? 'Hub VIP Arbitres (Gestion quotas & check-in)' : 'Referees & VIP Hub (Quotas & check-in)'
                 }
               ].map((role) => (
                 <div
@@ -103,7 +105,7 @@ export const AdminAuthGate: React.FC<AdminAuthGateProps> = ({ onSuccess, onCance
           {/* PIN Input */}
           <div className="pt-1">
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Code PIN d'Accréditation
+              {lang === 'fr' ? 'Code PIN d\'Accréditation' : 'Accreditation PIN Code'}
             </label>
             <div className="relative">
               <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -115,7 +117,7 @@ export const AdminAuthGate: React.FC<AdminAuthGateProps> = ({ onSuccess, onCance
                   setPin(e.target.value);
                   setError(false);
                 }}
-                placeholder="Saisissez votre code PIN sécurisé"
+                placeholder={lang === 'fr' ? 'Saisissez votre code PIN sécurisé (ex: FTE2027)' : 'Enter your secure PIN code (e.g. FTE2027)'}
                 className="w-full py-2.5 pl-10 pr-4 text-xs font-mono"
               />
             </div>
@@ -123,7 +125,7 @@ export const AdminAuthGate: React.FC<AdminAuthGateProps> = ({ onSuccess, onCance
             {error && (
               <div className="flex items-center gap-1.5 mt-2 text-red-700 text-xs bg-red-50 border border-red-200 px-3 py-1.5 rounded-lg">
                 <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                <span>Code PIN erroné. Veuillez contacter le coordinateur officiel.</span>
+                <span>{lang === 'fr' ? 'Code PIN erroné. Veuillez contacter le coordinateur officiel.' : 'Invalid PIN code. Please contact the official coordinator.'}</span>
               </div>
             )}
           </div>
@@ -139,7 +141,7 @@ export const AdminAuthGate: React.FC<AdminAuthGateProps> = ({ onSuccess, onCance
             ) : (
               <div className="flex items-center justify-center gap-2">
                 <ShieldCheck className="w-4 h-4" />
-                <span>Déverrouiller le Tableau de Bord</span>
+                <span>{lang === 'fr' ? 'Déverrouiller le Tableau de Bord' : 'Unlock Admin Dashboard'}</span>
               </div>
             )}
           </button>
@@ -149,7 +151,7 @@ export const AdminAuthGate: React.FC<AdminAuthGateProps> = ({ onSuccess, onCance
         <div className="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500">
           <span className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-            Chiffrement TLS 1.3
+            {lang === 'fr' ? 'Chiffrement TLS 1.3' : 'TLS 1.3 Encryption'}
           </span>
           <span className="font-mono text-[10px]">FIE-GP-TUNIS-2027</span>
         </div>

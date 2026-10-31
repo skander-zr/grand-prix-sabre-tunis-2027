@@ -10,8 +10,10 @@ import { SuperAdminDashboard } from '../components/SuperAdminDashboard';
 import { AdminAuthGate } from '../components/AdminAuthGate';
 import { Footer } from '../components/Footer';
 import { Reservation } from '../types/gp';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function Home() {
+  const { lang } = useLanguage();
   const [location, setLocation] = useLocation();
 
   const getInitialTab = () => {
@@ -133,13 +135,13 @@ export default function Home() {
                         onClick={() => setActiveTab('hotels')}
                         className="text-[#03396C] hover:underline font-semibold cursor-pointer"
                       >
-                        &larr; Consulter le site public
+                        {lang === 'fr' ? '← Consulter le site public' : '← View public site'}
                       </button>
                       <button
                         onClick={handleAdminLogout}
                         className="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors text-[11px] font-semibold cursor-pointer"
                       >
-                        Déconnexion
+                        {lang === 'fr' ? 'Déconnexion' : 'Logout'}
                       </button>
                     </div>
                   </div>
@@ -168,9 +170,9 @@ export default function Home() {
                     <span className="font-bold text-[#03396C]">Grand Prix Sabre Tunis 2027</span>
                     <span>&bull;</span>
                     <span className="text-slate-700 font-medium">
-                      {activeTab === 'booking' && 'Formulaire Officiel d\'Engagement & Réservation Hôtelière 5★'}
-                      {activeTab === 'shuttle' && 'Transferts Aéroports Officiels (TUN, NBE, MIR)'}
-                      {activeTab === 'client' && 'Portail Délégations & Voucher / Facture A4'}
+                      {activeTab === 'booking' && (lang === 'fr' ? 'Formulaire Officiel d\'Engagement & Réservation Hôtelière 5★' : 'Official Entry & 5★ Hotel Booking Form')}
+                      {activeTab === 'shuttle' && (lang === 'fr' ? 'Transferts Aéroports Officiels (TUN, NBE, MIR)' : 'Official Airport Transfers (TUN, NBE, MIR)')}
+                      {activeTab === 'client' && (lang === 'fr' ? 'Portail Délégations & Voucher / Facture A4' : 'Delegations Portal & A4 Voucher / Invoice')}
                     </span>
                   </div>
 
@@ -179,7 +181,7 @@ export default function Home() {
                     onClick={() => setActiveTab('hotels')}
                     className="text-[#03396C] hover:underline font-semibold text-xs cursor-pointer"
                   >
-                    &larr; Retour aux Hôtels 5★
+                    {lang === 'fr' ? '← Retour aux Hôtels 5★' : '← Back to 5★ Hotels'}
                   </button>
                 </div>
               </div>

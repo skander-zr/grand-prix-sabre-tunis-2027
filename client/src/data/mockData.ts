@@ -550,25 +550,25 @@ export const AIRPORTS = [
     distanceToGammarthKm: 18,
     typicalTransferTimeMin: 20,
     groupSurchargeEur: 0,
-    privateVanEur: 90,
-    description: 'Inclus dans le pack officiel (0 € en navette groupée)'
+    privateVanEur: 0,
+    description: 'Inclus dans le pack officiel (0 €)'
   },
   {
     code: 'NBE',
     name: 'Aéroport International d\'Enfidha-Hammamet (NBE - 100 km)',
     distanceToGammarthKm: 100,
     typicalTransferTimeMin: 75,
-    groupSurchargeEur: 35,
-    privateVanEur: 160,
-    description: 'Supplément transfert longue distance : +35 € / passager (ou 160 € en Van VIP privatif)'
+    groupSurchargeEur: 0,
+    privateVanEur: 0,
+    description: 'Inclus dans le pack officiel (0 €)'
   },
   {
     code: 'MIR',
     name: 'Aéroport International de Monastir Habib-Bourguiba (MIR - 165 km)',
     distanceToGammarthKm: 165,
     typicalTransferTimeMin: 120,
-    groupSurchargeEur: 45,
-    privateVanEur: 220,
-    description: 'Supplément transfert longue distance : +45 € / passager (ou 220 € en Van VIP privatif)'
+    groupSurchargeEur: 0,
+    privateVanEur: 0,
+    description: 'Inclus dans le pack officiel (0 €)'
   }
 ];

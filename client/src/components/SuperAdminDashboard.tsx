@@ -330,56 +330,44 @@ export const SuperAdminDashboard: React.FC = () => {
 
         </div>
 
-        {/* FTE Detailed Financial Breakdown Panel (Chambres + Suppléments) */}
+        {/* FTE Detailed Financial Breakdown Panel (Chambres & Inclusions) */}
         <div className="inst-card p-6 bg-white border border-slate-200 shadow-xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-200">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#03396C]"></span>
               <h3 className="text-sm font-bold text-[#0F172A] uppercase tracking-wider">
-                Ventilation Détaillée des Revenus de la Fédération (FTE)
+                {lang === 'fr' ? 'Ventilation Détaillée des Revenus & Inclusions (FTE / FIE)' : 'Detailed Revenue Breakdown & Official Inclusions (FTE / FIE)'}
               </h3>
             </div>
             <span className="text-xs font-mono font-bold text-[#03396C] bg-blue-50 px-2.5 py-1 rounded border border-blue-200">
-              Total Encaissé / Facturé : {totalRevenueEUR} €
+              {lang === 'fr' ? 'Total Encaissé / Facturé :' : 'Total Invoiced / Collected:'} {totalRevenueEUR} €
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
             
             <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-              <div className="text-slate-500 font-medium mb-1">1. Base Hébergement</div>
-              <div className="text-lg font-black font-mono text-slate-900">{totalRoomRevenue} €</div>
-              <div className="text-[10px] text-slate-500 mt-0.5">Nuitées 5★ officielles</div>
+              <div className="text-slate-500 font-medium mb-1">{lang === 'fr' ? '1. Nuitées Hôtelières 5★' : '1. 5★ Hotel Nights'}</div>
+              <div className="text-lg font-black font-mono text-slate-900">{totalRoomRevenue || totalRevenueEUR} €</div>
+              <div className="text-[10px] text-slate-500 mt-0.5">{lang === 'fr' ? 'Chambres Single & Double' : 'Single & Double Rooms'}</div>
             </div>
 
-            <div className="p-3 rounded-lg bg-blue-50/50 border border-blue-200">
-              <div className="text-[#03396C] font-medium mb-1">2. Late Check-out 19h</div>
-              <div className="text-lg font-black font-mono text-[#03396C]">+{totalLateCheckoutRevenue} €</div>
-              <div className="text-[10px] text-slate-500 mt-0.5">+50 € / chambre</div>
+            <div className="p-3 rounded-lg bg-emerald-50/60 border border-emerald-200">
+              <div className="text-emerald-800 font-medium mb-1">{lang === 'fr' ? '2. Navettes Aéroports' : '2. Airport Shuttles'}</div>
+              <div className="text-lg font-black font-mono text-emerald-800">0 € (Inclus)</div>
+              <div className="text-[10px] text-slate-500 mt-0.5">TUN, NBE, MIR {lang === 'fr' ? 'inclus' : 'included'}</div>
             </div>
 
-            <div className="p-3 rounded-lg bg-blue-50/50 border border-blue-200">
-              <div className="text-[#03396C] font-medium mb-1">3. Vans VIP Privatifs</div>
-              <div className="text-lg font-black font-mono text-[#03396C]">+{totalVipVanRevenue} €</div>
-              <div className="text-[10px] text-slate-500 mt-0.5">Transferts dédiés</div>
+            <div className="p-3 rounded-lg bg-emerald-50/60 border border-emerald-200">
+              <div className="text-emerald-800 font-medium mb-1">{lang === 'fr' ? '3. Frais Règlement Sur Place' : '3. On-site Payment Surcharge'}</div>
+              <div className="text-lg font-black font-mono text-emerald-800">0 € (0 % Frais)</div>
+              <div className="text-[10px] text-slate-500 mt-0.5">{lang === 'fr' ? 'Tarif identique garanti' : 'Strictly identical rate'}</div>
             </div>
 
-            <div className="p-3 rounded-lg bg-blue-50/50 border border-blue-200">
-              <div className="text-[#03396C] font-medium mb-1">4. Salles Kiné / Matériel</div>
-              <div className="text-lg font-black font-mono text-[#03396C]">+{totalPhysioRevenue} €</div>
-              <div className="text-[10px] text-slate-500 mt-0.5">+100 € / jour</div>
-            </div>
-
-            <div className="p-3 rounded-lg bg-amber-50/60 border border-amber-200">
-              <div className="text-amber-800 font-medium mb-1">5. Suppléments NBE/MIR</div>
-              <div className="text-lg font-black font-mono text-amber-900">+{totalAirportSurchargeRevenue} €</div>
-              <div className="text-[10px] text-slate-500 mt-0.5">Liaisons longue distance</div>
-            </div>
-
-            <div className="p-3 rounded-lg bg-amber-50/60 border border-amber-200">
-              <div className="text-amber-800 font-medium mb-1">6. Frais Règlement Sur Place</div>
-              <div className="text-lg font-black font-mono text-amber-900">+{totalOnsiteAdminRevenue} €</div>
-              <div className="text-[10px] text-slate-500 mt-0.5">+15 € / nuit / chambre</div>
+            <div className="p-3 rounded-lg bg-blue-50/60 border border-blue-200">
+              <div className="text-[#03396C] font-medium mb-1">{lang === 'fr' ? '4. Navettes Radès & Buffets' : '4. Radès Shuttles & Buffets'}</div>
+              <div className="text-lg font-black font-mono text-[#03396C]">100% Inclus</div>
+              <div className="text-[10px] text-slate-500 mt-0.5">{lang === 'fr' ? 'Pack officiel FTE garanti' : 'Official FTE Pack included'}</div>
             </div>
 
           </div>
@@ -388,10 +376,10 @@ export const SuperAdminDashboard: React.FC = () => {
         {/* Admin Navigation Tabs */}
         <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
           {[
-            { id: 'reservations', label: `Réservations (${reservations.length})`, icon: Building },
-            { id: 'shuttles', label: `Arrivées & Navettes (${incomingShuttles.length})`, icon: Bus },
-            { id: 'prices', label: 'Tarifs & Quotas Hôteliers', icon: DollarSign },
-            { id: 'emails', label: `Emails Automatiques (${emailLogs.length})`, icon: Mail }
+            { id: 'reservations', label: lang === 'fr' ? `Réservations (${reservations.length})` : `Bookings (${reservations.length})`, icon: Building },
+            { id: 'shuttles', label: lang === 'fr' ? `Arrivées & Navettes (${incomingShuttles.length})` : `Arrivals & Shuttles (${incomingShuttles.length})`, icon: Bus },
+            { id: 'prices', label: lang === 'fr' ? 'Tarifs & Quotas Hôteliers' : 'Rates & Room Quotas', icon: DollarSign },
+            { id: 'emails', label: lang === 'fr' ? `Emails Automatiques (${emailLogs.length})` : `Automated Emails (${emailLogs.length})`, icon: Mail }
           ].map(tab => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -602,15 +590,15 @@ export const SuperAdminDashboard: React.FC = () => {
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
                     <tr>
-                      <th className="py-3 px-4">Date &amp; Heure Arrivée</th>
-                      <th className="py-3 px-4">Aéroport</th>
-                      <th className="py-3 px-4">Vol &amp; Compagnie</th>
-                      <th className="py-3 px-4">Délégation</th>
-                      <th className="py-3 px-4">Passagers</th>
-                      <th className="py-3 px-4">Housses Sabre</th>
-                      <th className="py-3 px-4">WhatsApp Chauffeur</th>
-                      <th className="py-3 px-4">Hôtel Destination</th>
-                      <th className="py-3 px-4">Véhicule Assigné</th>
+                      <th className="py-3 px-4">{lang === 'fr' ? 'Date & Heure Arrivée' : 'Arrival Date & Time'}</th>
+                      <th className="py-3 px-4">{lang === 'fr' ? 'Aéroport' : 'Airport'}</th>
+                      <th className="py-3 px-4">{lang === 'fr' ? 'Vol & Compagnie' : 'Flight & Airline'}</th>
+                      <th className="py-3 px-4">{lang === 'fr' ? 'Délégation' : 'Delegation'}</th>
+                      <th className="py-3 px-4">{lang === 'fr' ? 'Passagers' : 'Passengers'}</th>
+                      <th className="py-3 px-4">{lang === 'fr' ? 'Housses Sabre' : 'Sabre Bags'}</th>
+                      <th className="py-3 px-4">{lang === 'fr' ? 'Téléphone Chauffeur' : 'Driver Phone'}</th>
+                      <th className="py-3 px-4">{lang === 'fr' ? 'Hôtel Destination' : 'Destination Hotel'}</th>
+                      <th className="py-3 px-4">{lang === 'fr' ? 'Véhicule Assigné' : 'Assigned Vehicle'}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-slate-800 font-mono">

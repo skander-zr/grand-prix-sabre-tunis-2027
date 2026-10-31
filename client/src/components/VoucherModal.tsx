@@ -196,17 +196,31 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ reservation, hotel, 
                     </td>
                   </tr>
                 )}
-                <tr className="bg-slate-50">
-                  <td colSpan={4} className="p-2.5 border border-slate-300 font-semibold text-slate-700">
-                    Taxe de séjour municipale & Frais logistiques FIE (3 € / nuit / pers.)
-                  </td>
-                  <td className="p-2.5 border border-slate-300 text-right font-semibold">
-                    {reservation.totalGuestsCount} pers.
-                  </td>
-                  <td className="p-2.5 border border-slate-300 text-right font-bold">
-                    {reservation.cityTaxAmount} €
-                  </td>
-                </tr>
+                {reservation.cityTaxAmount > 0 ? (
+                  <tr className="bg-slate-50">
+                    <td colSpan={4} className="p-2.5 border border-slate-300 font-semibold text-slate-700">
+                      Taxe de séjour municipale & Frais logistiques FIE
+                    </td>
+                    <td className="p-2.5 border border-slate-300 text-right font-semibold">
+                      {reservation.totalGuestsCount} pers.
+                    </td>
+                    <td className="p-2.5 border border-slate-300 text-right font-bold">
+                      {reservation.cityTaxAmount} €
+                    </td>
+                  </tr>
+                ) : (
+                  <tr className="bg-slate-50">
+                    <td colSpan={4} className="p-2.5 border border-slate-300 font-semibold text-slate-700">
+                      Navettes Aéroports (TUN/NBE/MIR), Liaisons Radès & Pack Officiel FTE
+                    </td>
+                    <td className="p-2.5 border border-slate-300 text-center font-semibold text-emerald-700">
+                      Inclus
+                    </td>
+                    <td className="p-2.5 border border-slate-300 text-right font-bold text-emerald-700">
+                      0 €
+                    </td>
+                  </tr>
+                )}
               </tbody>
               <tfoot className="bg-slate-100 font-bold text-slate-900">
                 <tr>
@@ -214,14 +228,21 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ reservation, hotel, 
                     Montant Total Réglé / Dû :
                   </td>
                   <td className="p-3 border border-slate-300 text-right text-base text-slate-950">
-                    {reservation.totalAmount} € <span className="text-[11px] text-slate-500 font-normal">(~{Math.round(reservation.totalAmount * 3.35)} TND)</span>
+                    {reservation.totalAmount} € <span className="text-[11px] text-slate-500 font-normal">(~{Math.round(reservation.totalAmount * 3.3)} TND)</span>
                   </td>
                 </tr>
               </tfoot>
             </table>
             <div className="mt-1 flex items-center justify-between text-[11px] text-slate-500">
-              <span>Mode de règlement : <strong>Paiement en Espèces (Cash) sur Place au Check-in (€ / TND)</strong> &bull; Statut : <strong className="text-emerald-700 uppercase">Confirmé & Garanti</strong></span>
-              <span>TVA 7% & Taxes Hôtelières Incluses</span>
+              <span>
+                Mode de règlement : <strong>
+                  {reservation.paymentMethod === 'stripe_card' && 'Carte Bancaire Sécurisée (Stripe)'}
+                  {reservation.paymentMethod === 'bank_transfer' && 'Virement Bancaire Officiel FIE'}
+                  {reservation.paymentMethod === 'onsite_federation' && 'Règlement au Bureau d\'Accréditation Hôtel (0 € Frais)'}
+                  {!reservation.paymentMethod && 'Règlement Officiel'}
+                </strong> &bull; Statut : <strong className="text-emerald-700 uppercase">{reservation.paymentStatus === 'paid' ? 'Payé & Garanti' : 'Confirmé & Enregistré'}</strong>
+              </span>
+              <span>TVA & Buffets Inclus</span>
             </div>
           </div>
 
@@ -241,16 +262,16 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ reservation, hotel, 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-slate-800">
                 <div>
                   <strong>Trajet :</strong> {reservation.shuttle.tripType === 'roundtrip' ? 'Aller-Retour' : reservation.shuttle.tripType}
-                  <div className="text-slate-600">Aéroport : <strong>{reservation.shuttle.airport}</strong></div>
+                  <div className="text-slate-600">Aéroport : <strong>{reservation.shuttle.airport} (0 €)</strong></div>
                 </div>
                 <div>
                   <strong>Vol d'Arrivée :</strong> {reservation.shuttle.arrivalAirline} {reservation.shuttle.arrivalFlightNumber || 'N/A'}
                   <div className="text-slate-600">Date/Heure : {reservation.shuttle.arrivalDateTime ? reservation.shuttle.arrivalDateTime.replace('T', ' à ') : 'N/A'}</div>
                 </div>
                 <div>
-                  <strong>Coordination Chauffeur :</strong>
-                  <div className="text-emerald-800 font-semibold">WhatsApp : {reservation.shuttle.driverWhatsApp}</div>
-                  <div className="text-[11px] text-slate-600">Point d'accueil : Terminal 1 Sortie Desk FTE</div>
+                  <strong>Coordination Chauffeur / Régie :</strong>
+                  <div className="text-emerald-800 font-semibold">Téléphone : {reservation.shuttle.driverWhatsApp}</div>
+                  <div className="text-[11px] text-slate-600">Point d'accueil : Terminal Sortie Desk FTE</div>
                 </div>
               </div>
             </div>

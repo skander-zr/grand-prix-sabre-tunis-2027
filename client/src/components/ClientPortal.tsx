@@ -64,30 +64,30 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
     if (searchMode === 'code') {
       const code = (codeToSearch || searchCode).trim().toUpperCase();
       if (!code) {
-        toast.warning('Veuillez saisir votre code de réservation.');
+        toast.warning(lang === 'fr' ? 'Veuillez saisir votre code de réservation.' : 'Please enter your booking reference code.');
         return;
       }
       const res = getReservation(code);
       if (res) {
         setActiveReservation(res);
-        toast.success(`Dossier ${res.id} chargé avec succès.`);
+        toast.success(lang === 'fr' ? `Dossier ${res.id} chargé avec succès.` : `Booking file ${res.id} successfully retrieved.`);
       } else {
         setActiveReservation(null);
-        toast.error('Aucune réservation trouvée pour ce code.');
+        toast.error(lang === 'fr' ? 'Aucune réservation trouvée pour ce code.' : 'No reservation found for this reference code.');
       }
     } else {
       if (!searchEmail && !searchPassport) {
-        toast.warning('Veuillez renseigner votre Email et votre Numéro de Passeport.');
+        toast.warning(lang === 'fr' ? 'Veuillez renseigner votre Email et votre Numéro de Passeport.' : 'Please enter your official Email and Passport Number.');
         return;
       }
       const res = findReservationByEmailAndPassport(searchEmail, searchPassport);
       if (res) {
         setActiveReservation(res);
         setSearchCode(res.id);
-        toast.success(`Dossier ${res.id} retrouvé via votre passeport !`);
+        toast.success(lang === 'fr' ? `Dossier ${res.id} retrouvé via votre passeport !` : `Booking ${res.id} retrieved via your passport!`);
       } else {
         setActiveReservation(null);
-        toast.error('Aucun dossier ne correspond à cet email et ce numéro de passeport.');
+        toast.error(lang === 'fr' ? 'Aucun dossier ne correspond à cet email et ce numéro de passeport.' : 'No record matching this email and passport.');
       }
     }
   };
@@ -101,7 +101,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
 
   const handleOpenEditFlight = () => {
     if (!activeReservation?.shuttle) {
-      toast.info('Aucune navette configurée pour ce dossier.');
+      toast.info(lang === 'fr' ? 'Aucune navette configurée pour ce dossier.' : 'No shuttle scheduled for this file.');
       return;
     }
     setEditFlightData({
@@ -131,7 +131,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
         }
       });
       setIsEditingFlight(false);
-      toast.success('Coordonnées de vol mises à jour avec succès.');
+      toast.success(lang === 'fr' ? 'Coordonnées de vol mises à jour avec succès.' : 'Flight information updated successfully.');
     }
   };
 
@@ -146,19 +146,21 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-blue-50 border border-blue-200 text-[#03396C] text-xs font-semibold mb-2.5">
               <FileText className="w-3.5 h-3.5" />
-              <span>Espace Délégations &bull; Suivi de Dossier Officiel</span>
+              <span>{lang === 'fr' ? 'Espace Délégations • Suivi de Dossier Officiel' : 'Delegations Portal • Official File Tracking'}</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight">
-              Mes Réservations &amp; Documents Officiels
+              {lang === 'fr' ? 'Mes Réservations & Documents Officiels' : 'My Bookings & Official Documents'}
             </h2>
             <p className="mt-1.5 text-sm text-slate-600 max-w-3xl leading-relaxed">
-              Consultez les détails de votre hébergement 5★, téléchargez vos vouchers et factures officiels avec QR Code, et ajustez vos coordonnées de vol à tout moment.
+              {lang === 'fr'
+                ? 'Consultez les détails de votre hébergement 5★, téléchargez vos vouchers et factures officiels avec QR Code, et ajustez vos coordonnées de vol à tout moment.'
+                : 'Review your 5★ hotel details, download official vouchers & invoices with QR Code, and adjust your flight details anytime.'}
             </p>
           </div>
 
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 bg-white px-3.5 py-2.5 rounded-xl border border-slate-200 shadow-xs">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-            <span>Portail Accréditation Sécurisé</span>
+            <span>{lang === 'fr' ? 'Portail Accréditation Sécurisé' : 'Secure Accreditation Portal'}</span>
           </div>
         </div>
 
@@ -176,7 +178,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
                   : 'border-transparent text-slate-500 hover:text-slate-800'
               }`}
             >
-              Recherche par Code Dossier (GPS2027)
+              {lang === 'fr' ? 'Recherche par Code Dossier (GPS2027)' : 'Search by Booking Code (GPS2027)'}
             </button>
             <button
               type="button"
@@ -187,14 +189,14 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
                   : 'border-transparent text-slate-500 hover:text-slate-800'
               }`}
             >
-              Code oublié ? Recherche par Email + Passeport
+              {lang === 'fr' ? 'Code oublié ? Recherche par Email + Passeport' : 'Forgot code? Search by Email + Passport'}
             </button>
           </div>
 
           {searchMode === 'code' ? (
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                Saisissez votre code de réservation
+                {lang === 'fr' ? 'Saisissez votre code de réservation' : 'Enter your booking code'}
               </label>
               <div className="flex gap-2">
                 <input
@@ -213,21 +215,23 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
                   className="btn-primary cursor-pointer text-sm font-semibold px-6"
                 >
                   <Search className="w-4 h-4" />
-                  <span>Consulter</span>
+                  <span>{lang === 'fr' ? 'Consulter' : 'View Booking'}</span>
                 </button>
               </div>
               <span className="text-[11px] text-slate-500 mt-2 block">
-                Saisissez le code de réservation à 11 caractères délivré lors de votre confirmation.
+                {lang === 'fr'
+                  ? 'Saisissez le code de réservation à 11 caractères délivré lors de votre confirmation.'
+                  : 'Enter the 11-character booking reference provided upon confirmation.'}
               </span>
             </div>
           ) : (
             <div className="space-y-3">
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Retrouvez votre réservation sans votre code
+                {lang === 'fr' ? 'Retrouvez votre réservation sans votre code' : 'Find your booking without your code'}
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">Email Officiel</label>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">{lang === 'fr' ? 'Email Officiel' : 'Official Email'}</label>
                   <input
                     type="email"
                     value={searchEmail}
@@ -240,7 +244,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">Numéro de Passeport</label>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">{lang === 'fr' ? 'Numéro de Passeport' : 'Passport Number'}</label>
                   <input
                     type="text"
                     value={searchPassport}
@@ -259,7 +263,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
                 className="w-full btn-primary cursor-pointer text-sm font-semibold py-2.5 mt-2"
               >
                 <Search className="w-4 h-4" />
-                <span>Rechercher mon dossier</span>
+                <span>{lang === 'fr' ? 'Rechercher mon dossier' : 'Find my booking'}</span>
               </button>
             </div>
           )}
@@ -305,7 +309,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
                     className="btn-primary cursor-pointer text-xs font-semibold px-4 py-2.5"
                   >
                     <Printer className="w-4 h-4" />
-                    <span>Imprimer Voucher &amp; Facture A4</span>
+                    <span>{lang === 'fr' ? 'Imprimer Voucher & Facture A4' : 'Print A4 Voucher & Invoice'}</span>
                   </button>
                 </div>
               </div>
@@ -317,13 +321,13 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
                     <Building2 className="w-4 h-4 text-[#03396C]" />
-                    <span>Hébergement 5★ Retenu</span>
+                    <span>{lang === 'fr' ? 'Hébergement 5★ Retenu' : 'Confirmed 5★ Hotel'}</span>
                   </div>
                   <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
                     <strong className="text-sm text-[#0F172A] block">{hotel.name}</strong>
                     <div className="text-slate-600">{hotel.location}</div>
                     <div className="text-slate-700 font-mono pt-1">
-                      Du <strong>{activeReservation.checkInDate}</strong> au <strong>{activeReservation.checkOutDate}</strong> ({activeReservation.nightsCount} nuits)
+                      {lang === 'fr' ? 'Du' : 'From'} <strong>{activeReservation.checkInDate}</strong> {lang === 'fr' ? 'au' : 'to'} <strong>{activeReservation.checkOutDate}</strong> ({activeReservation.nightsCount} {lang === 'fr' ? 'nuits' : 'nights'})
                     </div>
                     <div className="text-slate-600 pt-1">
                       {activeReservation.singleRoomCount > 0 && `${activeReservation.singleRoomCount} Single `}
@@ -336,59 +340,31 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
                     <CreditCard className="w-4 h-4 text-[#03396C]" />
-                    <span>Règlement &amp; Facturation</span>
+                    <span>{lang === 'fr' ? 'Règlement & Facturation' : 'Payment & Invoicing'}</span>
                   </div>
                   <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5 font-mono">
                     <div className="flex justify-between text-slate-600">
-                      <span>Total Séjour TTC :</span>
+                      <span>{lang === 'fr' ? 'Total Séjour TTC :' : 'Total Stay (VAT incl.):'}</span>
                       <strong className="text-[#0F172A] text-sm">{activeReservation.totalAmount} €</strong>
                     </div>
-                    {activeReservation.upsells?.lateCheckout && (
-                      <div className="flex justify-between text-[#03396C] text-[11px]">
-                        <span>Late Check-out 19h :</span>
-                        <span>Inclus (+{activeReservation.upsells.lateCheckoutPrice || 50} €)</span>
-                      </div>
-                    )}
-                    {activeReservation.upsells?.vipShuttle && (
-                      <div className="flex justify-between text-[#03396C] text-[11px]">
-                        <span>Van VIP Privatif :</span>
-                        <span>Inclus (+{activeReservation.upsells.vipShuttlePrice || 90} €)</span>
-                      </div>
-                    )}
-                    {activeReservation.upsells?.physioRoomDays && activeReservation.upsells.physioRoomDays > 0 ? (
-                      <div className="flex justify-between text-[#03396C] text-[11px]">
-                        <span>Salle Kiné Privatisée :</span>
-                        <span>Inclus (+{activeReservation.upsells.physioRoomPrice || 100} €)</span>
-                      </div>
-                    ) : null}
-                    {activeReservation.airportSurcharge && activeReservation.airportSurcharge > 0 ? (
-                      <div className="flex justify-between text-amber-700 text-[11px]">
-                        <span>Supplément Aéroport :</span>
-                        <span>+{activeReservation.airportSurcharge} €</span>
-                      </div>
-                    ) : null}
-                    {activeReservation.onsiteAdminSurcharge && activeReservation.onsiteAdminSurcharge > 0 ? (
-                      <div className="flex justify-between text-amber-800 text-[11px]">
-                        <span>Frais adm. sur place :</span>
-                        <span>+{activeReservation.onsiteAdminSurcharge} €</span>
-                      </div>
-                    ) : null}
                     <div className="flex justify-between text-slate-600">
-                      <span>Équivalent local :</span>
+                      <span>{lang === 'fr' ? 'Équivalent local :' : 'Local equivalent:'}</span>
                       <span>~{Math.round(activeReservation.totalAmount * 3.3)} TND</span>
                     </div>
                     <div className="pt-2 border-t border-slate-200 flex justify-between items-center">
-                      <span className="text-slate-600">Mode :</span>
+                      <span className="text-slate-600">{lang === 'fr' ? 'Mode :' : 'Method:'}</span>
                       <span className="font-sans font-bold text-xs text-[#03396C]">
-                        {activeReservation.paymentMethod === 'stripe_card' && 'Carte Bancaire (Stripe)'}
-                        {activeReservation.paymentMethod === 'bank_transfer' && 'Virement Bancaire FIE'}
-                        {activeReservation.paymentMethod === 'onsite_federation' && 'Règlement sur Place'}
+                        {activeReservation.paymentMethod === 'stripe_card' && (lang === 'fr' ? 'Carte Bancaire (Stripe)' : 'Credit Card (Stripe)')}
+                        {activeReservation.paymentMethod === 'bank_transfer' && (lang === 'fr' ? 'Virement Bancaire FIE' : 'Official Bank Transfer')}
+                        {activeReservation.paymentMethod === 'onsite_federation' && (lang === 'fr' ? 'Règlement sur Place' : 'On-site Payment')}
                       </span>
                     </div>
                     <div className="text-emerald-700 font-sans font-semibold text-[11px] flex items-center gap-1 pt-1">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       <span>
-                        {activeReservation.paymentStatus === 'paid' ? 'Payé & Encaissé' : 'Enregistré & Validé'}
+                        {activeReservation.paymentStatus === 'paid' 
+                          ? (lang === 'fr' ? 'Payé & Encaissé' : 'Paid & Confirmed') 
+                          : (lang === 'fr' ? 'Enregistré & Validé' : 'Registered & Validated')}
                       </span>
                     </div>
                   </div>
@@ -399,7 +375,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
                       <Bus className="w-4 h-4 text-[#03396C]" />
-                      <span>Transfert Aéroport</span>
+                      <span>{lang === 'fr' ? 'Transfert Aéroport' : 'Airport Shuttle'}</span>
                     </div>
                     {activeReservation.hasShuttle && (
                       <button
@@ -408,7 +384,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
                         className="text-xs text-[#03396C] hover:underline font-semibold flex items-center gap-1 cursor-pointer"
                       >
                         <Edit className="w-3 h-3" />
-                        <span>Modifier vol</span>
+                        <span>{lang === 'fr' ? 'Modifier vol' : 'Edit flight'}</span>
                       </button>
                     )}
                   </div>
@@ -416,37 +392,37 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
                   {activeReservation.hasShuttle && activeReservation.shuttle ? (
                     <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
                       <div className="flex justify-between">
-                        <span className="text-slate-500">Aéroport :</span>
+                        <span className="text-slate-500">{lang === 'fr' ? 'Aéroport :' : 'Airport:'}</span>
                         <strong className="text-slate-900 font-mono">{activeReservation.shuttle.airport}</strong>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-500">Trajet :</span>
+                        <span className="text-slate-500">{lang === 'fr' ? 'Trajet :' : 'Route:'}</span>
                         <strong className="text-slate-900 capitalize">{activeReservation.shuttle.tripType}</strong>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-500">Vol Arrivée :</span>
+                        <span className="text-slate-500">{lang === 'fr' ? 'Vol Arrivée :' : 'Inbound Flight:'}</span>
                         <strong className="text-slate-900 font-mono">
                           {activeReservation.shuttle.arrivalFlightNumber || 'N/A'} ({activeReservation.shuttle.arrivalDateTime ? activeReservation.shuttle.arrivalDateTime.replace('T', ' ') : 'N/A'})
                         </strong>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-500">WhatsApp chauffeur :</span>
+                        <span className="text-slate-500">{lang === 'fr' ? 'Téléphone chauffeur / régie :' : 'Driver / coordinator phone:'}</span>
                         <strong className="text-slate-900 font-mono">{activeReservation.shuttle.driverWhatsApp}</strong>
                       </div>
                       <div className="pt-2 border-t border-slate-200 text-emerald-700 font-semibold text-[11px] flex items-center gap-1">
                         <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Véhicule assigné : {activeReservation.shuttle.assignedVehicle || 'Minibus Officiel FIE'}</span>
+                        <span>{lang === 'fr' ? `Véhicule assigné : ${activeReservation.shuttle.assignedVehicle || 'Minibus Officiel FIE'}` : `Assigned vehicle: ${activeReservation.shuttle.assignedVehicle || 'Official FIE Minibus'}`}</span>
                       </div>
                     </div>
                   ) : (
                     <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 text-xs text-amber-900 space-y-2">
-                      <p>Aucune navette aéroport n'a encore été programmée pour ce dossier.</p>
+                      <p>{lang === 'fr' ? 'Aucune navette aéroport n\'a encore été programmée pour ce dossier.' : 'No airport shuttle scheduled yet for this booking.'}</p>
                       <button
                         type="button"
                         onClick={() => onGoToShuttleBooking?.(activeReservation.id)}
                         className="w-full btn-primary text-xs py-2"
                       >
-                        Programmer ma Navette Maintenant
+                        {lang === 'fr' ? 'Programmer ma Navette Maintenant' : 'Book My Shuttle Now'}
                       </button>
                     </div>
                   )}
@@ -458,7 +434,9 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
               {activeReservation.type === 'group' && activeReservation.federationGroup?.members && (
                 <div className="mt-8 pt-6 border-t border-slate-200">
                   <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
-                    Membres Enregistrés de la Délégation ({activeReservation.federationGroup.members.length} participants)
+                    {lang === 'fr' 
+                      ? `Membres Enregistrés de la Délégation (${activeReservation.federationGroup.members.length} participants)`
+                      : `Registered Delegation Members (${activeReservation.federationGroup.members.length} participants)`}
                   </h4>
 
                   <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white">
@@ -466,11 +444,11 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
                       <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
                         <tr>
                           <th className="py-2.5 px-3">#</th>
-                          <th className="py-2.5 px-3">Nom &amp; Prénom</th>
-                          <th className="py-2.5 px-3">Rôle</th>
-                          <th className="py-2.5 px-3">Passeport</th>
-                          <th className="py-2.5 px-3">Chambre</th>
-                          <th className="py-2.5 px-3">Binôme de Chambre</th>
+                          <th className="py-2.5 px-3">{lang === 'fr' ? 'Nom & Prénom' : 'Full Name'}</th>
+                          <th className="py-2.5 px-3">{lang === 'fr' ? 'Rôle' : 'Role'}</th>
+                          <th className="py-2.5 px-3">{lang === 'fr' ? 'Passeport' : 'Passport'}</th>
+                          <th className="py-2.5 px-3">{lang === 'fr' ? 'Chambre' : 'Room'}</th>
+                          <th className="py-2.5 px-3">{lang === 'fr' ? 'Binôme de Chambre' : 'Roommate'}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 text-slate-800">
@@ -481,7 +459,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
                             <td className="py-2 px-3 capitalize text-slate-600">{m.role}</td>
                             <td className="py-2 px-3 font-mono text-slate-600">{m.passportNumber || '—'}</td>
                             <td className="py-2 px-3 font-semibold text-[#03396C]">
-                              {m.roomPreference === 'single' ? 'Chambre Single' : 'Chambre Double'}
+                              {m.roomPreference === 'single' ? (lang === 'fr' ? 'Chambre Single' : 'Single Room') : (lang === 'fr' ? 'Chambre Double' : 'Double Room')}
                             </td>
                             <td className="py-2 px-3 text-slate-600">{m.roommateName || '—'}</td>
                           </tr>
@@ -501,9 +479,11 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
         {hasSearched && !activeReservation && (
           <div className="max-w-md mx-auto p-6 bg-white border border-slate-200 rounded-xl text-center space-y-3">
             <AlertCircle className="w-8 h-8 text-amber-500 mx-auto" />
-            <h4 className="text-sm font-bold text-slate-900">Aucun Dossier Trouvé</h4>
+            <h4 className="text-sm font-bold text-slate-900">{lang === 'fr' ? 'Aucun Dossier Trouvé' : 'No Reservation Found'}</h4>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Vérifiez le code de réservation saisi. Assurez-vous d'avoir finalisé votre réservation d'hôtel pour obtenir une référence GPS2027.
+              {lang === 'fr'
+                ? "Vérifiez le code de réservation saisi. Assurez-vous d'avoir finalisé votre réservation d'hôtel pour obtenir une référence GPS2027."
+                : "Please check your booking reference code. Ensure you completed your hotel booking to receive a GPS2027 reference."}
             </p>
           </div>
         )}
@@ -517,7 +497,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
               <h3 className="text-base font-bold text-[#0F172A] flex items-center gap-2">
                 <Plane className="w-4 h-4 text-[#03396C]" />
-                <span>Modifier les Informations de Vol</span>
+                <span>{lang === 'fr' ? 'Modifier les Informations de Vol' : 'Edit Flight Information'}</span>
               </h3>
               <button
                 type="button"
@@ -530,21 +510,21 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
 
             <form onSubmit={handleSaveFlight} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Aéroport de Prise en Charge *</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">{lang === 'fr' ? 'Aéroport de Prise en Charge *' : 'Pick-up Airport *'}</label>
                 <select
                   value={editFlightData.airport}
                   onChange={(e) => setEditFlightData({ ...editFlightData, airport: e.target.value as any })}
                   className="w-full px-3 py-2 text-xs font-semibold"
                 >
-                  <option value="TUN">Tunis-Carthage (TUN)</option>
-                  <option value="NBE">Enfidha-Hammamet (NBE)</option>
-                  <option value="MIR">Monastir Habib-Bourguiba (MIR)</option>
+                  <option value="TUN">Tunis-Carthage (TUN) - 0 €</option>
+                  <option value="NBE">Enfidha-Hammamet (NBE) - 0 €</option>
+                  <option value="MIR">Monastir Habib-Bourguiba (MIR) - 0 €</option>
                 </select>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Compagnie Aérienne</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">{lang === 'fr' ? 'Compagnie Aérienne' : 'Airline'}</label>
                   <input
                     type="text"
                     value={editFlightData.arrivalAirline}
@@ -553,7 +533,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Numéro de Vol</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">{lang === 'fr' ? 'Numéro de Vol' : 'Flight Number'}</label>
                   <input
                     type="text"
                     value={editFlightData.arrivalFlightNumber}
@@ -564,7 +544,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Date &amp; Heure d'Atterrissage</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">{lang === 'fr' ? "Date & Heure d'Atterrissage" : 'Arrival Date & Time'}</label>
                 <input
                   type="datetime-local"
                   value={editFlightData.arrivalDateTime}
@@ -574,11 +554,12 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Numéro WhatsApp Coordinateur Chauffeur</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">{lang === 'fr' ? 'Numéro de Téléphone Chauffeur / Régie' : 'Driver / Coordinator Phone Number'}</label>
                 <input
                   type="tel"
                   value={editFlightData.driverWhatsApp}
                   onChange={(e) => setEditFlightData({ ...editFlightData, driverWhatsApp: e.target.value })}
+                  placeholder="+216 20 000 000"
                   className="w-full px-3 py-2 text-xs font-mono"
                 />
               </div>
@@ -589,14 +570,14 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
                   onClick={() => setIsEditingFlight(false)}
                   className="btn-outline text-xs px-4 py-2"
                 >
-                  Annuler
+                  {lang === 'fr' ? 'Annuler' : 'Cancel'}
                 </button>
                 <button
                   type="submit"
                   className="btn-primary text-xs px-5 py-2"
                 >
                   <Save className="w-4 h-4" />
-                  <span>Enregistrer les modifications</span>
+                  <span>{lang === 'fr' ? 'Enregistrer les modifications' : 'Save changes'}</span>
                 </button>
               </div>
             </form>

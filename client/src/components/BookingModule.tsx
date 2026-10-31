@@ -178,30 +178,18 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
   const subtotal = (effectiveSingleRooms * singlePrice * nightsCount) +
                    (effectiveDoubleRooms * doublePrice * nightsCount);
 
-  // Upsell costs
-  const lateCheckoutCost = lateCheckout ? (50 * totalRooms) : 0;
+  // All extra services & transfers are included at 0 EUR (Room price is the only billed amount)
+  const lateCheckoutCost = 0;
   const isRoundTrip = shuttleTripType === 'roundtrip';
   const tripMultiplier = isRoundTrip ? 2 : 1;
-  const vipShuttleCost = vipShuttle ? (90 * tripMultiplier) : 0;
-  const physioRoomCost = physioRoom ? (100 * nightsCount) : 0;
-
-  // Airport distance surcharge (TUN 0€, NBE 35€/pax or 160€ Van, MIR 45€/pax or 220€ Van)
-  let airportSurcharge = 0;
-  if (requestShuttle) {
-    if (shuttleAirport === 'NBE') {
-      airportSurcharge = vipShuttle ? (160 * tripMultiplier) : (35 * effectiveGuestsCount * tripMultiplier);
-    } else if (shuttleAirport === 'MIR') {
-      airportSurcharge = vipShuttle ? (220 * tripMultiplier) : (45 * effectiveGuestsCount * tripMultiplier);
-    }
-  }
-
-  // On-site administrative fee (+15 € / room / night)
+  const vipShuttleCost = 0;
+  const physioRoomCost = 0;
+  const airportSurcharge = 0;
   const isOnsitePayment = paymentMethod === 'onsite_federation';
-  const onsiteAdminSurcharge = isOnsitePayment ? (15 * totalRooms * nightsCount) : 0;
-
-  const upsellsTotal = lateCheckoutCost + vipShuttleCost + physioRoomCost + airportSurcharge;
-  const cityTax = 3 * effectiveGuestsCount * nightsCount;
-  const grandTotal = subtotal + upsellsTotal + onsiteAdminSurcharge + cityTax;
+  const onsiteAdminSurcharge = 0;
+  const upsellsTotal = 0;
+  const cityTax = 0;
+  const grandTotal = subtotal; // Strictly Single / Double Room Price × Nights
 
   const addMember = () => {
     setMembers(prev => [
@@ -643,7 +631,7 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">Email Officiel *</label>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">{lang === 'fr' ? 'Email Officiel *' : 'Official Email *'}</label>
                       <input
                         type="email"
                         required
@@ -655,7 +643,7 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">Téléphone &bull; WhatsApp *</label>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">{lang === 'fr' ? 'Téléphone de contact *' : 'Contact Phone Number *'}</label>
                       <input
                         type="tel"
                         required
@@ -799,7 +787,7 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1">Téléphone &bull; WhatsApp *</label>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">{lang === 'fr' ? 'Téléphone de contact *' : 'Contact Phone Number *'}</label>
                         <input
                           type="tel"
                           required
@@ -951,7 +939,7 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
 
             </div>
 
-            {/* Step 3: Options Officielles & Suppléments FTE (Upsells) */}
+            {/* Step 3: Services & Logistique FTE Inclus (0 €) */}
             <div className="inst-card p-6 sm:p-8 space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-slate-200">
                 <div className="flex items-center gap-3">
@@ -959,16 +947,18 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                     3
                   </span>
                   <h3 className="text-base font-bold text-[#0F172A]">
-                    Options Complémentaires &amp; Services VIP FIE / FTE
+                    {lang === 'fr' ? 'Services & Logistique FIE / FTE Inclus (0 €)' : 'Included FIE / FTE Services & Logistics (0 €)'}
                   </h3>
                 </div>
-                <span className="text-xs font-semibold text-slate-500">Services sur-mesure</span>
+                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
+                  {lang === 'fr' ? '0 € de frais supplémentaires' : 'Zero extra fees'}
+                </span>
               </div>
 
-              {/* Upsells Selection */}
+              {/* Inclusions Selection */}
               <div className="space-y-3.5">
                 
-                {/* Upsell 1: Late Check-out (+50 € / chambre) */}
+                {/* Inclusion 1: Late Check-out */}
                 <label className={`flex items-start gap-3.5 p-4 rounded-xl border-2 cursor-pointer transition-all ${
                   lateCheckout ? 'border-[#03396C] bg-blue-50/30 shadow-xs' : 'border-slate-200 bg-white hover:border-slate-300'
                 }`}>
@@ -981,24 +971,21 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-bold text-[#0F172A]">
-                        Late Check-out Compétition (Dimanche 17 Janvier jusqu'à 19h00)
+                        {lang === 'fr' ? 'Late Check-out Compétition (Dimanche 17 Janvier jusqu\'à 19h00)' : 'Competition Late Check-out (Sunday Jan 17 until 19:00)'}
                       </span>
-                      <span className="font-mono text-xs font-bold text-[#03396C] bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-                        +50 € / chambre
+                      <span className="font-mono text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        {lang === 'fr' ? 'Inclus (0 €)' : 'Included (0 €)'}
                       </span>
                     </div>
                     <p className="text-xs text-slate-600 mt-0.5">
-                      Permet aux athlètes de garder leur chambre pour se doucher, se reposer et se préparer après les finales avant leur vol du soir.
+                      {lang === 'fr'
+                        ? 'Permet aux athlètes de garder leur chambre pour se doucher, se reposer et se préparer après les finales avant leur vol du soir.'
+                        : 'Allows athletes to keep their rooms to shower, rest and prepare after finals before their evening flight.'}
                     </p>
-                    {lateCheckout && (
-                      <div className="mt-2 text-xs font-semibold text-[#03396C]">
-                        Total option : +{50 * totalRooms} € ({totalRooms} chambre{totalRooms > 1 ? 's' : ''})
-                      </div>
-                    )}
                   </div>
                 </label>
 
-                {/* Upsell 2: Transfert Aéroport VIP Privatif (+90 € / trajet) */}
+                {/* Inclusion 2: Dedicated Airport Shuttle */}
                 <label className={`flex items-start gap-3.5 p-4 rounded-xl border-2 cursor-pointer transition-all ${
                   vipShuttle ? 'border-[#03396C] bg-blue-50/30 shadow-xs' : 'border-slate-200 bg-white hover:border-slate-300'
                 }`}>
@@ -1011,24 +998,21 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-bold text-[#0F172A]">
-                        Transfert Aéroport VIP Privatif (Van dédié sans attente)
+                        {lang === 'fr' ? 'Accueil Dédié & Navettes FIE Aéroports (TUN, NBE, MIR)' : 'Dedicated Reception & FIE Airport Shuttles (TUN, NBE, MIR)'}
                       </span>
-                      <span className="font-mono text-xs font-bold text-[#03396C] bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-                        +90 € / trajet {isRoundTrip ? '(+180 € A/R)' : ''}
+                      <span className="font-mono text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        {lang === 'fr' ? 'Inclus (0 €)' : 'Included (0 €)'}
                       </span>
                     </div>
                     <p className="text-xs text-slate-600 mt-0.5">
-                      Chauffeur dédié avec pancarte nominative à la sortie des bagages. Départ immédiat sans attente de regroupement.
+                      {lang === 'fr'
+                        ? 'Accueil personnalisé aux terminaux avec prise en charge directe des athlètes et des sacs de sabre volumineux.'
+                        : 'Personalized terminal meet & greet with direct transfer for athletes and fencing weapon bags.'}
                     </p>
-                    {vipShuttle && (
-                      <div className="mt-2 text-xs font-semibold text-[#03396C]">
-                        Total Van VIP : +{vipShuttleCost} € ({isRoundTrip ? 'Aller-Retour' : 'Aller simple'})
-                      </div>
-                    )}
                   </div>
                 </label>
 
-                {/* Upsell 3: Salle privée Kiné / Récupération (+100 € / jour) */}
+                {/* Inclusion 3: Private Physio Room */}
                 <label className={`flex items-start gap-3.5 p-4 rounded-xl border-2 cursor-pointer transition-all ${
                   physioRoom ? 'border-[#03396C] bg-blue-50/30 shadow-xs' : 'border-slate-200 bg-white hover:border-slate-300'
                 }`}>
@@ -1041,32 +1025,29 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-bold text-[#0F172A]">
-                        Salle privée Kiné / Récupération &amp; Stockage Matériel Sécurisé
+                        {lang === 'fr' ? 'Salle privée Kiné / Récupération & Stockage Matériel Sécurisé' : 'Private Physio / Recovery & Equipment Storage Room'}
                       </span>
-                      <span className="font-mono text-xs font-bold text-[#03396C] bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-                        +100 € / jour
+                      <span className="font-mono text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        {lang === 'fr' ? 'Inclus sur demande (0 €)' : 'Included on request (0 €)'}
                       </span>
                     </div>
                     <p className="text-xs text-slate-600 mt-0.5">
-                      Salon privatisé au sein de l'hôtel officiel pour les tables de massage des kinésithérapeutes de la délégation et le stockage sécurisé des armes.
+                      {lang === 'fr'
+                        ? 'Salon privatisé au sein de l\'hôtel officiel pour les tables de massage des kinésithérapeutes de la délégation et le stockage sécurisé des armes.'
+                        : 'Dedicated private salon at official hotel for delegation physio massage tables and secure fencing weapons storage.'}
                     </p>
-                    {physioRoom && (
-                      <div className="mt-2 text-xs font-semibold text-[#03396C]">
-                        Total salle kiné : +{100 * nightsCount} € ({nightsCount} jours de séjour)
-                      </div>
-                    )}
                   </div>
                 </label>
 
               </div>
 
-              {/* Shuttle Airport Logistics & Distance Surcharge */}
+              {/* Shuttle Airport Logistics */}
               <div className="pt-4 border-t border-slate-200">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Bus className="w-4 h-4 text-[#03396C]" />
                     <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                      Transfert Aéroport Officiel &amp; Véhicules Dédiés
+                      {lang === 'fr' ? 'Transfert Aéroport Officiel & Véhicules Dédiés' : 'Official Airport Transfer & Dedicated Shuttles'}
                     </span>
                   </div>
                   <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
@@ -1076,7 +1057,7 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                       onChange={(e) => setRequestShuttle(e.target.checked)}
                       className="rounded text-[#03396C]"
                     />
-                    <span>Inclure les navettes aéroport</span>
+                    <span>{lang === 'fr' ? 'Inclure les navettes aéroport (0 €)' : 'Include airport shuttles (0 €)'}</span>
                   </label>
                 </div>
 
@@ -1085,53 +1066,53 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-xs font-semibold text-slate-700 mb-1">
-                          Aéroport d'Arrivée (Liste Officielle FIE) *
+                          {lang === 'fr' ? 'Aéroport d\'Arrivée (Liste Officielle FIE) *' : 'Arrival Airport (Official FIE List) *'}
                         </label>
                         <select
                           value={shuttleAirport}
                           onChange={(e) => setShuttleAirport(e.target.value as any)}
                           className="w-full px-3 py-2 text-xs font-medium"
                         >
-                          <option value="TUN">Tunis-Carthage (TUN) — Inclus dans le pack (0 €)</option>
-                          <option value="NBE">Enfidha-Hammamet (NBE - 100 km) — Supplément 35 €/pers</option>
-                          <option value="MIR">Monastir Habib-Bourguiba (MIR - 165 km) — Supplément 45 €/pers</option>
+                          <option value="TUN">Tunis-Carthage (TUN) — {lang === 'fr' ? 'Inclus à 0 €' : '0 € Included'}</option>
+                          <option value="NBE">Enfidha-Hammamet (NBE - 100 km) — {lang === 'fr' ? 'Inclus à 0 €' : '0 € Included'}</option>
+                          <option value="MIR">Monastir Habib-Bourguiba (MIR - 165 km) — {lang === 'fr' ? 'Inclus à 0 €' : '0 € Included'}</option>
                         </select>
                       </div>
 
                       <div>
                         <label className="block text-xs font-semibold text-slate-700 mb-1">
-                          Type de Trajet
+                          {lang === 'fr' ? 'Type de Trajet' : 'Trip Type'}
                         </label>
                         <select
                           value={shuttleTripType}
                           onChange={(e) => setShuttleTripType(e.target.value as any)}
                           className="w-full px-3 py-2 text-xs font-medium"
                         >
-                          <option value="roundtrip">Aller-Retour (Aéroport ↔ Hôtel)</option>
-                          <option value="arrival">Arrivée uniquement (Aéroport → Hôtel)</option>
-                          <option value="departure">Départ uniquement (Hôtel → Aéroport)</option>
+                          <option value="roundtrip">{lang === 'fr' ? 'Aller-Retour (Aéroport ↔ Hôtel)' : 'Roundtrip (Airport ↔ Hotel)'}</option>
+                          <option value="arrival">{lang === 'fr' ? 'Arrivée uniquement (Aéroport → Hôtel)' : 'Arrival only (Airport → Hotel)'}</option>
+                          <option value="departure">{lang === 'fr' ? 'Départ uniquement (Hôtel → Aéroport)' : 'Departure only (Hotel → Airport)'}</option>
                         </select>
                       </div>
                     </div>
 
-                    {/* Surcharge Banner if NBE or MIR */}
-                    {shuttleAirport !== 'TUN' && (
-                      <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-between text-xs text-amber-900">
-                        <div className="flex items-center gap-2">
-                          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                          <span>
-                            Supplément transfert longue distance {shuttleAirport === 'NBE' ? 'Enfidha (100 km)' : 'Monastir (165 km)'} :
-                          </span>
-                        </div>
-                        <span className="font-mono font-bold">
-                          +{airportSurcharge} € ({vipShuttle ? 'Forfait Van VIP' : `${effectiveGuestsCount} passager${effectiveGuestsCount > 1 ? 's' : ''}`})
+                    {/* Inclusive 0 EUR notice for all airports */}
+                    <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs text-emerald-900">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>
+                          {lang === 'fr'
+                            ? 'Transfert aéroportuaire 100% inclus dans le pack officiel FTE (0 € de supplément pour TUN, NBE et MIR).'
+                            : 'Airport transfer 100% included in official FTE pack (0 € extra fee for TUN, NBE, and MIR).'}
                         </span>
                       </div>
-                    )}
+                      <span className="font-mono font-bold text-emerald-700">0 €</span>
+                    </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div>
-                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">Compagnie Aérienne</label>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                          {lang === 'fr' ? 'Compagnie Aérienne' : 'Airline'}
+                        </label>
                         <input
                           type="text"
                           value={shuttleAirline}
@@ -1141,7 +1122,9 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                         />
                       </div>
                       <div>
-                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">Numéro de Vol</label>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                          {lang === 'fr' ? 'Numéro de Vol' : 'Flight Number'}
+                        </label>
                         <input
                           type="text"
                           value={shuttleFlightNumber}
@@ -1151,7 +1134,9 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                         />
                       </div>
                       <div>
-                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">WhatsApp Chauffeur</label>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                          {lang === 'fr' ? 'Téléphone Chauffeur / Régie' : 'Driver / Coordinator Phone'}
+                        </label>
                         <input
                           type="text"
                           value={shuttleDriverWhatsApp}
@@ -1299,23 +1284,23 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                         <ShieldCheck className="w-5 h-5" />
                       </div>
                       <div>
-                        <div className="text-sm font-bold text-[#0F172A]">Règlement sur Place pour Fédérations</div>
-                        <div className="text-xs text-slate-600">Règlement direct lors de l'accréditation officielle FIE &amp; check-in hôtel</div>
+                        <div className="text-sm font-bold text-[#0F172A]">{lang === 'fr' ? 'Règlement sur Place pour Fédérations' : 'On-site Payment for Delegations'}</div>
+                        <div className="text-xs text-slate-600">{lang === 'fr' ? 'Règlement direct lors de l\'accréditation officielle FIE & check-in hôtel' : 'Direct payment during official FIE accreditation & hotel check-in'}</div>
                       </div>
                     </div>
                     {paymentMethod === 'onsite_federation' && <CheckCircle2 className="w-5 h-5 text-[#03396C]" />}
                   </div>
 
                   {paymentMethod === 'onsite_federation' && (
-                    <div className="mt-4 pt-4 border-t border-slate-200 text-xs text-amber-900 bg-amber-50 p-3.5 rounded-lg border border-amber-200 animate-fadeIn space-y-1.5">
-                      <div className="font-bold flex items-center gap-1.5 text-amber-950">
-                        <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
-                        <span>Majoration administrative pour règlement sur place : +15 € / nuit / chambre (+{onsiteAdminSurcharge} €)</span>
+                    <div className="mt-4 pt-4 border-t border-slate-200 text-xs text-emerald-900 bg-emerald-50 p-3.5 rounded-lg border border-emerald-200 animate-fadeIn space-y-1.5">
+                      <div className="font-bold flex items-center gap-1.5 text-emerald-950">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
+                        <span>{lang === 'fr' ? 'Tarif officiel identique garanti (0 € de frais supplémentaires)' : 'Identical official rate guaranteed (0 € extra fee)'}</span>
                       </div>
-                      <p className="text-[11px] text-amber-800 leading-relaxed">
-                        Pour inciter à la réservation pré-payée et accélérer les formalités au bureau d'accréditation FIE, toute réservation non réglée en ligne subit une majoration administrative de <strong>+15 € par chambre et par nuitée</strong>.
-                        <br />
-                        <span className="font-semibold underline">Conseil :</span> Réglez par carte bancaire (Stripe) ou par virement bancaire pour bénéficier immédiatement du tarif officiel sans majoration.
+                      <p className="text-[11px] text-emerald-800 leading-relaxed">
+                        {lang === 'fr'
+                          ? 'Règlement autorisé directement au bureau d\'accréditation FIE lors du check-in à l\'hôtel. Le montant facturé est strictement identique à un paiement en ligne.'
+                          : 'Payment authorized directly at official FIE accreditation desk during hotel check-in. The billed amount is strictly identical to online payment.'}
                       </p>
                     </div>
                   )}
@@ -1326,13 +1311,13 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
               {/* Notes */}
               <div className="pt-2">
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Remarques Spécifiques &amp; Régimes Alimentaires (Optionnel)
+                  {lang === 'fr' ? 'Remarques Spécifiques & Régimes Alimentaires (Optionnel)' : 'Specific Requests & Dietary Requirements (Optional)'}
                 </label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
-                  placeholder="Besoins spécifiques en matériel, régimes sportifs, demandes particulières..."
+                  placeholder={lang === 'fr' ? 'Besoins spécifiques en matériel, régimes sportifs, demandes particulières...' : 'Specific equipment needs, athletic diet, special requests...'}
                   className="w-full px-3.5 py-2.5 text-xs"
                 />
               </div>
@@ -1348,7 +1333,7 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
               <div className="flex items-center justify-between pb-4 border-b border-slate-200 mb-4">
                 <div className="flex items-center gap-2">
                   <FileText className="w-5 h-5 text-[#03396C]" />
-                  <span className="font-bold text-[#0F172A] text-base">Récapitulatif Officiel</span>
+                  <span className="font-bold text-[#0F172A] text-base">{lang === 'fr' ? 'Récapitulatif Officiel' : 'Official Summary'}</span>
                 </div>
                 <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-blue-50 text-[#03396C] font-bold border border-blue-200">
                   FIE 2027
@@ -1357,7 +1342,7 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
 
               {/* Selected Hotel */}
               <div className="mb-4 text-xs space-y-1">
-                <span className="text-slate-500">Établissement retenu :</span>
+                <span className="text-slate-500">{lang === 'fr' ? 'Établissement retenu :' : 'Selected Hotel:'}</span>
                 <div className="font-bold text-[#0F172A] text-sm">{selectedHotel.name} (5★)</div>
                 <div className="text-slate-500 text-[11px]">{selectedHotel.location}</div>
               </div>
@@ -1365,66 +1350,48 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
               {/* Calculation Lines */}
               <div className="space-y-2.5 text-xs py-3 border-y border-slate-200 mb-4 font-mono">
                 <div className="flex justify-between text-slate-600">
-                  <span>Période :</span>
-                  <span className="font-bold text-[#0F172A]">{nightsCount} Nuitées</span>
+                  <span>{lang === 'fr' ? 'Période :' : 'Period:'}</span>
+                  <span className="font-bold text-[#0F172A]">{nightsCount} {lang === 'fr' ? 'Nuitées' : 'Nights'}</span>
                 </div>
-                {trainingCampActive && (
-                  <div className="flex justify-between text-blue-800 bg-blue-50 px-2 py-1 rounded">
-                    <span>Stage Pré-Compétition :</span>
-                    <span className="font-bold">Inclus (dès 11 Janv.)</span>
+                {effectiveSingleRooms > 0 && (
+                  <div className="flex justify-between text-slate-600">
+                    <span>{effectiveSingleRooms} × Single ({singlePrice} €) :</span>
+                    <span className="font-bold text-[#0F172A]">{effectiveSingleRooms * singlePrice * nightsCount} €</span>
+                  </div>
+                )}
+                {effectiveDoubleRooms > 0 && (
+                  <div className="flex justify-between text-slate-600">
+                    <span>{effectiveDoubleRooms} × Double ({doublePrice} €) :</span>
+                    <span className="font-bold text-[#0F172A]">{effectiveDoubleRooms * doublePrice * nightsCount} €</span>
+                  </div>
+                )}
+                {requestShuttle && (
+                  <div className="flex justify-between text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                    <span>{lang === 'fr' ? 'Navettes Aéroports (TUN/NBE/MIR) :' : 'Airport Shuttles (TUN/NBE/MIR):'}</span>
+                    <span className="font-bold">{lang === 'fr' ? 'Inclus (0 €)' : 'Included (0 €)'}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-slate-600">
-                  <span>Hébergement Base :</span>
-                  <span className="font-bold text-[#0F172A]">{subtotal} €</span>
-                </div>
-                {lateCheckout && (
-                  <div className="flex justify-between text-[#03396C]">
-                    <span>Late Check-out ({totalRooms} ch.) :</span>
-                    <span className="font-bold">+{lateCheckoutCost} €</span>
-                  </div>
-                )}
-                {vipShuttle && (
-                  <div className="flex justify-between text-[#03396C]">
-                    <span>Van VIP Privatif :</span>
-                    <span className="font-bold">+{vipShuttleCost} €</span>
-                  </div>
-                )}
-                {physioRoom && (
-                  <div className="flex justify-between text-[#03396C]">
-                    <span>Salle Kiné ({nightsCount} j.) :</span>
-                    <span className="font-bold">+{physioRoomCost} €</span>
-                  </div>
-                )}
-                {airportSurcharge > 0 && (
-                  <div className="flex justify-between text-amber-800 bg-amber-50 px-2 py-0.5 rounded">
-                    <span>Supplément {shuttleAirport} :</span>
-                    <span className="font-bold">+{airportSurcharge} €</span>
-                  </div>
-                )}
-                {isOnsitePayment && onsiteAdminSurcharge > 0 && (
-                  <div className="flex justify-between text-amber-900 bg-amber-50 px-2 py-1 rounded border border-amber-200">
-                    <span>Frais adm. sur place :</span>
-                    <span className="font-bold">+{onsiteAdminSurcharge} €</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-slate-600">
-                  <span>Taxe &amp; Frais FIE (3€/n/pers) :</span>
-                  <span className="font-bold text-[#0F172A]">{cityTax} €</span>
+                  <span>{lang === 'fr' ? 'Frais supplémentaires :' : 'Extra Fees:'}</span>
+                  <span className="font-bold text-emerald-700">0 €</span>
                 </div>
               </div>
 
               {/* Total Display */}
               <div className="mb-6">
                 <div className="flex items-baseline justify-between">
-                  <span className="text-xs font-bold uppercase text-slate-500">Montant Total TTC :</span>
+                  <span className="text-xs font-bold uppercase text-slate-500">
+                    {lang === 'fr' ? 'Montant Total Facturé :' : 'Total Billed Amount:'}
+                  </span>
                   <div className="text-right">
                     <div className="text-2xl font-black text-[#0F172A] font-mono">{grandTotal} €</div>
                     <div className="text-xs text-slate-500 font-mono">(~{Math.round(grandTotal * 3.3)} TND)</div>
                   </div>
                 </div>
                 <div className="text-[11px] text-slate-500 mt-1">
-                  Buffets sportifs &amp; petits déjeuners inclus &bull; TVA comprise.
+                  {lang === 'fr'
+                    ? 'Chambres × Nuitées • Buffets sportifs & petits déjeuners inclus • TVA comprise.'
+                    : 'Rooms × Nights • Sports buffets & breakfasts included • VAT included.'}
                 </div>
               </div>
 
@@ -1437,19 +1404,19 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                 {isProcessingPayment ? (
                   <>
                     <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    <span>Validation du dossier FIE...</span>
+                    <span>{lang === 'fr' ? 'Validation du dossier FIE...' : 'Validating FIE booking...'}</span>
                   </>
                 ) : (
                   <>
                     <ShieldCheck className="w-4 h-4" />
-                    <span>Confirmer la Réservation</span>
+                    <span>{lang === 'fr' ? 'Confirmer la Réservation' : 'Confirm Reservation'}</span>
                   </>
                 )}
               </button>
 
               <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
                 <Lock className="w-3.5 h-3.5 text-slate-400" />
-                <span>Validation instantanée &bull; Code unique GPS2027</span>
+                <span>{lang === 'fr' ? 'Validation instantanée • Code unique GPS2027' : 'Instant validation • Unique GPS2027 Code'}</span>
               </div>
 
             </div>
@@ -1458,8 +1425,12 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
             <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-200 text-xs text-slate-700 flex gap-3">
               <Bus className="w-5 h-5 text-[#03396C] shrink-0 mt-0.5" />
               <div>
-                <strong className="text-[#03396C] block mb-0.5">Navette Aéroport Incluse</strong>
-                Une fois votre hébergement confirmé, votre code de réservation vous permettra de planifier immédiatement vos navettes aéroport (TUN, NBE, MIR).
+                <strong className="text-[#03396C] block mb-0.5">
+                  {lang === 'fr' ? 'Navette Aéroport Incluse (0 €)' : 'Airport Shuttle Included (0 €)'}
+                </strong>
+                {lang === 'fr'
+                  ? 'Une fois votre hébergement confirmé, votre code de réservation vous permettra de planifier immédiatement vos navettes aéroport (TUN, NBE, MIR).'
+                  : 'Once your accommodation is confirmed, your booking code will allow you to schedule airport shuttles (TUN, NBE, MIR) at zero extra fee.'}
               </div>
             </div>
 
@@ -1479,22 +1450,26 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
             </div>
 
             <h3 className="text-xl sm:text-2xl font-extrabold text-[#0F172A] tracking-tight mb-1">
-              Réservation Confirmée avec Succès
+              {lang === 'fr' ? 'Réservation Confirmée avec Succès' : 'Reservation Successfully Confirmed'}
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 mb-6">
-              Votre dossier pour le <strong>Grand Prix Sabre Tunis 2027</strong> a été enregistré. Un email de confirmation automatique a été consigné.
+              {lang === 'fr'
+                ? 'Votre dossier pour le Grand Prix Sabre Tunis 2027 a été enregistré. Un email de confirmation automatique a été consigné.'
+                : 'Your booking file for the Sabre Grand Prix Tunis 2027 has been registered. An automated confirmation email has been logged.'}
             </p>
 
             {/* Code */}
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 mb-6">
               <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                VOTRE CODE DE RÉSERVATION UNIQUE
+                {lang === 'fr' ? 'VOTRE CODE DE RÉSERVATION UNIQUE' : 'YOUR UNIQUE BOOKING CODE'}
               </div>
               <div className="text-3xl font-black text-[#03396C] font-mono tracking-wider select-all">
                 {createdReservation.id}
               </div>
               <p className="text-xs text-slate-600 mt-1.5 font-medium">
-                Conservez ce code. Il est indispensable pour réserver votre navette aéroport et accéder à votre dossier officiel.
+                {lang === 'fr'
+                  ? 'Conservez ce code. Il est indispensable pour réserver votre navette aéroport et accéder à votre dossier officiel.'
+                  : 'Keep this code safe. It is required to schedule your airport shuttle and access your official file.'}
               </p>
             </div>
 
@@ -1510,7 +1485,7 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                 className="w-full btn-primary cursor-pointer text-sm font-semibold py-3"
               >
                 <Bus className="w-4 h-4" />
-                <span>Réserver la Navette Aéroport Maintenant &rarr;</span>
+                <span>{lang === 'fr' ? 'Réserver la Navette Aéroport Maintenant →' : 'Book Airport Shuttle Now →'}</span>
               </button>
 
               <button
@@ -1521,7 +1496,7 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                 className="w-full btn-outline cursor-pointer text-sm font-semibold py-2.5"
               >
                 <Download className="w-4 h-4 text-slate-600" />
-                <span>Télécharger le Voucher &amp; Facture PDF</span>
+                <span>{lang === 'fr' ? 'Télécharger le Voucher & Facture PDF' : 'Download Voucher & PDF Invoice'}</span>
               </button>
 
               <button
@@ -1529,7 +1504,7 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                 onClick={() => setCreatedReservation(null)}
                 className="w-full text-xs text-slate-500 hover:text-slate-800 py-1 font-semibold cursor-pointer"
               >
-                Fermer
+                {lang === 'fr' ? 'Fermer' : 'Close'}
               </button>
             </div>
 

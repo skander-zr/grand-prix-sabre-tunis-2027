@@ -42,7 +42,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ onNavigate }) => {
   return (
     <section className="w-full bg-[#F8FAFC] py-6 sm:py-8 border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Authentic Official Tournament Banner Presentation (NO CROPPING & NO GIANT TEXT OVER FENCERS) */}
         <div className="w-full max-w-6xl mx-auto rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-[#061225]">
           <img
@@ -55,7 +55,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ onNavigate }) => {
         {/* Institutional Title & Operations Summary */}
         <div className="inst-card p-6 sm:p-8 max-w-6xl mx-auto mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            
+
             {/* Title & Official Details (7 cols) */}
             <div className="lg:col-span-7 space-y-4">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-blue-50 border border-blue-200 text-[#03396C] text-xs font-semibold">
@@ -66,7 +66,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ onNavigate }) => {
               <h1 className="text-2xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight leading-tight">
                 Grand Prix Sabre Tunis 2027
               </h1>
-              
+
               <p className="text-sm sm:text-base font-semibold text-[#03396C]">
                 Plateforme Officielle d'Hébergement &amp; de Transport des Délégations
               </p>
@@ -144,7 +144,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ onNavigate }) => {
 
         {/* 3 Pillars of Official Organization */}
         <div className="max-w-6xl mx-auto mt-6 grid grid-cols-1 md:grid-cols-3 gap-5">
-          
+
           {/* Pillar 1 */}
           <div
             onClick={() => onNavigate('hotels')}
