@@ -55,22 +55,34 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
   // Shuttle Form Fields
   const [tripType, setTripType] = useState<'arrival' | 'departure' | 'roundtrip'>('roundtrip');
   const [airport, setAirport] = useState<'TUN' | 'NBE' | 'MIR'>('TUN');
-  
-  // Flights
-  const [arrivalAirline, setArrivalAirline] = useState('Air France');
-  const [arrivalFlightNumber, setArrivalFlightNumber] = useState('AF1184');
-  const [arrivalDateTime, setArrivalDateTime] = useState('2027-01-14T14:15');
-  
-  const [departureAirline, setDepartureAirline] = useState('Air France');
-  const [departureFlightNumber, setDepartureFlightNumber] = useState('AF1185');
-  const [departureDateTime, setDepartureDateTime] = useState('2027-01-18T17:30');
-
-  // Logistics
+  const [isVipVan, setIsVipVan] = useState(false);
   const [passengerCount, setPassengerCount] = useState(2);
   const [luggageCount, setLuggageCount] = useState(2);
   const [weaponBagsCount, setWeaponBagsCount] = useState(2);
   const [driverWhatsApp, setDriverWhatsApp] = useState('+33 6 12 34 56 78');
   const [specialRequests, setSpecialRequests] = useState('');
+
+  // Smart Airport Pricing Calculation
+  const isRoundTrip = tripType === 'roundtrip';
+  const tripMultiplier = isRoundTrip ? 2 : 1;
+
+  let shuttlePriceEur = 0;
+  if (airport === 'TUN') {
+    shuttlePriceEur = isVipVan ? (90 * tripMultiplier) : 0;
+  } else if (airport === 'NBE') {
+    shuttlePriceEur = isVipVan ? (160 * tripMultiplier) : (35 * passengerCount * tripMultiplier);
+  } else if (airport === 'MIR') {
+    shuttlePriceEur = isVipVan ? (220 * tripMultiplier) : (45 * passengerCount * tripMultiplier);
+  }
+
+  // Flights
+  const [arrivalAirline, setArrivalAirline] = useState('Air France');
+  const [arrivalFlightNumber, setArrivalFlightNumber] = useState('AF1184');
+  const [arrivalDateTime, setArrivalDateTime] = useState('2027-01-14T14:15');
+
+  const [departureAirline, setDepartureAirline] = useState('Air France');
+  const [departureFlightNumber, setDepartureFlightNumber] = useState('AF1185');
+  const [departureDateTime, setDepartureDateTime] = useState('2027-01-18T17:30');
 
   const handleVerifyCode = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -107,6 +119,8 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
       const details: ShuttleDetails = {
         tripType,
         airport,
+        isVipVan,
+        surchargeEur: shuttlePriceEur,
         arrivalAirline: (tripType === 'arrival' || tripType === 'roundtrip') ? arrivalAirline : undefined,
         arrivalFlightNumber: (tripType === 'arrival' || tripType === 'roundtrip') ? arrivalFlightNumber : undefined,
         arrivalDateTime: (tripType === 'arrival' || tripType === 'roundtrip') ? arrivalDateTime : undefined,
@@ -119,7 +133,9 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
         driverWhatsApp,
         specialRequests,
         assignedGroupCode: `SHT-${airport}-${verifiedReservation.hotelId === 'el-mouradi-gammarth' ? 'ELM' : 'GDC'}-14H`,
-        assignedVehicle: passengerCount > 4 ? 'Minibus Mercedes Sprinter FIE #1' : 'Berline VIP Officielle FIE #3',
+        assignedVehicle: isVipVan
+          ? 'Van VIP Privatif Dédié Mercedes V-Class (Sans Attente)'
+          : (passengerCount > 4 ? 'Minibus Mercedes Sprinter FIE #1' : 'Berline VIP Officielle FIE #3'),
         status: 'grouped'
       };
 
@@ -139,7 +155,7 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
   return (
     <section id="shuttle-section" className="py-12 sm:py-16 bg-[#F8FAFC]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-6 border-b border-slate-200">
           <div>
@@ -219,10 +235,10 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
         ) : (
           /* UNLOCKED SHUTTLE CONFIGURATION FORM */
           <form onSubmit={handleSubmitShuttle} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            
+
             {/* Left Column (8 cols): Flight & Trip Details */}
             <div className="lg:col-span-8 space-y-6">
-              
+
               {/* Verified File Summary Header */}
               <div className="inst-card p-5 bg-blue-50/50 border-blue-200 flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
@@ -270,33 +286,30 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
                     <button
                       type="button"
                       onClick={() => setTripType('arrival')}
-                      className={`p-3 rounded-lg border text-xs font-semibold cursor-pointer text-center transition-all ${
-                        tripType === 'arrival'
-                          ? 'border-[#03396C] bg-blue-50 text-[#03396C] shadow-xs'
-                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                      }`}
+                      className={`p-3 rounded-lg border text-xs font-semibold cursor-pointer text-center transition-all ${tripType === 'arrival'
+                        ? 'border-[#03396C] bg-blue-50 text-[#03396C] shadow-xs'
+                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                        }`}
                     >
                       Arrivée Simple (Aéroport &rarr; Hôtel)
                     </button>
                     <button
                       type="button"
                       onClick={() => setTripType('departure')}
-                      className={`p-3 rounded-lg border text-xs font-semibold cursor-pointer text-center transition-all ${
-                        tripType === 'departure'
-                          ? 'border-[#03396C] bg-blue-50 text-[#03396C] shadow-xs'
-                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                      }`}
+                      className={`p-3 rounded-lg border text-xs font-semibold cursor-pointer text-center transition-all ${tripType === 'departure'
+                        ? 'border-[#03396C] bg-blue-50 text-[#03396C] shadow-xs'
+                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                        }`}
                     >
                       Départ Simple (Hôtel &rarr; Aéroport)
                     </button>
                     <button
                       type="button"
                       onClick={() => setTripType('roundtrip')}
-                      className={`p-3 rounded-lg border text-xs font-semibold cursor-pointer text-center transition-all ${
-                        tripType === 'roundtrip'
-                          ? 'border-[#03396C] bg-blue-50 text-[#03396C] shadow-xs'
-                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                      }`}
+                      className={`p-3 rounded-lg border text-xs font-semibold cursor-pointer text-center transition-all ${tripType === 'roundtrip'
+                        ? 'border-[#03396C] bg-blue-50 text-[#03396C] shadow-xs'
+                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                        }`}
                     >
                       Aller-Retour Complet
                     </button>
@@ -313,13 +326,52 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
                     onChange={(e) => setAirport(e.target.value as 'TUN' | 'NBE' | 'MIR')}
                     className="w-full px-3.5 py-3 text-sm font-semibold"
                   >
-                    <option value="TUN">Tunis-Carthage (TUN) — Aéroport Principal Recommandé (~15 km des hôtels)</option>
-                    <option value="NBE">Enfidha-Hammamet (NBE) — Prise en charge officielle (~105 km)</option>
-                    <option value="MIR">Monastir Habib-Bourguiba (MIR) — Prise en charge officielle (~160 km)</option>
+                    <option value="TUN">Tunis-Carthage (TUN) — Aéroport Principal (0 € inclus dans le pack officiel)</option>
+                    <option value="NBE">Enfidha-Hammamet (NBE - 100 km) — Supplément longue distance 35 €/pers</option>
+                    <option value="MIR">Monastir Habib-Bourguiba (MIR - 165 km) — Supplément longue distance 45 €/pers</option>
                   </select>
-                  <p className="text-[11px] text-slate-500 mt-1.5">
-                    Un agent d'accueil accrédité FIE avec pancarte nominative vous attendra dans le hall des arrivées de l'aéroport sélectionné.
-                  </p>
+
+                  {/* Pricing alert based on airport */}
+                  <div className="mt-2.5">
+                    {airport === 'TUN' ? (
+                      <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span><strong>Inclus dans le Pack Officiel :</strong> Transfert 0 € en navette cadencée toutes les 45 min.</span>
+                      </div>
+                    ) : (
+                      <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2">
+                        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                        <div>
+                          <strong>Transfert Longue Distance {airport === 'NBE' ? 'Enfidha (100 km)' : 'Monastir (165 km)'} :</strong>
+                          <div className="text-[11px] text-amber-800 mt-0.5">
+                            Supplément automatique de {airport === 'NBE' ? '35 €' : '45 €'} / passager {isRoundTrip ? '(aller-retour comptabilisé)' : '(aller simple)'} en navette groupée officielle (ou forfait Van VIP dédié).
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Van VIP Toggle */}
+                  <div className="mt-3 p-3 rounded-lg bg-slate-50 border border-slate-200 flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      id="shuttle-vip-van"
+                      checked={isVipVan}
+                      onChange={(e) => setIsVipVan(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 text-[#03396C] rounded border-slate-300"
+                    />
+                    <label htmlFor="shuttle-vip-van" className="text-xs text-slate-800 cursor-pointer">
+                      <div className="font-bold text-[#0F172A] flex items-center gap-2">
+                        <span>Privatiser un Van VIP Mercedes (Sans aucune attente)</span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-100 text-[#03396C] font-black">
+                          {airport === 'TUN' ? '+90 €/trajet' : (airport === 'NBE' ? '+160 €/trajet' : '+220 €/trajet')}
+                        </span>
+                      </div>
+                      <div className="text-slate-500 text-[11px] mt-0.5">
+                        Accueil personnalisé avec pancarte nominative à la sortie bagages et départ immédiat vers votre hôtel 5★.
+                      </div>
+                    </label>
+                  </div>
                 </div>
 
               </div>
@@ -504,7 +556,7 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
 
             {/* Right Column (4 cols): Summary & Automatic Grouping */}
             <div className="lg:col-span-4 sticky top-24 space-y-6">
-              
+
               <div className="inst-card p-6 shadow-sm">
                 <h4 className="text-sm font-bold text-[#0F172A] pb-3 border-b border-slate-200 mb-4 flex items-center gap-2">
                   <Bus className="w-4 h-4 text-[#03396C]" />
@@ -528,11 +580,23 @@ export const ShuttleModule: React.FC<ShuttleModuleProps> = ({
                     <span>Housses de sabre :</span>
                     <strong className="text-[#C8102E] font-mono">{weaponBagsCount} sacs 1m40</strong>
                   </div>
-                  <div className="flex justify-between py-1">
+                  <div className="flex justify-between py-1 border-b border-slate-100">
                     <span>Hôtel de destination :</span>
                     <strong className="text-slate-900 text-right">
                       {verifiedReservation.hotelId === 'el-mouradi-gammarth' ? 'El Mouradi Gammarth' : 'Golden Carthage'}
                     </strong>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-slate-100">
+                    <span>Véhicule sélectionné :</span>
+                    <strong className="text-slate-900 text-right">
+                      {isVipVan ? 'Van VIP Mercedes Dédié' : 'Navette Minibus FIE'}
+                    </strong>
+                  </div>
+                  <div className="flex justify-between py-1 text-slate-900 font-bold">
+                    <span>Tarif Transfert :</span>
+                    <span className="font-mono text-[#03396C] text-sm">
+                      {shuttlePriceEur === 0 ? 'Inclus dans le pack (0 €)' : `+${shuttlePriceEur} €`}
+                    </span>
                   </div>
                 </div>
 

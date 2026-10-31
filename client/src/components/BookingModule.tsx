@@ -149,6 +149,18 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
   const singlePrice = selectedHotel.roomTypes?.single?.pricePerNight ?? 130;
   const doublePrice = selectedHotel.roomTypes?.double?.pricePerNight ?? 180;
 
+  // Upsells & FTE Revenue Options
+  const [trainingCampActive, setTrainingCampActive] = useState(false);
+  const [lateCheckout, setLateCheckout] = useState(false);
+  const [vipShuttle, setVipShuttle] = useState(false);
+  const [physioRoom, setPhysioRoom] = useState(false);
+  const [requestShuttle, setRequestShuttle] = useState(true);
+  const [shuttleAirport, setShuttleAirport] = useState<'TUN' | 'NBE' | 'MIR'>('TUN');
+  const [shuttleTripType, setShuttleTripType] = useState<'arrival' | 'departure' | 'roundtrip'>('roundtrip');
+  const [shuttleFlightNumber, setShuttleFlightNumber] = useState('');
+  const [shuttleAirline, setShuttleAirline] = useState('Air France');
+  const [shuttleDriverWhatsApp, setShuttleDriverWhatsApp] = useState('');
+
   // Auto-calculation of rooms for group
   const autoGroupSingleCount = members.filter(m => m.roomPreference === 'single').length;
   const doublePreferencesCount = members.filter(m => m.roomPreference === 'double').length;
@@ -160,10 +172,36 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
     ? members.length
     : (individualSingleQty * 1 + individualDoubleQty * 2);
 
+  const totalRooms = effectiveSingleRooms + effectiveDoubleRooms;
+
+  // Base rooms subtotal
   const subtotal = (effectiveSingleRooms * singlePrice * nightsCount) +
                    (effectiveDoubleRooms * doublePrice * nightsCount);
+
+  // Upsell costs
+  const lateCheckoutCost = lateCheckout ? (50 * totalRooms) : 0;
+  const isRoundTrip = shuttleTripType === 'roundtrip';
+  const tripMultiplier = isRoundTrip ? 2 : 1;
+  const vipShuttleCost = vipShuttle ? (90 * tripMultiplier) : 0;
+  const physioRoomCost = physioRoom ? (100 * nightsCount) : 0;
+
+  // Airport distance surcharge (TUN 0€, NBE 35€/pax or 160€ Van, MIR 45€/pax or 220€ Van)
+  let airportSurcharge = 0;
+  if (requestShuttle) {
+    if (shuttleAirport === 'NBE') {
+      airportSurcharge = vipShuttle ? (160 * tripMultiplier) : (35 * effectiveGuestsCount * tripMultiplier);
+    } else if (shuttleAirport === 'MIR') {
+      airportSurcharge = vipShuttle ? (220 * tripMultiplier) : (45 * effectiveGuestsCount * tripMultiplier);
+    }
+  }
+
+  // On-site administrative fee (+15 € / room / night)
+  const isOnsitePayment = paymentMethod === 'onsite_federation';
+  const onsiteAdminSurcharge = isOnsitePayment ? (15 * totalRooms * nightsCount) : 0;
+
+  const upsellsTotal = lateCheckoutCost + vipShuttleCost + physioRoomCost + airportSurcharge;
   const cityTax = 3 * effectiveGuestsCount * nightsCount;
-  const totalAmount = subtotal + cityTax;
+  const grandTotal = subtotal + upsellsTotal + onsiteAdminSurcharge + cityTax;
 
   const addMember = () => {
     setMembers(prev => [
@@ -237,7 +275,32 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
           members
         } : undefined,
         paymentMethod,
-        notes
+        notes,
+        upsells: {
+          lateCheckout,
+          lateCheckoutPrice: lateCheckoutCost,
+          vipShuttle,
+          vipShuttlePrice: vipShuttleCost,
+          physioRoomDays: physioRoom ? nightsCount : 0,
+          physioRoomPrice: physioRoomCost,
+          trainingCamp: trainingCampActive
+        },
+        upsellsAmount: upsellsTotal,
+        onsiteAdminSurcharge,
+        airportSurcharge,
+        shuttle: requestShuttle ? {
+          tripType: shuttleTripType,
+          airport: shuttleAirport,
+          isVipVan: vipShuttle,
+          surchargeEur: airportSurcharge,
+          arrivalAirline: shuttleAirline,
+          arrivalFlightNumber: shuttleFlightNumber,
+          driverWhatsApp: shuttleDriverWhatsApp || (bookingType === 'individual' ? individualData.phone : federationData.contactPhone),
+          passengerCount: effectiveGuestsCount,
+          luggageCount: effectiveGuestsCount * 2,
+          weaponBagsCount: effectiveGuestsCount,
+          status: 'pending'
+        } : undefined
       });
 
       setCreatedReservation(reservation);
@@ -251,7 +314,7 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Module Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-6 border-b border-slate-200">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 pb-6 border-b border-slate-200">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-blue-50 border border-blue-200 text-[#03396C] text-xs font-semibold mb-2.5">
               <Building2 className="w-3.5 h-3.5" />
@@ -268,6 +331,40 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 bg-white px-3.5 py-2.5 rounded-xl border border-slate-200 shadow-xs">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
             <span>Quotas Officiels FIE Ouverts</span>
+          </div>
+        </div>
+
+        {/* Avantages Exclusifs Pack Officiel FTE Banner */}
+        <div className="mb-8 p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
+          <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#C8102E]"></span>
+              <h3 className="text-xs font-extrabold uppercase tracking-wider text-[#03396C]">
+                Avantages Exclusifs Pack Officiel FTE
+              </h3>
+            </div>
+            <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
+              Tarif Pré-réservation Garanti jusqu'au 25 Décembre 2026
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80">
+              <div className="font-bold text-slate-900 mb-0.5">1. Accréditation Directe Hôtel</div>
+              <div className="text-[11px] text-slate-600">Remise des badges FIE à votre hôtel sans queue à la salle.</div>
+            </div>
+            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80">
+              <div className="font-bold text-slate-900 mb-0.5">2. Navettes Radès Toutes les 30 min</div>
+              <div className="text-[11px] text-slate-600">Liaisons directes cadencées Hôtel ↔ Salle d'Armes FIE.</div>
+            </div>
+            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80">
+              <div className="font-bold text-slate-900 mb-0.5">3. Buffet Sportif &amp; Balnéo</div>
+              <div className="text-[11px] text-slate-600">Pension complète diététique et récupération athlétique.</div>
+            </div>
+            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80">
+              <div className="font-bold text-slate-900 mb-0.5">4. Transport Housses 1m40</div>
+              <div className="text-[11px] text-slate-600">Minibus aménagés pour le matériel et armes sabre.</div>
+            </div>
           </div>
         </div>
 
@@ -337,7 +434,7 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                       QG Exécutif FIE sur la colline &bull; Panorama Golfe de Tunis &bull; Salles diplomatiques
                     </p>
                     <div className="text-xs font-semibold text-[#03396C] flex items-center justify-between pt-2 border-t border-slate-200/80">
-                      <span>Single: 140 € / Double: 190 €</span>
+                      <span>Single: 145 € / Double: 195 €</span>
                       {hotelId === 'golden-carthage' && <CheckCircle2 className="w-4 h-4 text-[#03396C]" />}
                     </div>
                   </div>
@@ -354,7 +451,12 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                   <input
                     type="date"
                     value={checkInDate}
-                    onChange={(e) => setCheckInDate(e.target.value)}
+                    onChange={(e) => {
+                      setCheckInDate(e.target.value);
+                      if (e.target.value <= '2027-01-12') {
+                        setTrainingCampActive(true);
+                      }
+                    }}
                     required
                     className="w-full px-3.5 py-2.5"
                   />
@@ -384,6 +486,46 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                   </div>
                   <span className="text-[11px] text-slate-500 mt-1 block">Calcul automatique</span>
                 </div>
+              </div>
+
+              {/* Forfait Stage Pré-Compétition Button & Info */}
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!trainingCampActive) {
+                      setCheckInDate('2027-01-11');
+                      setTrainingCampActive(true);
+                      toast.success('Stage Pré-Compétition Activé : Arrivée le 11 Janvier avec accès aux pistes.');
+                    } else {
+                      setCheckInDate('2027-01-14');
+                      setTrainingCampActive(false);
+                      toast.info('Dates réinitialisées au tournoi officiel (14 Janvier).');
+                    }
+                  }}
+                  className={`w-full p-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all cursor-pointer ${
+                    trainingCampActive
+                      ? 'bg-blue-50 border-[#03396C] text-[#03396C]'
+                      : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded bg-[#03396C] text-white text-[10px] font-bold uppercase">
+                      Option Stage
+                    </span>
+                    <span className="font-bold">
+                      {trainingCampActive ? 'Stage Pré-Compétition Activé (Arrivée 11 Janv.)' : 'Activer le Forfait Stage Pré-Compétition (11–14 Janvier 2027)'}
+                    </span>
+                  </div>
+                  <span className="text-[11px] underline">
+                    {trainingCampActive ? 'Désactiver (14 Janv.)' : 'Avancer l\'arrivée au 11 Janvier'}
+                  </span>
+                </button>
+                {trainingCampActive && (
+                  <p className="text-[11px] text-blue-700 mt-1.5 pl-1">
+                    ✓ Votre délégation bénéficie d'un accès anticipé aux pistes officielles d'entraînement de la Salle Omnisports de Radès dès le 11 janvier 2027.
+                  </p>
+                )}
               </div>
 
             </div>
@@ -481,7 +623,9 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                         className="w-full px-3.5 py-2.5"
                       >
                         {COUNTRIES_LIST.map(c => (
-                          <option key={c} value={c}>{c}</option>
+                          <option key={c.code} value={lang === 'fr' ? c.nameFr : c.nameEn}>
+                            {c.flag} {lang === 'fr' ? c.nameFr : c.nameEn}
+                          </option>
                         ))}
                       </select>
                     </div>
@@ -611,7 +755,9 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                           className="w-full px-3.5 py-2.5"
                         >
                           {COUNTRIES_LIST.map(c => (
-                            <option key={c} value={c}>{c}</option>
+                            <option key={c.code} value={lang === 'fr' ? c.nameFr : c.nameEn}>
+                              {c.flag} {lang === 'fr' ? c.nameFr : c.nameEn}
+                            </option>
                           ))}
                         </select>
                       </div>
@@ -805,12 +951,229 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
 
             </div>
 
-            {/* Step 3: Paiement Sécurisé (3 Modes) */}
+            {/* Step 3: Options Officielles & Suppléments FTE (Upsells) */}
             <div className="inst-card p-6 sm:p-8 space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-slate-200">
                 <div className="flex items-center gap-3">
                   <span className="w-7 h-7 rounded-md bg-blue-50 text-[#03396C] border border-blue-200 flex items-center justify-center font-bold text-xs">
                     3
+                  </span>
+                  <h3 className="text-base font-bold text-[#0F172A]">
+                    Options Complémentaires &amp; Services VIP FIE / FTE
+                  </h3>
+                </div>
+                <span className="text-xs font-semibold text-slate-500">Services sur-mesure</span>
+              </div>
+
+              {/* Upsells Selection */}
+              <div className="space-y-3.5">
+                
+                {/* Upsell 1: Late Check-out (+50 € / chambre) */}
+                <label className={`flex items-start gap-3.5 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                  lateCheckout ? 'border-[#03396C] bg-blue-50/30 shadow-xs' : 'border-slate-200 bg-white hover:border-slate-300'
+                }`}>
+                  <input
+                    type="checkbox"
+                    checked={lateCheckout}
+                    onChange={(e) => setLateCheckout(e.target.checked)}
+                    className="mt-1 w-4 h-4 text-[#03396C] rounded border-slate-300 focus:ring-[#03396C]"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-bold text-[#0F172A]">
+                        Late Check-out Compétition (Dimanche 17 Janvier jusqu'à 19h00)
+                      </span>
+                      <span className="font-mono text-xs font-bold text-[#03396C] bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                        +50 € / chambre
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      Permet aux athlètes de garder leur chambre pour se doucher, se reposer et se préparer après les finales avant leur vol du soir.
+                    </p>
+                    {lateCheckout && (
+                      <div className="mt-2 text-xs font-semibold text-[#03396C]">
+                        Total option : +{50 * totalRooms} € ({totalRooms} chambre{totalRooms > 1 ? 's' : ''})
+                      </div>
+                    )}
+                  </div>
+                </label>
+
+                {/* Upsell 2: Transfert Aéroport VIP Privatif (+90 € / trajet) */}
+                <label className={`flex items-start gap-3.5 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                  vipShuttle ? 'border-[#03396C] bg-blue-50/30 shadow-xs' : 'border-slate-200 bg-white hover:border-slate-300'
+                }`}>
+                  <input
+                    type="checkbox"
+                    checked={vipShuttle}
+                    onChange={(e) => setVipShuttle(e.target.checked)}
+                    className="mt-1 w-4 h-4 text-[#03396C] rounded border-slate-300 focus:ring-[#03396C]"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-bold text-[#0F172A]">
+                        Transfert Aéroport VIP Privatif (Van dédié sans attente)
+                      </span>
+                      <span className="font-mono text-xs font-bold text-[#03396C] bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                        +90 € / trajet {isRoundTrip ? '(+180 € A/R)' : ''}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      Chauffeur dédié avec pancarte nominative à la sortie des bagages. Départ immédiat sans attente de regroupement.
+                    </p>
+                    {vipShuttle && (
+                      <div className="mt-2 text-xs font-semibold text-[#03396C]">
+                        Total Van VIP : +{vipShuttleCost} € ({isRoundTrip ? 'Aller-Retour' : 'Aller simple'})
+                      </div>
+                    )}
+                  </div>
+                </label>
+
+                {/* Upsell 3: Salle privée Kiné / Récupération (+100 € / jour) */}
+                <label className={`flex items-start gap-3.5 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                  physioRoom ? 'border-[#03396C] bg-blue-50/30 shadow-xs' : 'border-slate-200 bg-white hover:border-slate-300'
+                }`}>
+                  <input
+                    type="checkbox"
+                    checked={physioRoom}
+                    onChange={(e) => setPhysioRoom(e.target.checked)}
+                    className="mt-1 w-4 h-4 text-[#03396C] rounded border-slate-300 focus:ring-[#03396C]"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-bold text-[#0F172A]">
+                        Salle privée Kiné / Récupération &amp; Stockage Matériel Sécurisé
+                      </span>
+                      <span className="font-mono text-xs font-bold text-[#03396C] bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                        +100 € / jour
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      Salon privatisé au sein de l'hôtel officiel pour les tables de massage des kinésithérapeutes de la délégation et le stockage sécurisé des armes.
+                    </p>
+                    {physioRoom && (
+                      <div className="mt-2 text-xs font-semibold text-[#03396C]">
+                        Total salle kiné : +{100 * nightsCount} € ({nightsCount} jours de séjour)
+                      </div>
+                    )}
+                  </div>
+                </label>
+
+              </div>
+
+              {/* Shuttle Airport Logistics & Distance Surcharge */}
+              <div className="pt-4 border-t border-slate-200">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Bus className="w-4 h-4 text-[#03396C]" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                      Transfert Aéroport Officiel &amp; Véhicules Dédiés
+                    </span>
+                  </div>
+                  <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={requestShuttle}
+                      onChange={(e) => setRequestShuttle(e.target.checked)}
+                      className="rounded text-[#03396C]"
+                    />
+                    <span>Inclure les navettes aéroport</span>
+                  </label>
+                </div>
+
+                {requestShuttle && (
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3.5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">
+                          Aéroport d'Arrivée (Liste Officielle FIE) *
+                        </label>
+                        <select
+                          value={shuttleAirport}
+                          onChange={(e) => setShuttleAirport(e.target.value as any)}
+                          className="w-full px-3 py-2 text-xs font-medium"
+                        >
+                          <option value="TUN">Tunis-Carthage (TUN) — Inclus dans le pack (0 €)</option>
+                          <option value="NBE">Enfidha-Hammamet (NBE - 100 km) — Supplément 35 €/pers</option>
+                          <option value="MIR">Monastir Habib-Bourguiba (MIR - 165 km) — Supplément 45 €/pers</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">
+                          Type de Trajet
+                        </label>
+                        <select
+                          value={shuttleTripType}
+                          onChange={(e) => setShuttleTripType(e.target.value as any)}
+                          className="w-full px-3 py-2 text-xs font-medium"
+                        >
+                          <option value="roundtrip">Aller-Retour (Aéroport ↔ Hôtel)</option>
+                          <option value="arrival">Arrivée uniquement (Aéroport → Hôtel)</option>
+                          <option value="departure">Départ uniquement (Hôtel → Aéroport)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Surcharge Banner if NBE or MIR */}
+                    {shuttleAirport !== 'TUN' && (
+                      <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-between text-xs text-amber-900">
+                        <div className="flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                          <span>
+                            Supplément transfert longue distance {shuttleAirport === 'NBE' ? 'Enfidha (100 km)' : 'Monastir (165 km)'} :
+                          </span>
+                        </div>
+                        <span className="font-mono font-bold">
+                          +{airportSurcharge} € ({vipShuttle ? 'Forfait Van VIP' : `${effectiveGuestsCount} passager${effectiveGuestsCount > 1 ? 's' : ''}`})
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">Compagnie Aérienne</label>
+                        <input
+                          type="text"
+                          value={shuttleAirline}
+                          onChange={(e) => setShuttleAirline(e.target.value)}
+                          placeholder="ex: Air France, Tunisair..."
+                          className="w-full px-2.5 py-1.5 text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">Numéro de Vol</label>
+                        <input
+                          type="text"
+                          value={shuttleFlightNumber}
+                          onChange={(e) => setShuttleFlightNumber(e.target.value)}
+                          placeholder="ex: AF1184"
+                          className="w-full px-2.5 py-1.5 text-xs font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">WhatsApp Chauffeur</label>
+                        <input
+                          type="text"
+                          value={shuttleDriverWhatsApp}
+                          onChange={(e) => setShuttleDriverWhatsApp(e.target.value)}
+                          placeholder="+33 6 12 34 56 78"
+                          className="w-full px-2.5 py-1.5 text-xs font-mono"
+                        />
+                      </div>
+                    </div>
+
+                  </div>
+                )}
+              </div>
+
+            </div>
+
+            {/* Step 4: Paiement Sécurisé (3 Modes) */}
+            <div className="inst-card p-6 sm:p-8 space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+                <div className="flex items-center gap-3">
+                  <span className="w-7 h-7 rounded-md bg-blue-50 text-[#03396C] border border-blue-200 flex items-center justify-center font-bold text-xs">
+                    4
                   </span>
                   <h3 className="text-base font-bold text-[#0F172A]">
                     Mode de Règlement Sécurisé
@@ -845,31 +1208,37 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                   </div>
 
                   {paymentMethod === 'stripe_card' && (
-                    <div className="mt-4 pt-4 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-3 animate-fadeIn">
-                      <div className="sm:col-span-2">
-                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">Numéro de Carte Bancaire</label>
-                        <input
-                          type="text"
-                          value={stripeCard.cardNumber}
-                          onChange={(e) => setStripeCard({ ...stripeCard, cardNumber: e.target.value })}
-                          className="w-full px-3 py-2 text-xs font-mono"
-                        />
+                    <div className="mt-4 pt-4 border-t border-slate-200 space-y-3 animate-fadeIn">
+                      <div className="text-xs text-emerald-800 bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-200 flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>Tarif officiel Pré-réservation garanti (0 € de frais administratifs supplémentaires).</span>
                       </div>
-                      <div>
-                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">Expiration / CVC</label>
-                        <div className="flex gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="sm:col-span-2">
+                          <label className="block text-[11px] font-semibold text-slate-600 mb-1">Numéro de Carte Bancaire</label>
                           <input
                             type="text"
-                            value={stripeCard.cardExpiry}
-                            onChange={(e) => setStripeCard({ ...stripeCard, cardExpiry: e.target.value })}
-                            className="w-1/2 px-2 py-2 text-xs font-mono text-center"
+                            value={stripeCard.cardNumber}
+                            onChange={(e) => setStripeCard({ ...stripeCard, cardNumber: e.target.value })}
+                            className="w-full px-3 py-2 text-xs font-mono"
                           />
-                          <input
-                            type="text"
-                            value={stripeCard.cardCvc}
-                            onChange={(e) => setStripeCard({ ...stripeCard, cardCvc: e.target.value })}
-                            className="w-1/2 px-2 py-2 text-xs font-mono text-center"
-                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-600 mb-1">Expiration / CVC</label>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={stripeCard.cardExpiry}
+                              onChange={(e) => setStripeCard({ ...stripeCard, cardExpiry: e.target.value })}
+                              className="w-1/2 px-2 py-2 text-xs font-mono text-center"
+                            />
+                            <input
+                              type="text"
+                              value={stripeCard.cardCvc}
+                              onChange={(e) => setStripeCard({ ...stripeCard, cardCvc: e.target.value })}
+                              className="w-1/2 px-2 py-2 text-xs font-mono text-center"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -899,12 +1268,18 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                   </div>
 
                   {paymentMethod === 'bank_transfer' && (
-                    <div className="mt-4 pt-4 border-t border-slate-200 text-xs text-slate-700 bg-white p-3.5 rounded-lg border border-slate-200 space-y-1 font-mono animate-fadeIn">
-                      <div><strong>Bénéficiaire :</strong> Fédération Tunisienne d'Escrime (Grand Prix 2027)</div>
-                      <div><strong>Banque :</strong> Banque Internationale Arabe de Tunisie (BIAT)</div>
-                      <div><strong>IBAN :</strong> TN59 0800 1000 1234 5678 9012</div>
-                      <div><strong>SWIFT / BIC :</strong> BIATTNTT</div>
-                      <div className="text-blue-700 pt-1"><strong>Référence :</strong> Votre code GPS2027-XXXX généré à la validation</div>
+                    <div className="mt-4 pt-4 border-t border-slate-200 space-y-3 animate-fadeIn">
+                      <div className="text-xs text-emerald-800 bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-200 flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>Tarif officiel Pré-réservation garanti (0 € de frais administratifs supplémentaires).</span>
+                      </div>
+                      <div className="text-xs text-slate-700 bg-white p-3.5 rounded-lg border border-slate-200 space-y-1 font-mono">
+                        <div><strong>Bénéficiaire :</strong> Fédération Tunisienne d'Escrime (Grand Prix 2027)</div>
+                        <div><strong>Banque :</strong> Banque Internationale Arabe de Tunisie (BIAT)</div>
+                        <div><strong>IBAN :</strong> TN59 0800 1000 1234 5678 9012</div>
+                        <div><strong>SWIFT / BIC :</strong> BIATTNTT</div>
+                        <div className="text-blue-700 pt-1"><strong>Référence :</strong> Votre code GPS2027-XXXX généré à la validation</div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -932,8 +1307,16 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                   </div>
 
                   {paymentMethod === 'onsite_federation' && (
-                    <div className="mt-4 pt-4 border-t border-slate-200 text-xs text-slate-600 animate-fadeIn">
-                      Paiement en espèces (Euros ou Dinars TND) ou par carte bancaire directement au bureau d'accréditation du Palais des Sports de Radès ou à la réception de votre hôtel 5★.
+                    <div className="mt-4 pt-4 border-t border-slate-200 text-xs text-amber-900 bg-amber-50 p-3.5 rounded-lg border border-amber-200 animate-fadeIn space-y-1.5">
+                      <div className="font-bold flex items-center gap-1.5 text-amber-950">
+                        <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
+                        <span>Majoration administrative pour règlement sur place : +15 € / nuit / chambre (+{onsiteAdminSurcharge} €)</span>
+                      </div>
+                      <p className="text-[11px] text-amber-800 leading-relaxed">
+                        Pour inciter à la réservation pré-payée et accélérer les formalités au bureau d'accréditation FIE, toute réservation non réglée en ligne subit une majoration administrative de <strong>+15 € par chambre et par nuitée</strong>.
+                        <br />
+                        <span className="font-semibold underline">Conseil :</span> Réglez par carte bancaire (Stripe) ou par virement bancaire pour bénéficier immédiatement du tarif officiel sans majoration.
+                      </p>
                     </div>
                   )}
                 </div>
@@ -949,7 +1332,7 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
-                  placeholder="Besoins spécifiques en matériel, horaires particuliers, régimes sportifs..."
+                  placeholder="Besoins spécifiques en matériel, régimes sportifs, demandes particulières..."
                   className="w-full px-3.5 py-2.5 text-xs"
                 />
               </div>
@@ -985,22 +1368,46 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                   <span>Période :</span>
                   <span className="font-bold text-[#0F172A]">{nightsCount} Nuitées</span>
                 </div>
+                {trainingCampActive && (
+                  <div className="flex justify-between text-blue-800 bg-blue-50 px-2 py-1 rounded">
+                    <span>Stage Pré-Compétition :</span>
+                    <span className="font-bold">Inclus (dès 11 Janv.)</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-slate-600">
-                  <span>Chambres Single :</span>
-                  <span className="font-bold text-[#0F172A]">
-                    {effectiveSingleRooms} × {singlePrice} € = {effectiveSingleRooms * singlePrice * nightsCount} €
-                  </span>
+                  <span>Hébergement Base :</span>
+                  <span className="font-bold text-[#0F172A]">{subtotal} €</span>
                 </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Chambres Double :</span>
-                  <span className="font-bold text-[#0F172A]">
-                    {effectiveDoubleRooms} × {doublePrice} € = {effectiveDoubleRooms * doublePrice * nightsCount} €
-                  </span>
-                </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Participants Totaux :</span>
-                  <span className="font-bold text-[#03396C]">{effectiveGuestsCount} Personnes</span>
-                </div>
+                {lateCheckout && (
+                  <div className="flex justify-between text-[#03396C]">
+                    <span>Late Check-out ({totalRooms} ch.) :</span>
+                    <span className="font-bold">+{lateCheckoutCost} €</span>
+                  </div>
+                )}
+                {vipShuttle && (
+                  <div className="flex justify-between text-[#03396C]">
+                    <span>Van VIP Privatif :</span>
+                    <span className="font-bold">+{vipShuttleCost} €</span>
+                  </div>
+                )}
+                {physioRoom && (
+                  <div className="flex justify-between text-[#03396C]">
+                    <span>Salle Kiné ({nightsCount} j.) :</span>
+                    <span className="font-bold">+{physioRoomCost} €</span>
+                  </div>
+                )}
+                {airportSurcharge > 0 && (
+                  <div className="flex justify-between text-amber-800 bg-amber-50 px-2 py-0.5 rounded">
+                    <span>Supplément {shuttleAirport} :</span>
+                    <span className="font-bold">+{airportSurcharge} €</span>
+                  </div>
+                )}
+                {isOnsitePayment && onsiteAdminSurcharge > 0 && (
+                  <div className="flex justify-between text-amber-900 bg-amber-50 px-2 py-1 rounded border border-amber-200">
+                    <span>Frais adm. sur place :</span>
+                    <span className="font-bold">+{onsiteAdminSurcharge} €</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-slate-600">
                   <span>Taxe &amp; Frais FIE (3€/n/pers) :</span>
                   <span className="font-bold text-[#0F172A]">{cityTax} €</span>
@@ -1012,8 +1419,8 @@ export const BookingModule: React.FC<BookingModuleProps> = ({
                 <div className="flex items-baseline justify-between">
                   <span className="text-xs font-bold uppercase text-slate-500">Montant Total TTC :</span>
                   <div className="text-right">
-                    <div className="text-2xl font-black text-[#0F172A] font-mono">{totalAmount} €</div>
-                    <div className="text-xs text-slate-500 font-mono">(~{Math.round(totalAmount * 3.3)} TND)</div>
+                    <div className="text-2xl font-black text-[#0F172A] font-mono">{grandTotal} €</div>
+                    <div className="text-xs text-slate-500 font-mono">(~{Math.round(grandTotal * 3.3)} TND)</div>
                   </div>
                 </div>
                 <div className="text-[11px] text-slate-500 mt-1">

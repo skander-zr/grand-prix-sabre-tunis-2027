@@ -8,7 +8,8 @@ import {
   ReservationType,
   PaymentMethod,
   GroupMember,
-  RoleType
+  RoleType,
+  ReservationUpsells
 } from '../types/gp';
 import { INITIAL_HOTELS, INITIAL_RESERVATIONS, INITIAL_SHUTTLE_GROUPS } from '../data/mockData';
 import { toast } from 'sonner';
@@ -44,6 +45,10 @@ interface CreateReservationParams {
   paymentMethod: PaymentMethod;
   notes?: string;
   shuttle?: ShuttleDetails;
+  upsells?: ReservationUpsells;
+  upsellsAmount?: number;
+  onsiteAdminSurcharge?: number;
+  airportSurcharge?: number;
 }
 
 interface ReservationContextType {
@@ -53,6 +58,7 @@ interface ReservationContextType {
   emailLogs: EmailLog[];
   createReservation: (params: CreateReservationParams) => Reservation;
   getReservation: (code: string) => Reservation | undefined;
+  findReservationByEmailAndPassport: (email: string, passport: string) => Reservation | undefined;
   bookShuttle: (code: string, shuttle: ShuttleDetails) => boolean;
   updateFlightInfo: (code: string, updates: Partial<ShuttleDetails>) => boolean;
   updateHotelRates: (hotelId: 'el-mouradi-gammarth' | 'golden-carthage', singlePrice: number, doublePrice: number) => void;
@@ -173,11 +179,46 @@ export const ReservationProvider: React.FC<{ children: React.ReactNode }> = ({ c
     const singlePrice = hotel.roomTypes.single.pricePerNight;
     const doublePrice = hotel.roomTypes.double.pricePerNight;
 
-    const subtotal = (params.singleRoomCount * singlePrice * params.nightsCount) +
-                     (params.doubleRoomCount * doublePrice * params.nightsCount);
+    const totalRooms = params.singleRoomCount + params.doubleRoomCount;
+    const roomSubtotal = (params.singleRoomCount * singlePrice * params.nightsCount) +
+                         (params.doubleRoomCount * doublePrice * params.nightsCount);
+
+    // Upsells calculation
+    let computedUpsells = params.upsellsAmount ?? 0;
+    if (params.upsells && computedUpsells === 0) {
+      if (params.upsells.lateCheckout) computedUpsells += 50 * totalRooms;
+      if (params.upsells.vipShuttle) {
+        const tripMultiplier = params.shuttle?.tripType === 'roundtrip' ? 2 : 1;
+        computedUpsells += 90 * tripMultiplier;
+      }
+      if (params.upsells.physioRoomDays && params.upsells.physioRoomDays > 0) {
+        computedUpsells += 100 * params.upsells.physioRoomDays;
+      }
+    }
+
+    // Airport distance surcharge calculation
+    let computedAirportSurcharge = params.airportSurcharge ?? 0;
+    if (params.shuttle && computedAirportSurcharge === 0) {
+      const isRoundTrip = params.shuttle.tripType === 'roundtrip';
+      const roundMultiplier = isRoundTrip ? 2 : 1;
+      if (params.shuttle.airport === 'NBE') {
+        computedAirportSurcharge = params.shuttle.isVipVan 
+          ? (160 * roundMultiplier) 
+          : (35 * params.shuttle.passengerCount * roundMultiplier);
+      } else if (params.shuttle.airport === 'MIR') {
+        computedAirportSurcharge = params.shuttle.isVipVan 
+          ? (220 * roundMultiplier) 
+          : (45 * params.shuttle.passengerCount * roundMultiplier);
+      }
+    }
+
+    // Onsite payment administrative surcharge (+15 EUR / room / night)
+    const computedOnsiteSurcharge = params.onsiteAdminSurcharge !== undefined
+      ? params.onsiteAdminSurcharge
+      : (params.paymentMethod === 'onsite_federation' ? (15 * totalRooms * params.nightsCount) : 0);
 
     const cityTax = 3 * params.totalGuestsCount * params.nightsCount;
-    const total = subtotal + cityTax;
+    const total = roomSubtotal + computedUpsells + computedAirportSurcharge + computedOnsiteSurcharge + cityTax;
 
     const newReservation: Reservation = {
       id: code,
@@ -194,12 +235,16 @@ export const ReservationProvider: React.FC<{ children: React.ReactNode }> = ({ c
       federationGroup: params.federationGroup,
       singleRoomPricePerNight: singlePrice,
       doubleRoomPricePerNight: doublePrice,
-      subtotalAmount: subtotal,
+      subtotalAmount: roomSubtotal,
+      upsellsAmount: computedUpsells,
+      airportSurcharge: computedAirportSurcharge,
+      onsiteAdminSurcharge: computedOnsiteSurcharge,
+      upsells: params.upsells,
       cityTaxAmount: cityTax,
       totalAmount: total,
       currency: 'EUR',
       paymentMethod: params.paymentMethod,
-      paymentStatus: params.paymentMethod === 'stripe_card' ? 'paid' : 'pending_verification',
+      paymentStatus: params.paymentMethod === 'stripe_card' ? 'paid' : (params.paymentMethod === 'onsite_federation' ? 'pending_onsite' : 'pending_verification'),
       stripeTransactionId: params.paymentMethod === 'stripe_card' ? `ch_sim_${Date.now()}` : undefined,
       hasShuttle: !!params.shuttle,
       shuttle: params.shuttle ? {
@@ -245,11 +290,38 @@ export const ReservationProvider: React.FC<{ children: React.ReactNode }> = ({ c
     return newReservation;
   };
 
-  // Find Reservation
+  // Find Reservation by Booking Code
   const getReservation = (code: string): Reservation | undefined => {
     if (!code) return undefined;
     const cleanCode = code.trim().toUpperCase();
     return reservations.find(r => r.id.toUpperCase() === cleanCode);
+  };
+
+  // Find Reservation by Email + Passport Number (Dual Search)
+  const findReservationByEmailAndPassport = (email: string, passport: string): Reservation | undefined => {
+    if (!email && !passport) return undefined;
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassport = passport.trim().toLowerCase();
+
+    return reservations.find(r => {
+      // Individual check
+      if (r.type === 'individual' && r.individualLead) {
+        const emailMatch = cleanEmail ? r.individualLead.email?.toLowerCase().includes(cleanEmail) : true;
+        const passportMatch = cleanPassport ? r.individualLead.passportNumber?.toLowerCase() === cleanPassport : true;
+        if (cleanEmail && cleanPassport) return emailMatch && passportMatch;
+        if (cleanEmail) return emailMatch;
+        if (cleanPassport) return passportMatch;
+      }
+      // Group check
+      if (r.type === 'group' && r.federationGroup) {
+        const contactEmailMatch = cleanEmail ? r.federationGroup.contactEmail?.toLowerCase().includes(cleanEmail) : false;
+        const memberPassportMatch = cleanPassport ? r.federationGroup.members?.some(m => m.passportNumber?.toLowerCase() === cleanPassport) : false;
+        if (cleanEmail && cleanPassport) return contactEmailMatch || memberPassportMatch;
+        if (cleanEmail) return contactEmailMatch;
+        if (cleanPassport) return memberPassportMatch;
+      }
+      return false;
+    });
   };
 
   // Book Shuttle for an existing reservation
@@ -442,7 +514,12 @@ export const ReservationProvider: React.FC<{ children: React.ReactNode }> = ({ c
       'Nom Délégation / Client',
       'Email Contact',
       'Téléphone',
-      'Total EUR',
+      'Base Chambres EUR',
+      'Options Upsells EUR',
+      'Supplément Aéroport EUR',
+      'Frais Sur Place EUR',
+      'Taxe Séjour EUR',
+      'Total Global EUR',
       'Mode Paiement',
       'Statut Paiement',
       'Navette Réservée',
@@ -473,6 +550,11 @@ export const ReservationProvider: React.FC<{ children: React.ReactNode }> = ({ c
         `"${clientName || ''}"`,
         email || '',
         phone || '',
+        r.subtotalAmount,
+        r.upsellsAmount || 0,
+        r.airportSurcharge || 0,
+        r.onsiteAdminSurcharge || 0,
+        r.cityTaxAmount,
         r.totalAmount,
         r.paymentMethod,
         r.paymentStatus,
@@ -509,6 +591,7 @@ export const ReservationProvider: React.FC<{ children: React.ReactNode }> = ({ c
         emailLogs,
         createReservation,
         getReservation,
+        findReservationByEmailAndPassport,
         bookShuttle,
         updateFlightInfo,
         updateHotelRates,

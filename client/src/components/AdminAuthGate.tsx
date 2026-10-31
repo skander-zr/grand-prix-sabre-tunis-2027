@@ -33,7 +33,7 @@ export const AdminAuthGate: React.FC<AdminAuthGateProps> = ({ onSuccess, onCance
   return (
     <div className="min-h-[75vh] flex items-center justify-center px-4 py-12 bg-[#F8FAFC]">
       <div className="max-w-md w-full inst-card p-6 sm:p-8 shadow-md border border-slate-200">
-        
+
         {/* Back link */}
         <button
           onClick={onCancel}
@@ -61,7 +61,7 @@ export const AdminAuthGate: React.FC<AdminAuthGateProps> = ({ onSuccess, onCance
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          
+
           {/* Role selector */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1.5">
@@ -88,11 +88,10 @@ export const AdminAuthGate: React.FC<AdminAuthGateProps> = ({ onSuccess, onCance
                 <div
                   key={role.id}
                   onClick={() => setSelectedRole(role.id as any)}
-                  className={`p-3 rounded-lg border text-left cursor-pointer transition-all ${
-                    selectedRole === role.id
-                      ? 'border-[#03396C] bg-blue-50/60 shadow-xs'
-                      : 'border-slate-200 bg-white hover:bg-slate-50'
-                  }`}
+                  className={`p-3 rounded-lg border text-left cursor-pointer transition-all ${selectedRole === role.id
+                    ? 'border-[#03396C] bg-blue-50/60 shadow-xs'
+                    : 'border-slate-200 bg-white hover:bg-slate-50'
+                    }`}
                 >
                   <div className="text-xs font-bold text-[#0F172A]">{role.title}</div>
                   <div className="text-[11px] text-slate-500">{role.desc}</div>

@@ -35,9 +35,12 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
   onGoToShuttleBooking
 }) => {
   const { lang, t } = useLanguage();
-  const { getReservation, hotels, updateFlightInfo } = useReservation();
+  const { getReservation, findReservationByEmailAndPassport, hotels, updateFlightInfo } = useReservation();
 
+  const [searchMode, setSearchMode] = useState<'code' | 'credentials'>('code');
   const [searchCode, setSearchCode] = useState(initialCode);
+  const [searchEmail, setSearchEmail] = useState('');
+  const [searchPassport, setSearchPassport] = useState('');
   const [activeReservation, setActiveReservation] = useState<Reservation | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
 
@@ -57,19 +60,35 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
   const [isVoucherOpen, setIsVoucherOpen] = useState(false);
 
   const handleSearch = (codeToSearch?: string) => {
-    const code = (codeToSearch || searchCode).trim().toUpperCase();
-    if (!code) {
-      toast.warning('Veuillez saisir votre code de réservation.');
-      return;
-    }
     setHasSearched(true);
-    const res = getReservation(code);
-    if (res) {
-      setActiveReservation(res);
-      toast.success(`Dossier ${res.id} chargé avec succès.`);
+    if (searchMode === 'code') {
+      const code = (codeToSearch || searchCode).trim().toUpperCase();
+      if (!code) {
+        toast.warning('Veuillez saisir votre code de réservation.');
+        return;
+      }
+      const res = getReservation(code);
+      if (res) {
+        setActiveReservation(res);
+        toast.success(`Dossier ${res.id} chargé avec succès.`);
+      } else {
+        setActiveReservation(null);
+        toast.error('Aucune réservation trouvée pour ce code.');
+      }
     } else {
-      setActiveReservation(null);
-      toast.error('Aucune réservation trouvée pour ce code.');
+      if (!searchEmail && !searchPassport) {
+        toast.warning('Veuillez renseigner votre Email et votre Numéro de Passeport.');
+        return;
+      }
+      const res = findReservationByEmailAndPassport(searchEmail, searchPassport);
+      if (res) {
+        setActiveReservation(res);
+        setSearchCode(res.id);
+        toast.success(`Dossier ${res.id} retrouvé via votre passeport !`);
+      } else {
+        setActiveReservation(null);
+        toast.error('Aucun dossier ne correspond à cet email et ce numéro de passeport.');
+      }
     }
   };
 
@@ -143,34 +162,108 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="max-w-2xl mx-auto inst-card p-6 sm:p-8 mb-10">
-          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-            Rechercher un dossier par code unique
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={searchCode}
-              onChange={(e) => setSearchCode(e.target.value)}
-              placeholder="ex: GPS2027-FR48"
-              className="flex-1 px-4 py-3 font-mono font-bold uppercase tracking-wider text-sm"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSearch();
-              }}
-            />
+        {/* Dual Search Card */}
+        <div className="max-w-2xl mx-auto inst-card p-6 sm:p-8 mb-10 shadow-xs">
+          
+          {/* Search Mode Tabs */}
+          <div className="flex border-b border-slate-200 mb-5">
             <button
               type="button"
-              onClick={() => handleSearch()}
-              className="btn-primary cursor-pointer text-sm font-semibold px-6"
+              onClick={() => setSearchMode('code')}
+              className={`pb-2.5 px-4 text-xs font-bold transition-all border-b-2 cursor-pointer ${
+                searchMode === 'code'
+                  ? 'border-[#03396C] text-[#03396C]'
+                  : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}
             >
-              <Search className="w-4 h-4" />
-              <span>Consulter</span>
+              Recherche par Code Dossier (GPS2027)
+            </button>
+            <button
+              type="button"
+              onClick={() => setSearchMode('credentials')}
+              className={`pb-2.5 px-4 text-xs font-bold transition-all border-b-2 cursor-pointer ${
+                searchMode === 'credentials'
+                  ? 'border-[#03396C] text-[#03396C]'
+                  : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              Code oublié ? Recherche par Email + Passeport
             </button>
           </div>
-          <span className="text-[11px] text-slate-500 mt-2 block">
-            Saisissez le code de réservation à 11 caractères délivré lors de votre confirmation.
-          </span>
+
+          {searchMode === 'code' ? (
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                Saisissez votre code de réservation
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={searchCode}
+                  onChange={(e) => setSearchCode(e.target.value)}
+                  placeholder="ex: GPS2027-FR48"
+                  className="flex-1 px-4 py-3 font-mono font-bold uppercase tracking-wider text-sm"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSearch();
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => handleSearch()}
+                  className="btn-primary cursor-pointer text-sm font-semibold px-6"
+                >
+                  <Search className="w-4 h-4" />
+                  <span>Consulter</span>
+                </button>
+              </div>
+              <span className="text-[11px] text-slate-500 mt-2 block">
+                Saisissez le code de réservation à 11 caractères délivré lors de votre confirmation.
+              </span>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Retrouvez votre réservation sans votre code
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">Email Officiel</label>
+                  <input
+                    type="email"
+                    value={searchEmail}
+                    onChange={(e) => setSearchEmail(e.target.value)}
+                    placeholder="ex: contact.france@escrime-ffe.fr"
+                    className="w-full px-3.5 py-2.5 text-xs"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSearch();
+                    }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">Numéro de Passeport</label>
+                  <input
+                    type="text"
+                    value={searchPassport}
+                    onChange={(e) => setSearchPassport(e.target.value)}
+                    placeholder="ex: 24FA19283"
+                    className="w-full px-3.5 py-2.5 text-xs font-mono"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSearch();
+                    }}
+                  />
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleSearch()}
+                className="w-full btn-primary cursor-pointer text-sm font-semibold py-2.5 mt-2"
+              >
+                <Search className="w-4 h-4" />
+                <span>Rechercher mon dossier</span>
+              </button>
+            </div>
+          )}
+
         </div>
 
         {/* Display Verified Reservation File */}
@@ -250,6 +343,36 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
                       <span>Total Séjour TTC :</span>
                       <strong className="text-[#0F172A] text-sm">{activeReservation.totalAmount} €</strong>
                     </div>
+                    {activeReservation.upsells?.lateCheckout && (
+                      <div className="flex justify-between text-[#03396C] text-[11px]">
+                        <span>Late Check-out 19h :</span>
+                        <span>Inclus (+{activeReservation.upsells.lateCheckoutPrice || 50} €)</span>
+                      </div>
+                    )}
+                    {activeReservation.upsells?.vipShuttle && (
+                      <div className="flex justify-between text-[#03396C] text-[11px]">
+                        <span>Van VIP Privatif :</span>
+                        <span>Inclus (+{activeReservation.upsells.vipShuttlePrice || 90} €)</span>
+                      </div>
+                    )}
+                    {activeReservation.upsells?.physioRoomDays && activeReservation.upsells.physioRoomDays > 0 ? (
+                      <div className="flex justify-between text-[#03396C] text-[11px]">
+                        <span>Salle Kiné Privatisée :</span>
+                        <span>Inclus (+{activeReservation.upsells.physioRoomPrice || 100} €)</span>
+                      </div>
+                    ) : null}
+                    {activeReservation.airportSurcharge && activeReservation.airportSurcharge > 0 ? (
+                      <div className="flex justify-between text-amber-700 text-[11px]">
+                        <span>Supplément Aéroport :</span>
+                        <span>+{activeReservation.airportSurcharge} €</span>
+                      </div>
+                    ) : null}
+                    {activeReservation.onsiteAdminSurcharge && activeReservation.onsiteAdminSurcharge > 0 ? (
+                      <div className="flex justify-between text-amber-800 text-[11px]">
+                        <span>Frais adm. sur place :</span>
+                        <span>+{activeReservation.onsiteAdminSurcharge} €</span>
+                      </div>
+                    ) : null}
                     <div className="flex justify-between text-slate-600">
                       <span>Équivalent local :</span>
                       <span>~{Math.round(activeReservation.totalAmount * 3.3)} TND</span>

@@ -60,6 +60,8 @@ export interface ShuttleDetails {
   bookingId?: string;
   tripType: 'arrival' | 'departure' | 'roundtrip';
   airport: 'TUN' | 'NBE' | 'MIR';
+  isVipVan?: boolean;
+  surchargeEur?: number;
   arrivalFlightNumber?: string;
   arrivalAirline?: string;
   arrivalDateTime?: string;
@@ -79,6 +81,16 @@ export interface ShuttleDetails {
 export type PaymentMethod = 'stripe_card' | 'bank_transfer' | 'onsite_federation';
 
 export type PaymentStatus = 'paid' | 'pending_verification' | 'pending_onsite';
+
+export interface ReservationUpsells {
+  lateCheckout?: boolean;
+  lateCheckoutPrice?: number; // 50 EUR per room
+  vipShuttle?: boolean;
+  vipShuttlePrice?: number; // 90 EUR per trip
+  physioRoomDays?: number; // 100 EUR per day
+  physioRoomPrice?: number;
+  trainingCamp?: boolean; // Pre-competition training camp Jan 11-14
+}
 
 export interface Reservation {
   id: string; // GPS2027-XXXX
@@ -118,13 +130,19 @@ export interface Reservation {
   // Financials
   singleRoomPricePerNight: number;
   doubleRoomPricePerNight: number;
-  subtotalAmount: number; // in EUR
+  subtotalAmount: number; // in EUR (Room base cost)
+  upsellsAmount?: number; // Total additional options
+  onsiteAdminSurcharge?: number; // +15 EUR / room / night for onsite payment
+  airportSurcharge?: number; // NBE / MIR distance fee
   cityTaxAmount: number; // Taxe de séjour (~3 EUR / nuit / pers)
-  totalAmount: number; // in EUR
+  totalAmount: number; // in EUR (Grand Total)
   currency: 'EUR';
   paymentMethod: PaymentMethod;
   paymentStatus: PaymentStatus;
   stripeTransactionId?: string;
+
+  // Upsells detailed
+  upsells?: ReservationUpsells;
 
   // Shuttle Transfer
   hasShuttle: boolean;

@@ -81,6 +81,15 @@ export const SuperAdminDashboard: React.FC = () => {
   const totalDoubleRooms = reservations.reduce((acc, r) => acc + (r.doubleRoomCount || 0), 0);
   const totalRevenueEUR = reservations.reduce((acc, r) => acc + (r.totalAmount || 0), 0);
 
+  // FTE Detailed Financial Breakdown
+  const totalRoomRevenue = reservations.reduce((acc, r) => acc + (r.subtotalAmount || 0), 0);
+  const totalLateCheckoutRevenue = reservations.reduce((acc, r) => acc + (r.upsells?.lateCheckout ? (r.upsells.lateCheckoutPrice || (50 * (r.singleRoomCount + r.doubleRoomCount))) : 0), 0);
+  const totalVipVanRevenue = reservations.reduce((acc, r) => acc + (r.upsells?.vipShuttle ? (r.upsells.vipShuttlePrice || 90) : 0), 0);
+  const totalPhysioRevenue = reservations.reduce((acc, r) => acc + (r.upsells?.physioRoomDays ? (r.upsells.physioRoomPrice || (100 * r.upsells.physioRoomDays)) : 0), 0);
+  const totalAirportSurchargeRevenue = reservations.reduce((acc, r) => acc + (r.airportSurcharge || 0), 0);
+  const totalOnsiteAdminRevenue = reservations.reduce((acc, r) => acc + (r.onsiteAdminSurcharge || 0), 0);
+  const totalUpsellsRevenue = totalLateCheckoutRevenue + totalVipVanRevenue + totalPhysioRevenue + totalAirportSurchargeRevenue;
+
   // Occupancy Rates
   const elmSingleTotal = hotels['el-mouradi-gammarth']?.roomTypes?.single?.totalInventory ?? 90;
   const elmDoubleTotal = hotels['el-mouradi-gammarth']?.roomTypes?.double?.totalInventory ?? 130;
@@ -218,15 +227,70 @@ export const SuperAdminDashboard: React.FC = () => {
 
           <div className="inst-card p-5">
             <div className="flex items-center justify-between text-xs text-slate-500 font-semibold mb-2">
-              <span>Volume Financier Hôtelier</span>
+              <span>Volume Financier Global FTE</span>
               <DollarSign className="w-4 h-4 text-emerald-600" />
             </div>
             <div className="text-2xl font-extrabold text-[#0F172A] font-mono">{totalRevenueEUR} €</div>
             <div className="text-xs text-slate-500 mt-1">
-              ~{Math.round(totalRevenueEUR * 3.3)} TND (TTC &amp; Buffets)
+              ~{Math.round(totalRevenueEUR * 3.3)} TND (TTC, Buffets &amp; Options)
             </div>
           </div>
 
+        </div>
+
+        {/* FTE Detailed Financial Breakdown Panel (Chambres + Suppléments) */}
+        <div className="inst-card p-6 bg-white border border-slate-200 shadow-xs space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-200">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#03396C]"></span>
+              <h3 className="text-sm font-bold text-[#0F172A] uppercase tracking-wider">
+                Ventilation Détaillée des Revenus de la Fédération (FTE)
+              </h3>
+            </div>
+            <span className="text-xs font-mono font-bold text-[#03396C] bg-blue-50 px-2.5 py-1 rounded border border-blue-200">
+              Total Encaissé / Facturé : {totalRevenueEUR} €
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+            
+            <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+              <div className="text-slate-500 font-medium mb-1">1. Base Hébergement</div>
+              <div className="text-lg font-black font-mono text-slate-900">{totalRoomRevenue} €</div>
+              <div className="text-[10px] text-slate-500 mt-0.5">Nuitées 5★ officielles</div>
+            </div>
+
+            <div className="p-3 rounded-lg bg-blue-50/50 border border-blue-200">
+              <div className="text-[#03396C] font-medium mb-1">2. Late Check-out 19h</div>
+              <div className="text-lg font-black font-mono text-[#03396C]">+{totalLateCheckoutRevenue} €</div>
+              <div className="text-[10px] text-slate-500 mt-0.5">+50 € / chambre</div>
+            </div>
+
+            <div className="p-3 rounded-lg bg-blue-50/50 border border-blue-200">
+              <div className="text-[#03396C] font-medium mb-1">3. Vans VIP Privatifs</div>
+              <div className="text-lg font-black font-mono text-[#03396C]">+{totalVipVanRevenue} €</div>
+              <div className="text-[10px] text-slate-500 mt-0.5">Transferts dédiés</div>
+            </div>
+
+            <div className="p-3 rounded-lg bg-blue-50/50 border border-blue-200">
+              <div className="text-[#03396C] font-medium mb-1">4. Salles Kiné / Matériel</div>
+              <div className="text-lg font-black font-mono text-[#03396C]">+{totalPhysioRevenue} €</div>
+              <div className="text-[10px] text-slate-500 mt-0.5">+100 € / jour</div>
+            </div>
+
+            <div className="p-3 rounded-lg bg-amber-50/60 border border-amber-200">
+              <div className="text-amber-800 font-medium mb-1">5. Suppléments NBE/MIR</div>
+              <div className="text-lg font-black font-mono text-amber-900">+{totalAirportSurchargeRevenue} €</div>
+              <div className="text-[10px] text-slate-500 mt-0.5">Liaisons longue distance</div>
+            </div>
+
+            <div className="p-3 rounded-lg bg-amber-50/60 border border-amber-200">
+              <div className="text-amber-800 font-medium mb-1">6. Frais Règlement Sur Place</div>
+              <div className="text-lg font-black font-mono text-amber-900">+{totalOnsiteAdminRevenue} €</div>
+              <div className="text-[10px] text-slate-500 mt-0.5">+15 € / nuit / chambre</div>
+            </div>
+
+          </div>
         </div>
 
         {/* Admin Navigation Tabs */}

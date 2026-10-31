@@ -572,5 +572,31 @@ export const COUNTRIES_LIST = [
 ];
 
 export const AIRPORTS = [
-  { code: 'TUN', name: 'Aéroport International de Tunis-Carthage (TUN)', distanceToGammarthKm: 18, typicalTransferTimeMin: 20 }
+  {
+    code: 'TUN',
+    name: 'Aéroport International de Tunis-Carthage (TUN)',
+    distanceToGammarthKm: 18,
+    typicalTransferTimeMin: 20,
+    groupSurchargeEur: 0,
+    privateVanEur: 90,
+    description: 'Inclus dans le pack officiel (0 € en navette groupée)'
+  },
+  {
+    code: 'NBE',
+    name: 'Aéroport International d\'Enfidha-Hammamet (NBE - 100 km)',
+    distanceToGammarthKm: 100,
+    typicalTransferTimeMin: 75,
+    groupSurchargeEur: 35,
+    privateVanEur: 160,
+    description: 'Supplément transfert longue distance : +35 € / passager (ou 160 € en Van VIP privatif)'
+  },
+  {
+    code: 'MIR',
+    name: 'Aéroport International de Monastir Habib-Bourguiba (MIR - 165 km)',
+    distanceToGammarthKm: 165,
+    typicalTransferTimeMin: 120,
+    groupSurchargeEur: 45,
+    privateVanEur: 220,
+    description: 'Supplément transfert longue distance : +45 € / passager (ou 220 € en Van VIP privatif)'
+  }
 ];

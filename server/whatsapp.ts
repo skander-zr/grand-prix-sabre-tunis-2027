@@ -80,7 +80,7 @@ export async function notifyHostOnWhatsApp(notification: WhatsAppNotification): 
 
   // Option 2 : Envoi officiel via Meta WhatsApp Cloud API (si configuré)
   if (ENV.whatsappAccessToken && ENV.whatsappPhoneNumberId) {
-    const version = ENV.whatsappApiVersion || "v23.0";
+    const version = (ENV as any).whatsappApiVersion || "v23.0";
     const endpoint = `https://graph.facebook.com/${version}/${ENV.whatsappPhoneNumberId}/messages`;
     const body = {
       messaging_product: "whatsapp",
@@ -88,7 +88,7 @@ export async function notifyHostOnWhatsApp(notification: WhatsAppNotification): 
       type: "template",
       template: {
         name: ENV.whatsappTemplateName,
-        language: { code: ENV.whatsappTemplateLanguage || "fr" },
+        language: { code: (ENV as any).whatsappTemplateLanguage || "fr" },
         components: [{ type: "body", parameters: templateParameters(notification).map(text => ({ type: "text", text })) }],
       },
     };
