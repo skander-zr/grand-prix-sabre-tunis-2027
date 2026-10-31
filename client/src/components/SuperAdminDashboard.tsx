@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useReservation } from '../contexts/ReservationContext';
 import { Reservation, EmailLog, Hotel } from '../types/gp';
@@ -26,7 +26,9 @@ import {
   Download,
   Calendar,
   Bed,
-  BedDouble
+  BedDouble,
+  Bell,
+  Volume2
 } from 'lucide-react';
 import { VoucherModal } from './VoucherModal';
 import { EmailPreviewModal } from './EmailPreviewModal';
@@ -42,8 +44,98 @@ export const SuperAdminDashboard: React.FC = () => {
     updateHotelRates,
     blockRooms,
     simulateSendEmail,
-    exportReservationsCSV
+    exportReservationsCSV,
+    acknowledgeFlightModification
   } = useReservation();
+
+  // Web Audio API Synthesizer Chime for Live Flight Alerts
+  const playAlertChime = () => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const now = ctx.currentTime;
+
+      // Note 1 (587.33 Hz - D5)
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(587.33, now);
+      gain1.gain.setValueAtTime(0.3, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.35);
+
+      // Note 2 (880 Hz - A5)
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(880, now + 0.15);
+      gain2.gain.setValueAtTime(0.35, now + 0.15);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now + 0.15);
+      osc2.stop(now + 0.6);
+    } catch (e) {
+      console.warn('Audio chime warning:', e);
+    }
+  };
+
+  // Ask for Web Notification API permissions on Admin mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+    }
+  }, []);
+
+  // Live Flight Modification Listener (Event + BroadcastChannel)
+  useEffect(() => {
+    const handleFlightAlert = (e: any) => {
+      const data = e.detail || e.data?.payload;
+      if (!data) return;
+
+      playAlertChime();
+
+      // Native browser notification if permitted
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        try {
+          new Notification(`[ALERTE NAVETTE] Vol Modifié : ${data.code}`, {
+            body: `${data.delegation}\nAncien: ${data.oldFlight?.flightNumber} ➔ Nouveau: ${data.newFlight?.flightNumber}\nHeure d'arrivée: ${data.newFlight?.dateTime}`,
+            icon: '/banner-gp-tunis-2027.png'
+          });
+        } catch (err) {
+          console.warn('Notification error:', err);
+        }
+      }
+
+      toast.warning(`[ALERTE NAVETTE] Vol modifié pour le dossier ${data.code}`, {
+        description: `${data.delegation} : Ancien vol ${data.oldFlight?.flightNumber} ➔ Nouveau vol ${data.newFlight?.flightNumber} (${data.newFlight?.dateTime})`,
+        duration: 10000
+      });
+    };
+
+    window.addEventListener('gps2027_flight_alert', handleFlightAlert);
+
+    let channel: BroadcastChannel | null = null;
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      channel = new BroadcastChannel('gps2027_alerts');
+      channel.onmessage = (msg) => {
+        if (msg.data?.type === 'flight_alert') {
+          handleFlightAlert({ detail: msg.data.payload });
+        }
+      };
+    }
+
+    return () => {
+      window.removeEventListener('gps2027_flight_alert', handleFlightAlert);
+      if (channel) channel.close();
+    };
+  }, []);
 
   // Active Admin Tab
   const [activeTab, setActiveTab] = useState<'reservations' | 'shuttles' | 'prices' | 'emails'>('reservations');
@@ -146,7 +238,7 @@ export const SuperAdminDashboard: React.FC = () => {
   return (
     <div className="py-8 sm:py-12 bg-[#F8FAFC] min-h-screen text-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        
+
         {/* Dashboard Top Header (Stripe / Linear Style) */}
         <div className="inst-card p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -183,7 +275,7 @@ export const SuperAdminDashboard: React.FC = () => {
 
         {/* KPI Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          
+
           <div className="inst-card p-5">
             <div className="flex items-center justify-between text-xs text-slate-500 font-semibold mb-2">
               <span>Total Délégations &bull; Dossiers</span>
@@ -308,11 +400,10 @@ export const SuperAdminDashboard: React.FC = () => {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
-                  isActive
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${isActive
                     ? 'bg-[#03396C] text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                }`}
+                  }`}
               >
                 <Icon className="w-4 h-4" />
                 <span>{tab.label}</span>
@@ -324,7 +415,7 @@ export const SuperAdminDashboard: React.FC = () => {
         {/* TAB 1: RESERVATIONS TABLE */}
         {activeTab === 'reservations' && (
           <div className="space-y-4 animate-fadeIn">
-            
+
             {/* Filter Bar */}
             <div className="inst-card p-4 flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap items-center gap-3">
@@ -426,13 +517,12 @@ export const SuperAdminDashboard: React.FC = () => {
                         {res.totalAmount} €
                       </td>
                       <td className="py-3 px-4">
-                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
-                          res.paymentStatus === 'paid'
+                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${res.paymentStatus === 'paid'
                             ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                             : res.paymentMethod === 'bank_transfer'
-                            ? 'bg-blue-50 text-blue-800 border border-blue-200'
-                            : 'bg-amber-50 text-amber-800 border border-amber-200'
-                        }`}>
+                              ? 'bg-blue-50 text-blue-800 border border-blue-200'
+                              : 'bg-amber-50 text-amber-800 border border-amber-200'
+                          }`}>
                           {res.paymentStatus === 'paid' ? 'Payé CB' : res.paymentMethod === 'bank_transfer' ? 'Virement FIE' : 'Sur Place'}
                         </span>
                       </td>
@@ -468,14 +558,45 @@ export const SuperAdminDashboard: React.FC = () => {
         {/* TAB 2: SHUTTLES & ARRIVALS DISPATCH */}
         {activeTab === 'shuttles' && (
           <div className="space-y-6 animate-fadeIn">
-            
+
+            {/* Alert Banner if any modified flights pending acknowledgement */}
+            {incomingShuttles.some(s => s.flightModifiedRecently) && (
+              <div className="p-4 rounded-xl bg-amber-50 border border-amber-300 flex items-center justify-between gap-4 animate-pulse">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <AlertCircle className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-amber-950">
+                      {incomingShuttles.filter(s => s.flightModifiedRecently).length} Vol(s) modifié(s) récemment par les délégations
+                    </h4>
+                    <p className="text-xs text-amber-800">
+                      Les coordonnées d'arrivée ont été mises à jour depuis l'espace client. Veuillez vérifier les horaires et affectations de véhicules ci-dessous.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={playAlertChime}
+                  className="px-3 py-1.5 rounded-lg bg-white border border-amber-300 text-amber-900 text-xs font-bold hover:bg-amber-100 transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer shadow-xs"
+                >
+                  <Volume2 className="w-3.5 h-3.5" />
+                  <span>Tester Alerte Sonore</span>
+                </button>
+              </div>
+            )}
+
             <div className="inst-card p-6">
-              <h3 className="text-base font-bold text-[#0F172A] mb-1">
-                Dispatching des Arrivées Aéroports (TUN &bull; NBE &bull; MIR)
-              </h3>
-              <p className="text-xs text-slate-600 mb-6">
-                Planning chronologique des vols d'arrivée et regroupement automatique des délégations par tranche de 45 minutes pour l'affectation des véhicules.
-              </p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                <div>
+                  <h3 className="text-base font-bold text-[#0F172A] mb-1">
+                    Dispatching des Arrivées Aéroports (TUN &bull; NBE &bull; MIR)
+                  </h3>
+                  <p className="text-xs text-slate-600">
+                    Planning chronologique des vols d'arrivée et regroupement automatique des délégations par tranche de 45 minutes pour l'affectation des véhicules.
+                  </p>
+                </div>
+              </div>
 
               <div className="overflow-x-auto border border-slate-200 rounded-xl">
                 <table className="w-full text-left text-xs">
@@ -493,41 +614,87 @@ export const SuperAdminDashboard: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-slate-800 font-mono">
-                    {incomingShuttles.map(res => (
-                      <tr key={res.id} className="hover:bg-slate-50/70">
-                        <td className="py-3 px-4 font-bold text-slate-900">
-                          {res.shuttle?.arrivalDateTime ? res.shuttle.arrivalDateTime.replace('T', ' ') : 'N/A'}
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className="px-2 py-0.5 rounded bg-blue-50 text-[#03396C] font-bold border border-blue-200">
-                            {res.shuttle?.airport}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 font-sans">
-                          <strong>{res.shuttle?.arrivalFlightNumber}</strong> ({res.shuttle?.arrivalAirline})
-                        </td>
-                        <td className="py-3 px-4 font-sans font-semibold">
-                          {res.type === 'group'
-                            ? res.federationGroup?.federationName
-                            : `${res.individualLead?.firstName} ${res.individualLead?.lastName}`}
-                        </td>
-                        <td className="py-3 px-4 text-center font-bold">
-                          {res.shuttle?.passengerCount}
-                        </td>
-                        <td className="py-3 px-4 text-center font-bold text-[#C8102E]">
-                          {res.shuttle?.weaponBagsCount}
-                        </td>
-                        <td className="py-3 px-4 font-sans text-xs">
-                          {res.shuttle?.driverWhatsApp}
-                        </td>
-                        <td className="py-3 px-4 font-sans text-xs">
-                          {res.hotelId === 'el-mouradi-gammarth' ? 'El Mouradi Gammarth' : 'Golden Carthage'}
-                        </td>
-                        <td className="py-3 px-4 font-sans text-xs font-semibold text-emerald-800">
-                          {res.shuttle?.assignedVehicle || 'Minibus Sprinter #1'}
-                        </td>
-                      </tr>
-                    ))}
+                    {incomingShuttles.map(res => {
+                      const isModified = Boolean(res.flightModifiedRecently);
+                      return (
+                        <tr
+                          key={res.id}
+                          className={`transition-colors ${
+                            isModified
+                              ? 'bg-amber-50/90 border-l-4 border-l-amber-500 hover:bg-amber-100/70'
+                              : 'hover:bg-slate-50/70'
+                          }`}
+                        >
+                          <td className="py-3 px-4 font-bold text-slate-900">
+                            <div>{res.shuttle?.arrivalDateTime ? res.shuttle.arrivalDateTime.replace('T', ' ') : 'N/A'}</div>
+                            {isModified && res.previousFlightDetails?.dateTime && (
+                              <div className="text-[10px] text-amber-800 font-normal line-through">
+                                Précédent: {res.previousFlightDetails.dateTime}
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className="px-2 py-0.5 rounded bg-blue-50 text-[#03396C] font-bold border border-blue-200">
+                              {res.shuttle?.airport}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 font-sans">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <strong>{res.shuttle?.arrivalFlightNumber}</strong> ({res.shuttle?.arrivalAirline})
+                              {isModified && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-white shadow-xs animate-pulse">
+                                  <span>⚠️ Vol modifié récemment</span>
+                                </span>
+                              )}
+                            </div>
+                            {isModified && res.previousFlightDetails?.flightNumber && (
+                              <div className="text-[10px] text-amber-800 mt-0.5">
+                                Ancien vol : <span className="line-through">{res.previousFlightDetails.flightNumber}</span>
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 font-sans font-semibold">
+                            <div>
+                              {res.type === 'group'
+                                ? res.federationGroup?.federationName
+                                : `${res.individualLead?.firstName} ${res.individualLead?.lastName}`}
+                            </div>
+                            <div className="text-[10px] font-mono text-slate-500 font-normal">
+                              {res.id}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-center font-bold">
+                            {res.shuttle?.passengerCount}
+                          </td>
+                          <td className="py-3 px-4 text-center font-bold text-[#C8102E]">
+                            {res.shuttle?.weaponBagsCount}
+                          </td>
+                          <td className="py-3 px-4 font-sans text-xs">
+                            {res.shuttle?.driverWhatsApp}
+                          </td>
+                          <td className="py-3 px-4 font-sans text-xs">
+                            {res.hotelId === 'el-mouradi-gammarth' ? 'El Mouradi Gammarth' : 'Golden Carthage'}
+                          </td>
+                          <td className="py-3 px-4 font-sans text-xs">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-semibold text-emerald-800">
+                                {res.shuttle?.assignedVehicle || 'Minibus Sprinter #1'}
+                              </span>
+                              {isModified && (
+                                <button
+                                  type="button"
+                                  onClick={() => acknowledgeFlightModification(res.id)}
+                                  className="px-2.5 py-1 rounded bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold shrink-0 transition-colors cursor-pointer shadow-xs"
+                                  title="Acquitter et retirer le badge d'alerte"
+                                >
+                                  ✓ Acquitter
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -540,7 +707,7 @@ export const SuperAdminDashboard: React.FC = () => {
         {/* TAB 3: PRICES & ROOM QUOTAS */}
         {activeTab === 'prices' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fadeIn">
-            
+
             {/* Price Editor */}
             <div className="inst-card p-6 sm:p-8 space-y-6">
               <div>
@@ -742,10 +909,15 @@ export const SuperAdminDashboard: React.FC = () => {
                         <div className="text-[11px] text-slate-500">{log.recipientEmail}</div>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                          log.type === 'flight_modified_alert'
+                            ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                            : 'bg-slate-100 text-slate-700'
+                        }`}>
                           {log.type === 'booking_confirmation' && 'Confirmation Immédiate'}
                           {log.type === 'shuttle_assignment' && 'Attribution Navette'}
                           {log.type === 'reminder_48h' && 'Rappel J-2 Tournoi'}
+                          {log.type === 'flight_modified_alert' && '⚠️ Alerte Vol Modifié'}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-slate-700">

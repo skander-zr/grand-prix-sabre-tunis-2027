@@ -148,6 +148,16 @@ export interface Reservation {
   hasShuttle: boolean;
   shuttle?: ShuttleDetails;
 
+  // Live Flight Modification Tracking
+  flightModifiedRecently?: boolean;
+  flightModifiedAt?: string;
+  previousFlightDetails?: {
+    flightNumber?: string;
+    airline?: string;
+    dateTime?: string;
+    airport?: string;
+  };
+
   // Status & Notes
   status: 'confirmed' | 'pending' | 'cancelled';
   notes?: string;
@@ -179,7 +189,7 @@ export interface EmailLog {
   bookingCode: string;
   recipientEmail: string;
   recipientName: string;
-  type: 'booking_confirmation' | 'shuttle_assignment' | 'reminder_48h';
+  type: 'booking_confirmation' | 'shuttle_assignment' | 'reminder_48h' | 'flight_modified_alert';
   sentAt: string;
   status: 'sent' | 'delivered';
   subject: string;

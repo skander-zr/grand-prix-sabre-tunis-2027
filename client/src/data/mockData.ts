@@ -25,32 +25,16 @@ export const INITIAL_HOTELS: Record<'el-mouradi-gammarth' | 'golden-carthage', H
     },
     photos: [
       {
-        url: '/hotels/el-mouradi-resort.jpg',
-        caption: { fr: 'Vue panoramique du complexe 5★ & plage privée des Côtes de Carthage', en: 'Panoramic resort view & private beach on Carthage coast' }
+        url: 'https://static21.com-hotel.com/uploads/hotel/58672/photo/lg_el-mouradi-gammarth_152983353811.jpg',
+        caption: { fr: 'Façade & Grande piscine en bord de mer', en: 'Facade & Grand seafront swimming pool' }
       },
       {
-        url: '/hotels/el-mouradi-facade.jpg',
-        caption: { fr: 'Façade extérieure & piscines en bord de mer Méditerranée', en: 'Exterior facade & Mediterranean seafront pools' }
+        url: 'https://images.trvl-media.com/lodging/2000000/1510000/1507700/1507626/d1b12f5f.jpg',
+        caption: { fr: 'Plage & Extérieurs des Côtes de Carthage', en: 'Beach & Carthage coast grounds' }
       },
       {
-        url: '/hotels/el-mouradi-verriere.jpg',
-        caption: { fr: 'Grand hall d\'accueil & verrière de réception officielle FIE', en: 'Grand reception hall & official FIE glass atrium' }
-      },
-      {
-        url: '/hotels/el-mouradi-room.jpg',
-        caption: { fr: 'Chambre athlète officielle avec balcon privatif & vue mer', en: 'Official athlete room with private balcony & sea view' }
-      },
-      {
-        url: '/hotels/el-mouradi-restaurant.jpg',
-        caption: { fr: 'Restaurant buffet nutritionnel adapté aux compétiteurs FIE', en: 'Sports nutrition buffet restaurant for FIE competitors' }
-      },
-      {
-        url: '/hotels/el-mouradi-pool.jpg',
-        caption: { fr: 'Piscine olympique & parc paysager méditerranéen', en: 'Olympic pool & landscaped Mediterranean park' }
-      },
-      {
-        url: '/hotels/el-mouradi-entree.jpg',
-        caption: { fr: 'Entrée sécurisée & aire de dépose des navettes officielles', en: 'Secured entrance & official shuttle drop-off area' }
+        url: 'https://pix10.agoda.net/hotelImages/34566410/0/dfdec0ec3d34adbd696d6e084f34376e.jpeg',
+        caption: { fr: 'Chambre Double / Twin officielle pour athlètes', en: 'Official Double / Twin room for athletes' }
       }
     ],
     amenities: [
@@ -117,28 +101,16 @@ export const INITIAL_HOTELS: Record<'el-mouradi-gammarth' | 'golden-carthage', H
     },
     photos: [
       {
-        url: '/hotels/golden-carthage-panoramic.jpg',
-        caption: { fr: 'Vue panoramique officielle sur la colline de Gammarth & Golfe de Tunis', en: 'Official panoramic cliff view over Gammarth Bay' }
+        url: 'https://static21.com-hotel.com/uploads/hotel/58465/photo/lg_golden-tulip-carthage-tunis_15298728881.jpg',
+        caption: { fr: 'Vue panoramique sur la Baie de Gammarth & Golfe de Tunis', en: 'Panoramic view over Gammarth Bay' }
       },
       {
-        url: '/hotels/golden-carthage-facade.jpg',
-        caption: { fr: 'Façade majestueuse du palace & architecture carthaginoise', en: 'Grand palace facade & Carthaginian architecture' }
+        url: 'https://images.trvl-media.com/lodging/1000000/560000/558100/558059/5f9a3236.jpg',
+        caption: { fr: 'Terrasse & Piscine extérieure panoramique', en: 'Terrace & Panoramic outdoor pool' }
       },
       {
-        url: '/hotels/golden-carthage-pool.jpg',
-        caption: { fr: 'Grande piscine extérieure & parc méditerranéen', en: 'Grand outdoor swimming pool & Mediterranean gardens' }
-      },
-      {
-        url: '/hotels/golden-carthage-room.jpg',
-        caption: { fr: 'Suite Exécutive avec balcon privatif & vue mer', en: 'Executive Suite with private terrace & sea view' }
-      },
-      {
-        url: '/hotels/golden-carthage-twin.jpg',
-        caption: { fr: 'Chambre Deluxe Twin (2 lits séparés athlètes)', en: 'Deluxe Twin Room (2 separate beds for athletes)' }
-      },
-      {
-        url: '/hotels/golden-carthage-lobby.jpg',
-        caption: { fr: 'Restaurant gastronomique La Stalla & salons officiels FIE', en: 'Fine dining La Stalla & official FIE reception salons' }
+        url: 'https://images.trvl-media.com/lodging/1000000/560000/558100/558059/56a1277b.jpg',
+        caption: { fr: 'Chambre Executive VIP & Grand standing', en: 'Executive VIP Room' }
       }
     ],
     amenities: [

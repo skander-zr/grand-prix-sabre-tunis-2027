@@ -61,6 +61,7 @@ interface ReservationContextType {
   findReservationByEmailAndPassport: (email: string, passport: string) => Reservation | undefined;
   bookShuttle: (code: string, shuttle: ShuttleDetails) => boolean;
   updateFlightInfo: (code: string, updates: Partial<ShuttleDetails>) => boolean;
+  acknowledgeFlightModification: (code: string) => void;
   updateHotelRates: (hotelId: 'el-mouradi-gammarth' | 'golden-carthage', singlePrice: number, doublePrice: number) => void;
   blockRooms: (hotelId: 'el-mouradi-gammarth' | 'golden-carthage', roomType: 'single' | 'double', count: number) => void;
   simulateSendEmail: (code: string, type: 'booking_confirmation' | 'shuttle_assignment' | 'reminder_48h') => void;
@@ -379,7 +380,7 @@ export const ReservationProvider: React.FC<{ children: React.ReactNode }> = ({ c
     return true;
   };
 
-  // Update Flight Info
+  // Update Flight Info & Trigger Instant Alert
   const updateFlightInfo = (code: string, updates: Partial<ShuttleDetails>): boolean => {
     const reservation = getReservation(code);
     if (!reservation || !reservation.shuttle) {
@@ -387,10 +388,30 @@ export const ReservationProvider: React.FC<{ children: React.ReactNode }> = ({ c
       return false;
     }
 
+    const oldFlight = {
+      flightNumber: reservation.shuttle.arrivalFlightNumber || 'N/A',
+      airline: reservation.shuttle.arrivalAirline || 'N/A',
+      dateTime: reservation.shuttle.arrivalDateTime ? reservation.shuttle.arrivalDateTime.replace('T', ' ') : 'Non renseigné',
+      airport: reservation.shuttle.airport || 'TUN'
+    };
+
+    const newFlightNumber = updates.arrivalFlightNumber || oldFlight.flightNumber;
+    const newAirline = updates.arrivalAirline || oldFlight.airline;
+    const newDateTime = updates.arrivalDateTime ? updates.arrivalDateTime.replace('T', ' ') : oldFlight.dateTime;
+    const newAirport = updates.airport || oldFlight.airport;
+
+    const delegationName = reservation.type === 'group'
+      ? (reservation.federationGroup?.federationName || 'Délégation Groupe')
+      : `${reservation.individualLead?.firstName || ''} ${reservation.individualLead?.lastName || ''}`.trim() || 'Athlète Individuel';
+
+    // 1. Update reservation state with modified flag and previous details
     setReservations(prev => prev.map(r => {
       if (r.id === reservation.id && r.shuttle) {
         return {
           ...r,
+          flightModifiedRecently: true,
+          flightModifiedAt: new Date().toISOString(),
+          previousFlightDetails: oldFlight,
           shuttle: {
             ...r.shuttle,
             ...updates
@@ -400,11 +421,65 @@ export const ReservationProvider: React.FC<{ children: React.ReactNode }> = ({ c
       return r;
     }));
 
+    // 2. Instant automatic alert email to organization address
+    const alertEmail: EmailLog = {
+      id: `EML-ALERT-${Date.now()}`,
+      bookingCode: reservation.id,
+      recipientEmail: 'organisation@escrime-tunis2027.com',
+      recipientName: 'Cellule Dispatching Navettes & Logistique FIE',
+      type: 'flight_modified_alert',
+      sentAt: new Date().toISOString(),
+      status: 'delivered',
+      subject: `[ALERTE NAVETTE] Vol modifié pour le dossier ${reservation.id}`,
+      contentSnippet: `Dossier ${reservation.id} (${delegationName}) : Ancien vol [${oldFlight.flightNumber} - ${oldFlight.dateTime}] ➔ Nouvel horaire [${newFlightNumber} - ${newDateTime}] à l'aéroport ${newAirport}. Le planning chauffeur et les rotations de minibus ont été réajustés.`
+    };
+    setEmailLogs(prev => [alertEmail, ...prev]);
+
+    // 3. Trigger live browser event & broadcast channel for SuperAdmin dashboard
+    try {
+      const alertPayload = {
+        code: reservation.id,
+        delegation: delegationName,
+        oldFlight,
+        newFlight: {
+          flightNumber: newFlightNumber,
+          airline: newAirline,
+          dateTime: newDateTime,
+          airport: newAirport
+        }
+      };
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('gps2027_flight_alert', { detail: alertPayload }));
+        if ('BroadcastChannel' in window) {
+          const ch = new BroadcastChannel('gps2027_alerts');
+          ch.postMessage({ type: 'flight_alert', payload: alertPayload });
+          ch.close();
+        }
+      }
+    } catch (e) {
+      console.error('Error dispatching flight alert:', e);
+    }
+
     toast.success('Horaires et coordonnées de vol mis à jour !', {
-      description: 'Le planning de dispatch navette a été recalculé.'
+      description: `Notification d'alerte instantanée transmise à la cellule de dispatching FIE.`
     });
 
     return true;
+  };
+
+  // Acknowledge Flight Modification Alert in Admin
+  const acknowledgeFlightModification = (code: string) => {
+    setReservations(prev => prev.map(r => {
+      if (r.id === code) {
+        return {
+          ...r,
+          flightModifiedRecently: false
+        };
+      }
+      return r;
+    }));
+    toast.info(`Alerte acquittée pour le dossier ${code}`);
   };
 
   // Update Hotel Room Rates
@@ -594,6 +669,7 @@ export const ReservationProvider: React.FC<{ children: React.ReactNode }> = ({ c
         findReservationByEmailAndPassport,
         bookShuttle,
         updateFlightInfo,
+        acknowledgeFlightModification,
         updateHotelRates,
         blockRooms,
         simulateSendEmail,

@@ -39,6 +39,12 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
 
   const [selectedMapHotel, setSelectedMapHotel] = useState<Hotel | null>(null);
 
+  const getLoc = (val: any, fallback = ''): string => {
+    if (!val) return fallback;
+    if (typeof val === 'string') return val;
+    return val[lang] || val['fr'] || val['en'] || fallback;
+  };
+
   const nextPhoto = (hotelId: string, max: number) => {
     setPhotoIndexes(prev => ({
       ...prev,
@@ -180,7 +186,7 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
                     <div className="relative w-full h-full flex-1 overflow-hidden group">
                       <img
                         src={hotel.photos[currentPhotoIdx]?.url}
-                        alt={hotel.photos[currentPhotoIdx]?.caption?.[lang] || hotel.name}
+                        alt={getLoc(hotel.photos[currentPhotoIdx]?.caption, hotel.name)}
                         className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-102"
                       />
                       
@@ -219,7 +225,7 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
                       {/* Photo Caption & Counter */}
                       <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-xs text-white">
                         <span className="font-medium truncate pr-2 drop-shadow-sm">
-                          {hotel.photos[currentPhotoIdx]?.caption?.[lang] || ''}
+                          {getLoc(hotel.photos[currentPhotoIdx]?.caption, '')}
                         </span>
                         <span className="px-2 py-0.5 rounded bg-black/70 font-mono text-[10px] shrink-0 font-bold">
                           {currentPhotoIdx + 1} / {hotel.photos.length}
@@ -272,7 +278,7 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
                         {hotel.name}
                       </h3>
                       <p className="text-xs font-bold text-slate-500 mt-1 mb-4">
-                        {hotel.tagline?.[lang] || ''}
+                        {getLoc(hotel.tagline, '')}
                       </p>
 
                       {/* Distance to Radès Competition Venue Banner */}
@@ -295,7 +301,7 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
 
                       {/* Editorial Hotel Description */}
                       <p className="text-sm text-slate-600 leading-relaxed mb-5">
-                        {hotel.description?.[lang] || ''}
+                        {getLoc(hotel.description, '')}
                       </p>
 
                       {/* Athletic & Hospitality Amenities */}
@@ -306,7 +312,7 @@ export const HotelsSection: React.FC<HotelsSectionProps> = ({ onSelectHotel }) =
                             className="flex items-center gap-2 p-2 rounded-md bg-slate-50 border border-slate-200 text-xs text-slate-700 font-medium"
                           >
                             <span className="w-1.5 h-1.5 rounded-full bg-[#03396C] shrink-0"></span>
-                            <span className="truncate">{amenity.label?.[lang] || (amenity as any).name?.[lang] || ''}</span>
+                            <span className="truncate">{getLoc(amenity.label || (amenity as any).name, '')}</span>
                           </div>
                         ))}
                       </div>
